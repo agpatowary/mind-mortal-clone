@@ -399,7 +399,9 @@ export type Database = {
           full_name: string | null
           id: string
           location: string | null
+          phone: string | null
           updated_at: string | null
+          username: string | null
         }
         Insert: {
           avatar_url?: string | null
@@ -407,7 +409,9 @@ export type Database = {
           full_name?: string | null
           id: string
           location?: string | null
+          phone?: string | null
           updated_at?: string | null
+          username?: string | null
         }
         Update: {
           avatar_url?: string | null
@@ -415,7 +419,9 @@ export type Database = {
           full_name?: string | null
           id?: string
           location?: string | null
+          phone?: string | null
           updated_at?: string | null
+          username?: string | null
         }
         Relationships: [
           {
@@ -598,6 +604,38 @@ export type Database = {
           },
         ]
       }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["user_role"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["user_role"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["user_role"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_roles_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       wisdom_resources: {
         Row: {
           approved: boolean | null
@@ -727,7 +765,12 @@ export type Database = {
         Returns: string[]
       }
       has_role: {
-        Args: { _user_id: string; _role: string }
+        Args:
+          | {
+              _user_id: string
+              _role: Database["public"]["Enums"]["user_role"]
+            }
+          | { _user_id: string; _role: string }
         Returns: boolean
       }
       is_admin: {
@@ -758,6 +801,7 @@ export type Database = {
     }
     Enums: {
       app_role: "user" | "admin" | "mentor"
+      user_role: "admin" | "mentor" | "disciple" | "guest"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -874,6 +918,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["user", "admin", "mentor"],
+      user_role: ["admin", "mentor", "disciple", "guest"],
     },
   },
 } as const

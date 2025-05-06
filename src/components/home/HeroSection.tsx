@@ -99,40 +99,81 @@ const HeroSection: React.FC<HeroSectionProps> = ({ data }) => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
         >
-          <Logo className="mx-auto mb-8" />
+          <motion.div 
+            whileHover={{ scale: 1.05 }}
+            transition={{ type: "spring", stiffness: 300 }}
+          >
+            <Logo className="mx-auto mb-8" />
+          </motion.div>
           
-          <h1 className="text-4xl md:text-6xl font-bold mb-6">
+          <motion.h1 
+            className="text-4xl md:text-6xl font-bold mb-6"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2, duration: 0.8 }}
+          >
             {data.title}
-          </h1>
+          </motion.h1>
           
           <div className="h-16 md:h-20 flex items-center justify-center">
-            <h2 className="text-2xl md:text-4xl font-semibold text-primary min-h-[4rem] flex items-center">
+            <motion.h2 
+              className="text-2xl md:text-4xl font-semibold text-primary min-h-[4rem] flex items-center"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.4, duration: 0.8 }}
+            >
               {displayText}
-              <span className="animate-pulse ml-1">|</span>
-            </h2>
+              <motion.span 
+                className="ml-1"
+                animate={{ opacity: [1, 0, 1] }}
+                transition={{ repeat: Infinity, duration: 1 }}
+              >
+                |
+              </motion.span>
+            </motion.h2>
           </div>
           
-          <p className="text-lg md:text-xl text-muted-foreground mt-6 mb-8">
+          <motion.p 
+            className="text-lg md:text-xl text-muted-foreground mt-6 mb-8"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.6, duration: 0.8 }}
+          >
             {data.description}
-          </p>
+          </motion.p>
           
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button 
-              size="lg" 
-              className="w-full sm:w-auto"
-              onClick={() => navigate("/signup")}
-            >
-              Get Started
-            </Button>
-            <Button 
-              size="lg" 
-              variant="outline" 
-              className="w-full sm:w-auto"
-              onClick={() => navigate("/")}
-            >
-              Learn More
-            </Button>
-          </div>
+          <motion.div 
+            className="flex flex-col sm:flex-row gap-4 justify-center"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.8, duration: 0.8 }}
+          >
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+              <Button 
+                size="lg" 
+                className="w-full sm:w-auto"
+                onClick={() => navigate("/signup")}
+              >
+                Get Started
+              </Button>
+            </motion.div>
+            
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+              <Button 
+                size="lg" 
+                variant="outline" 
+                className="w-full sm:w-auto"
+                onClick={() => {
+                  const featuresSection = document.getElementById('features-section');
+                  if (featuresSection) {
+                    featuresSection.scrollIntoView({ behavior: 'smooth' });
+                  }
+                }}
+              >
+                Learn More
+              </Button>
+            </motion.div>
+          </motion.div>
         </motion.div>
       </div>
     </div>
