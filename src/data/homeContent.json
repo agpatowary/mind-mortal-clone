@@ -1,0 +1,58 @@
+
+{
+  "hero": {
+    "title": "MMortal",
+    "slogans": [
+      "Preserve your legacy.",
+      "Share your knowledge.",
+      "Connect through time.",
+      "Create a lasting impact."
+    ],
+    "description": "A platform for preserving legacies, sharing knowledge, and sending timeless messages.",
+    "backgroundImages": [
+      "/lovable-uploads/c7971a89-c468-49b1-ab5a-14b1d463c990.png"
+    ]
+  },
+  "features": {
+    "title": "Our Features",
+    "items": [
+      {
+        "title": "Legacy Vault",
+        "description": "Share and preserve your ideas, memories, and important documents for future generations.",
+        "icon": "archive"
+      },
+      {
+        "title": "Knowledge Exchange",
+        "description": "Connect retired professionals with newcomers for mentorship and knowledge sharing.",
+        "icon": "users"
+      },
+      {
+        "title": "Timeless Messages",
+        "description": "Create messages to be delivered at future dates or triggered by specific events.",
+        "icon": "clock"
+      }
+    ]
+  },
+  "stories": {
+    "title": "User Stories",
+    "items": [
+      {
+        "quote": "I can now share my life's wisdom with my grandchildren, even when I'm no longer here.",
+        "author": "James, 72"
+      },
+      {
+        "quote": "The mentorship program connected me with an industry veteran who helped me navigate my career path.",
+        "author": "Sarah, 28"
+      },
+      {
+        "quote": "My father left timeless messages for my important life events. It's like he's still with me.",
+        "author": "Michael, 34"
+      }
+    ]
+  },
+  "cta": {
+    "title": "Start Your Legacy Today",
+    "description": "Join thousands of users who are preserving their legacy and connecting across generations.",
+    "buttonText": "Get Started"
+  }
+}
