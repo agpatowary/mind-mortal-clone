@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion, useMotionValue, useTransform } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import Logo from '../Logo';
 import { useNavigate } from 'react-router-dom';
@@ -19,6 +19,21 @@ const HeroSection: React.FC<HeroSectionProps> = ({ data }) => {
   const [currentSlogan, setCurrentSlogan] = useState(0);
   const [isTyping, setIsTyping] = useState(true);
   const [displayText, setDisplayText] = useState('');
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
+  
+  // Transform mouse position to rotation values
+  const rotateX = useTransform(mouseY, [0, window.innerHeight], [5, -5]);
+  const rotateY = useTransform(mouseX, [0, window.innerWidth], [-5, 5]);
+  
+  // Handle mouse move
+  const handleMouseMove = (e: React.MouseEvent) => {
+    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    mouseX.set(x);
+    mouseY.set(y);
+  };
   
   useEffect(() => {
     const slogan = data.slogans[currentSlogan];
@@ -50,8 +65,8 @@ const HeroSection: React.FC<HeroSectionProps> = ({ data }) => {
     return () => clearTimeout(typingTimeout);
   }, [currentSlogan, displayText, isTyping, data.slogans]);
   
-  // Moving background elements
-  const floatingElements = Array.from({ length: 15 }, (_, i) => ({
+  // Interactive elements
+  const floatingElements = Array.from({ length: 10 }, (_, i) => ({
     id: i,
     size: Math.random() * 30 + 10,
     x: Math.random() * 100,
@@ -61,16 +76,26 @@ const HeroSection: React.FC<HeroSectionProps> = ({ data }) => {
   }));
   
   return (
-    <div className="relative min-h-screen flex items-center justify-center overflow-hidden">
+    <div 
+      className="relative min-h-screen flex items-center justify-center overflow-hidden"
+      onMouseMove={handleMouseMove}
+    >
       {/* Background image */}
-      <div className="absolute inset-0 z-0">
-        <img 
+      <motion.div 
+        className="absolute inset-0 z-0"
+        style={{ 
+          rotateX, 
+          rotateY,
+          perspective: 1000,
+        }}
+      >
+        <motion.img 
           src={data.backgroundImages[0]} 
           alt="Background" 
           className="w-full h-full object-cover opacity-10"
         />
         <div className="absolute inset-0 bg-gradient-to-b from-background/50 to-background"></div>
-      </div>
+      </motion.div>
       
       {/* Floating elements */}
       {floatingElements.map((el) => (
@@ -82,6 +107,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ data }) => {
           animate={{
             x: [`${el.x}vw`, `${(el.x + 20) % 100}vw`, `${el.x}vw`],
             y: [`${el.y}vh`, `${(el.y + 20) % 100}vh`, `${el.y}vh`],
+            opacity: [0.3, 0.8, 0.3],
           }}
           transition={{
             duration: el.duration,
@@ -100,8 +126,12 @@ const HeroSection: React.FC<HeroSectionProps> = ({ data }) => {
           transition={{ duration: 0.8 }}
         >
           <motion.div 
-            whileHover={{ scale: 1.05 }}
+            whileHover={{ scale: 1.05, rotate: 2 }}
+            whileTap={{ scale: 0.95, rotate: -2 }}
             transition={{ type: "spring", stiffness: 300 }}
+            drag
+            dragConstraints={{ top: -10, right: 10, bottom: 10, left: -10 }}
+            dragElastic={0.1}
           >
             <Logo className="mx-auto mb-8" />
           </motion.div>
@@ -111,6 +141,10 @@ const HeroSection: React.FC<HeroSectionProps> = ({ data }) => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2, duration: 0.8 }}
+            style={{ 
+              rotateX: rotateX.get() * 0.5, 
+              rotateY: rotateY.get() * 0.5,
+            }}
           >
             {data.title}
           </motion.h1>
@@ -148,7 +182,10 @@ const HeroSection: React.FC<HeroSectionProps> = ({ data }) => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.8, duration: 0.8 }}
           >
-            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+            <motion.div 
+              whileHover={{ scale: 1.05, boxShadow: "0px 10px 20px rgba(0, 0, 0, 0.1)" }} 
+              whileTap={{ scale: 0.95 }}
+            >
               <Button 
                 size="lg" 
                 className="w-full sm:w-auto"
@@ -158,7 +195,10 @@ const HeroSection: React.FC<HeroSectionProps> = ({ data }) => {
               </Button>
             </motion.div>
             
-            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+            <motion.div 
+              whileHover={{ scale: 1.05, boxShadow: "0px 10px 20px rgba(0, 0, 0, 0.05)" }} 
+              whileTap={{ scale: 0.95 }}
+            >
               <Button 
                 size="lg" 
                 variant="outline" 

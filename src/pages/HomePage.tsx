@@ -52,9 +52,9 @@ const HomePage: React.FC = () => {
       if (isScrolling) return;
       
       // Determine scroll direction and navigate
-      if (e.deltaY > 30) {
+      if (e.deltaY > 20) {
         navigateToSection(activeSection + 1);
-      } else if (e.deltaY < -30) {
+      } else if (e.deltaY < -20) {
         navigateToSection(activeSection - 1);
       }
     };
@@ -62,6 +62,42 @@ const HomePage: React.FC = () => {
     // Add wheel event listener with passive: false to allow preventDefault
     window.addEventListener('wheel', handleWheel, { passive: false });
     return () => window.removeEventListener('wheel', handleWheel);
+  }, [activeSection, isScrolling]);
+  
+  // Handle touch events for mobile
+  useEffect(() => {
+    let touchStartY = 0;
+    
+    const handleTouchStart = (e: TouchEvent) => {
+      touchStartY = e.touches[0].clientY;
+    };
+    
+    const handleTouchMove = (e: TouchEvent) => {
+      if (isScrolling) return;
+      
+      const touchEndY = e.touches[0].clientY;
+      const diff = touchStartY - touchEndY;
+      
+      // Threshold for vertical swipe
+      if (Math.abs(diff) > 50) {
+        if (diff > 0) {
+          // Swipe up (next section)
+          navigateToSection(activeSection + 1);
+        } else {
+          // Swipe down (previous section)
+          navigateToSection(activeSection - 1);
+        }
+        touchStartY = touchEndY; // Reset for next swipe
+      }
+    };
+    
+    window.addEventListener('touchstart', handleTouchStart);
+    window.addEventListener('touchmove', handleTouchMove);
+    
+    return () => {
+      window.removeEventListener('touchstart', handleTouchStart);
+      window.removeEventListener('touchmove', handleTouchMove);
+    };
   }, [activeSection, isScrolling]);
   
   // Section components and their variants for animations
@@ -88,7 +124,13 @@ const HomePage: React.FC = () => {
   };
   
   return (
-    <AnimatedBackground mouseInteraction={true} density={25} speed={15}>
+    <AnimatedBackground 
+      mouseInteraction={true} 
+      density={30} 
+      speed={15} 
+      interactionStrength={120}
+      particleSize="mixed"
+    >
       <div className="overflow-hidden h-screen">
         <HomeNavigation 
           currentSection={activeSection} 
@@ -120,7 +162,7 @@ const HomePage: React.FC = () => {
         {/* Pagination dots */}
         <div className="fixed right-6 top-1/2 transform -translate-y-1/2 z-50 hidden md:flex flex-col gap-3">
           {Array.from({ length: totalSections }).map((_, index) => (
-            <button
+            <motion.button
               key={`dot-${index}`}
               onClick={() => navigateToSection(index)}
               className={`w-3 h-3 rounded-full transition-all duration-300 ${
@@ -128,9 +170,23 @@ const HomePage: React.FC = () => {
                   ? "bg-primary scale-125" 
                   : "bg-muted-foreground hover:bg-primary/50"
               }`}
+              whileHover={{ scale: 1.5 }}
+              whileTap={{ scale: 0.9 }}
               aria-label={`Navigate to section ${index + 1}`}
             />
           ))}
+        </div>
+        
+        {/* Section indicators */}
+        <div className="fixed left-6 top-1/2 transform -translate-y-1/2 z-50 hidden md:block">
+          <motion.div 
+            className="text-primary font-bold text-5xl"
+            animate={{ opacity: [0, 1], y: [20, 0] }}
+            transition={{ duration: 0.5 }}
+            key={`section-number-${activeSection}`}
+          >
+            {activeSection + 1}
+          </motion.div>
         </div>
       </div>
     </AnimatedBackground>
