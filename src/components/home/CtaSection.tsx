@@ -2,7 +2,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 interface CtaSectionProps {
   data: {
@@ -13,6 +13,8 @@ interface CtaSectionProps {
 }
 
 const CtaSection: React.FC<CtaSectionProps> = ({ data }) => {
+  const navigate = useNavigate();
+  
   return (
     <div className="min-h-screen relative flex flex-col justify-center items-center py-20 px-4">
       {/* Background gradient */}
@@ -32,11 +34,13 @@ const CtaSection: React.FC<CtaSectionProps> = ({ data }) => {
           </p>
           
           <div className="mb-16">
-            <Link to="/signup">
-              <Button size="lg" className="rounded-full px-8 py-6 text-lg">
-                {data.buttonText}
-              </Button>
-            </Link>
+            <Button 
+              size="lg" 
+              className="rounded-full px-8 py-6 text-lg"
+              onClick={() => navigate("/signup")}
+            >
+              {data.buttonText}
+            </Button>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-16">

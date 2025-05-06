@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Sun, Moon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Logo from './Logo';
@@ -14,6 +14,7 @@ const HomeNavigation: React.FC<HomeNavigationProps> = ({
   currentSection, 
   onNavigate 
 }) => {
+  const navigate = useNavigate();
   const [isDarkMode, setIsDarkMode] = useState(false);
   
   useEffect(() => {
@@ -66,12 +67,19 @@ const HomeNavigation: React.FC<HomeNavigationProps> = ({
         <div className="w-px h-6 bg-border mx-2" />
         
         <div className="flex gap-2">
-          <Link to="/signin">
-            <Button variant="outline" size="sm">Sign In</Button>
-          </Link>
-          <Link to="/signup">
-            <Button size="sm">Sign Up</Button>
-          </Link>
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={() => navigate("/signin")}
+          >
+            Sign In
+          </Button>
+          <Button 
+            size="sm"
+            onClick={() => navigate("/signup")}
+          >
+            Sign Up
+          </Button>
         </div>
       </div>
     </div>

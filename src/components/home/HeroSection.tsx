@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import Logo from '../Logo';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 interface HeroSectionProps {
   data: {
@@ -15,6 +15,7 @@ interface HeroSectionProps {
 }
 
 const HeroSection: React.FC<HeroSectionProps> = ({ data }) => {
+  const navigate = useNavigate();
   const [currentSlogan, setCurrentSlogan] = useState(0);
   const [isTyping, setIsTyping] = useState(true);
   const [displayText, setDisplayText] = useState('');
@@ -116,12 +117,21 @@ const HeroSection: React.FC<HeroSectionProps> = ({ data }) => {
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link to="/signup">
-              <Button size="lg" className="w-full sm:w-auto">Get Started</Button>
-            </Link>
-            <Link to="/features">
-              <Button size="lg" variant="outline" className="w-full sm:w-auto">Learn More</Button>
-            </Link>
+            <Button 
+              size="lg" 
+              className="w-full sm:w-auto"
+              onClick={() => navigate("/signup")}
+            >
+              Get Started
+            </Button>
+            <Button 
+              size="lg" 
+              variant="outline" 
+              className="w-full sm:w-auto"
+              onClick={() => navigate("/")}
+            >
+              Learn More
+            </Button>
           </div>
         </motion.div>
       </div>
