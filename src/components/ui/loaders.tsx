@@ -75,14 +75,14 @@ export const LogoLoader = ({ size = "default", interactive = false }: { size?: "
           dragElastic={0.8}
         >
           <svg 
-            viewBox="0 0 500 500" 
+            viewBox="0 0 100 100" 
             xmlns="http://www.w3.org/2000/svg" 
             className="w-full h-full"
           >
             <motion.path
-              d="M 250 50 L 350 150 L 250 250 L 150 150 Z M 250 250 L 350 350 L 250 450 L 150 350 Z"
-              strokeWidth="30"
-              stroke="currentColor"
+              d="M 50 10 L 80 30 L 80 70 L 50 90 L 20 70 L 20 30 Z"
+              strokeWidth="5"
+              stroke="#F97316"
               fill="transparent"
               initial={{ pathLength: 0 }}
               animate={{ 
@@ -91,6 +91,21 @@ export const LogoLoader = ({ size = "default", interactive = false }: { size?: "
               }}
               transition={{
                 duration: 4,
+                repeat: Infinity,
+                ease: "easeInOut"
+              }}
+            />
+            <motion.circle
+              cx="50"
+              cy="50"
+              r="5"
+              fill="#CCFF00"
+              animate={{
+                scale: [1, 1.5, 1],
+                opacity: [0.7, 1, 0.7]
+              }}
+              transition={{
+                duration: 2,
                 repeat: Infinity,
                 ease: "easeInOut"
               }}
@@ -110,15 +125,21 @@ export const LogoLoader = ({ size = "default", interactive = false }: { size?: "
           }}
         >
           <svg 
-            viewBox="0 0 500 500" 
+            viewBox="0 0 100 100" 
             xmlns="http://www.w3.org/2000/svg" 
             className="w-full h-full"
           >
             <path
-              d="M 250 50 L 350 150 L 250 250 L 150 150 Z M 250 250 L 350 350 L 250 450 L 150 350 Z"
-              strokeWidth="30"
-              stroke="currentColor"
+              d="M 50 10 L 80 30 L 80 70 L 50 90 L 20 70 L 20 30 Z"
+              strokeWidth="5"
+              stroke="#F97316"
               fill="transparent"
+            />
+            <circle
+              cx="50"
+              cy="50"
+              r="5"
+              fill="#CCFF00"
             />
           </svg>
         </motion.div>
@@ -165,6 +186,7 @@ export const InteractiveLoader = ({ size = "default" }: { size?: "sm" | "default
             animate={{
               scale: [1, 1.5, 1],
               opacity: [0.7, 1, 0.7],
+              boxShadow: ['0 0 0px rgba(249, 115, 22, 0)', '0 0 10px rgba(249, 115, 22, 0.7)', '0 0 0px rgba(249, 115, 22, 0)']
             }}
             transition={{
               duration: 2,

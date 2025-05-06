@@ -126,9 +126,9 @@ const HomePage: React.FC = () => {
   return (
     <AnimatedBackground 
       mouseInteraction={true} 
-      density={30} 
+      density={40} 
       speed={15} 
-      interactionStrength={120}
+      interactionStrength={150}
       particleSize="mixed"
     >
       <div className="overflow-hidden h-screen">
@@ -165,12 +165,15 @@ const HomePage: React.FC = () => {
             <motion.button
               key={`dot-${index}`}
               onClick={() => navigateToSection(index)}
-              className={`w-3 h-3 rounded-full transition-all duration-300 ${
+              className={`rounded-full transition-all duration-300 border ${
                 activeSection === index 
-                  ? "bg-primary scale-125" 
-                  : "bg-muted-foreground hover:bg-primary/50"
+                  ? "bg-primary w-3 h-3 border-primary" 
+                  : "bg-muted-foreground/20 w-2 h-2 border-transparent hover:border-primary/50"
               }`}
-              whileHover={{ scale: 1.5 }}
+              whileHover={{ 
+                scale: 1.5,
+                backgroundColor: "rgba(249, 115, 22, 0.5)",
+              }}
               whileTap={{ scale: 0.9 }}
               aria-label={`Navigate to section ${index + 1}`}
             />
@@ -180,7 +183,7 @@ const HomePage: React.FC = () => {
         {/* Section indicators */}
         <div className="fixed left-6 top-1/2 transform -translate-y-1/2 z-50 hidden md:block">
           <motion.div 
-            className="text-primary font-bold text-5xl"
+            className="text-primary font-bold text-5xl gradient-text"
             animate={{ opacity: [0, 1], y: [20, 0] }}
             transition={{ duration: 0.5 }}
             key={`section-number-${activeSection}`}

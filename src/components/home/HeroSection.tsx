@@ -65,61 +65,84 @@ const HeroSection: React.FC<HeroSectionProps> = ({ data }) => {
     return () => clearTimeout(typingTimeout);
   }, [currentSlogan, displayText, isTyping, data.slogans]);
   
-  // Interactive elements
-  const floatingElements = Array.from({ length: 10 }, (_, i) => ({
-    id: i,
-    size: Math.random() * 30 + 10,
-    x: Math.random() * 100,
-    y: Math.random() * 100,
-    duration: Math.random() * 20 + 10,
-    delay: Math.random() * 5,
-  }));
+  // Tech-themed floating elements
+  const floatingElements = [
+    { id: 1, shape: 'circle', size: 60, x: 15, y: 20, color: '#F97316' },
+    { id: 2, shape: 'hexagon', size: 80, x: 85, y: 15, color: '#F97316' },
+    { id: 3, shape: 'triangle', size: 70, x: 75, y: 75, color: '#CCFF00' },
+    { id: 4, shape: 'square', size: 50, x: 20, y: 70, color: '#CCFF00' },
+    { id: 5, shape: 'circle', size: 40, x: 50, y: 30, color: '#F97316' },
+  ];
   
   return (
     <div 
-      className="relative min-h-screen flex items-center justify-center overflow-hidden"
+      className="relative min-h-screen flex items-center justify-center overflow-hidden px-4"
       onMouseMove={handleMouseMove}
     >
-      {/* Background image */}
-      <motion.div 
-        className="absolute inset-0 z-0"
+      {/* Tech grid overlay */}
+      <div className="absolute inset-0 z-0 bg-[url('/lovable-uploads/4dc712f6-a086-4f5f-bd6b-3231b62037bb.png')] bg-cover bg-center opacity-10"></div>
+      
+      {/* Floating elements */}
+      {floatingElements.map((el) => {
+        // Shape class based on shape type
+        const shapeClass = 
+          el.shape === 'circle' ? 'rounded-full' :
+          el.shape === 'square' ? 'rounded-md' :
+          el.shape === 'triangle' ? 'triangle' :
+          el.shape === 'hexagon' ? 'hexagon' : 'rounded-full';
+        
+        return (
+          <motion.div
+            key={el.id}
+            className={`absolute ${shapeClass} bg-[${el.color}]/10 backdrop-blur-md border border-[${el.color}]/20`}
+            style={{ 
+              width: el.size, 
+              height: el.size,
+              left: `${el.x}%`, 
+              top: `${el.y}%`,
+            }}
+            initial={{ opacity: 0 }}
+            animate={{
+              opacity: [0.2, 0.4, 0.2],
+              x: [0, 20, 0],
+              y: [0, -20, 0],
+              rotate: [0, 10, 0],
+              scale: [1, 1.05, 1],
+            }}
+            transition={{
+              duration: 8 + el.id,
+              repeat: Infinity,
+              ease: "easeInOut",
+            }}
+            whileHover={{
+              scale: 1.2,
+              opacity: 0.8,
+              boxShadow: `0 0 20px 5px rgba(${el.color === '#F97316' ? '249, 115, 22' : '204, 255, 0'}, 0.2)`,
+            }}
+            drag
+            dragConstraints={{
+              top: -100,
+              right: 100,
+              bottom: 100,
+              left: -100,
+            }}
+            dragElastic={0.3}
+          />
+        );
+      })}
+      
+      {/* Content */}
+      <motion.div
+        className="relative z-10 text-center max-w-4xl glass-card p-10 backdrop-blur-md border border-white/10"
         style={{ 
           rotateX, 
           rotateY,
           perspective: 1000,
         }}
+        whileHover={{
+          boxShadow: "0 0 30px rgba(249, 115, 22, 0.2)",
+        }}
       >
-        <motion.img 
-          src={data.backgroundImages[0]} 
-          alt="Background" 
-          className="w-full h-full object-cover opacity-10"
-        />
-        <div className="absolute inset-0 bg-gradient-to-b from-background/50 to-background"></div>
-      </motion.div>
-      
-      {/* Floating elements */}
-      {floatingElements.map((el) => (
-        <motion.div
-          key={el.id}
-          className="absolute rounded-full bg-primary/10 backdrop-blur-md"
-          style={{ width: el.size, height: el.size }}
-          initial={{ x: `${el.x}vw`, y: `${el.y}vh` }}
-          animate={{
-            x: [`${el.x}vw`, `${(el.x + 20) % 100}vw`, `${el.x}vw`],
-            y: [`${el.y}vh`, `${(el.y + 20) % 100}vh`, `${el.y}vh`],
-            opacity: [0.3, 0.8, 0.3],
-          }}
-          transition={{
-            duration: el.duration,
-            delay: el.delay,
-            repeat: Infinity,
-            ease: "easeInOut",
-          }}
-        />
-      ))}
-      
-      {/* Content */}
-      <div className="relative z-10 text-center px-4 max-w-3xl">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
@@ -137,21 +160,17 @@ const HeroSection: React.FC<HeroSectionProps> = ({ data }) => {
           </motion.div>
           
           <motion.h1 
-            className="text-4xl md:text-6xl font-bold mb-6"
+            className="text-4xl md:text-6xl font-bold mb-6 gradient-text"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2, duration: 0.8 }}
-            style={{ 
-              rotateX: rotateX.get() * 0.5, 
-              rotateY: rotateY.get() * 0.5,
-            }}
           >
             {data.title}
           </motion.h1>
           
           <div className="h-16 md:h-20 flex items-center justify-center">
             <motion.h2 
-              className="text-2xl md:text-4xl font-semibold text-primary min-h-[4rem] flex items-center"
+              className="text-2xl md:text-4xl font-semibold text-primary min-h-[4rem] flex items-center neon-glow"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.4, duration: 0.8 }}
@@ -183,12 +202,15 @@ const HeroSection: React.FC<HeroSectionProps> = ({ data }) => {
             transition={{ delay: 0.8, duration: 0.8 }}
           >
             <motion.div 
-              whileHover={{ scale: 1.05, boxShadow: "0px 10px 20px rgba(0, 0, 0, 0.1)" }} 
+              whileHover={{ 
+                scale: 1.05, 
+                boxShadow: "0px 0px 20px rgba(249, 115, 22, 0.5)" 
+              }} 
               whileTap={{ scale: 0.95 }}
             >
               <Button 
                 size="lg" 
-                className="w-full sm:w-auto"
+                className="w-full sm:w-auto bg-[#F97316] hover:bg-[#F97316]/90 text-white rounded-full"
                 onClick={() => navigate("/signup")}
               >
                 Get Started
@@ -196,13 +218,16 @@ const HeroSection: React.FC<HeroSectionProps> = ({ data }) => {
             </motion.div>
             
             <motion.div 
-              whileHover={{ scale: 1.05, boxShadow: "0px 10px 20px rgba(0, 0, 0, 0.05)" }} 
+              whileHover={{ 
+                scale: 1.05, 
+                boxShadow: "0px 0px 20px rgba(204, 255, 0, 0.3)" 
+              }} 
               whileTap={{ scale: 0.95 }}
             >
               <Button 
                 size="lg" 
                 variant="outline" 
-                className="w-full sm:w-auto"
+                className="w-full sm:w-auto border-[#F97316]/50 text-[#F97316] hover:bg-[#F97316]/10 hover:text-[#F97316] rounded-full"
                 onClick={() => {
                   const featuresSection = document.getElementById('features-section');
                   if (featuresSection) {
@@ -215,7 +240,34 @@ const HeroSection: React.FC<HeroSectionProps> = ({ data }) => {
             </motion.div>
           </motion.div>
         </motion.div>
-      </div>
+      </motion.div>
+      
+      {/* Tech-themed visual elements */}
+      <svg className="absolute bottom-10 left-10 w-40 h-40 opacity-10" viewBox="0 0 100 100">
+        <motion.path
+          d="M 10 10 L 90 10 L 90 90 L 10 90 Z"
+          stroke="#F97316"
+          strokeWidth="1"
+          fill="none"
+          initial={{ pathLength: 0 }}
+          animate={{ pathLength: 1 }}
+          transition={{ duration: 3, repeat: Infinity, repeatType: "loop" }}
+        />
+      </svg>
+      
+      <svg className="absolute top-10 right-10 w-40 h-40 opacity-10" viewBox="0 0 100 100">
+        <motion.circle
+          cx="50"
+          cy="50"
+          r="40"
+          stroke="#CCFF00"
+          strokeWidth="1"
+          fill="none"
+          initial={{ pathLength: 0 }}
+          animate={{ pathLength: 1 }}
+          transition={{ duration: 3, repeat: Infinity, repeatType: "loop" }}
+        />
+      </svg>
     </div>
   );
 };
