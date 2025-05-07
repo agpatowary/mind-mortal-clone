@@ -18,14 +18,6 @@ import TimelessMessagesPage from "./pages/features/TimelessMessagesPage";
 import { useState, useEffect } from "react";
 import LoadingScreen from "./components/LoadingScreen";
 
-// Import dashboard components
-import DashboardHome from "./components/dashboard/DashboardHome";
-import CreateContent from "./components/dashboard/CreateContent";
-import LegacyVault from "./components/dashboard/LegacyVault";
-import WisdomExchange from "./components/dashboard/WisdomExchange";
-import TimelessMessages from "./components/dashboard/TimelessMessages";
-import ProfileSettings from "./components/dashboard/ProfileSettings";
-
 // Import framer-motion for animations
 import { MotionConfig } from "framer-motion";
 
@@ -69,21 +61,11 @@ const App = () => {
                         <SignUp />
                       </AuthGuard>
                     } />
-                    
-                    {/* Dashboard Routes */}
                     <Route path="/dashboard" element={
                       <AuthGuard requireAuth={true}>
                         <Dashboard />
                       </AuthGuard>
-                    }>
-                      {/* Dashboard nested routes rendered via outlet */}
-                      <Route path="create" element={<CreateContent />} />
-                      <Route path="legacy-vault" element={<LegacyVault />} />
-                      <Route path="wisdom-exchange" element={<WisdomExchange />} />
-                      <Route path="timeless-messages" element={<TimelessMessages />} />
-                      <Route path="profile" element={<ProfileSettings />} />
-                    </Route>
-                    
+                    } />
                     <Route path="/unauthorized" element={<UnauthorizedPage />} />
                     {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                     <Route path="*" element={<NotFound />} />
