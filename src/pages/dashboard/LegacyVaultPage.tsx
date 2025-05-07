@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
@@ -8,6 +7,7 @@ import { MessageSquare, Heart, Clock, MapPin, Plus } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
+import PostInteractions from '@/components/social/PostInteractions';
 
 const LegacyVaultPage: React.FC = () => {
   const [posts, setPosts] = useState<any[]>([]);
@@ -27,7 +27,6 @@ const LegacyVaultPage: React.FC = () => {
       const { data, error } = await supabase
         .from('legacy_posts')
         .select('*')
-        .eq('user_id', user?.id)
         .order('created_at', { ascending: false });
 
       if (error) {
@@ -128,20 +127,17 @@ const LegacyVaultPage: React.FC = () => {
                     <CardContent>
                       <p className="line-clamp-3">{post.content}</p>
                     </CardContent>
-                    <CardFooter className="flex justify-between">
-                      <div className="flex items-center gap-4">
-                        <Button variant="ghost" size="sm" className="flex items-center gap-1">
-                          <Heart className="h-4 w-4" />
-                          <span>{Math.floor(Math.random() * 50)}</span>
-                        </Button>
-                        <Button variant="ghost" size="sm" className="flex items-center gap-1">
-                          <MessageSquare className="h-4 w-4" />
-                          <span>{Math.floor(Math.random() * 20)}</span>
+                    <CardFooter className="flex flex-col items-stretch">
+                      <PostInteractions 
+                        postId={post.id} 
+                        postType="legacy_post"
+                        onUpdate={fetchPosts}
+                      />
+                      <div className="flex justify-end mt-4">
+                        <Button variant="outline" size="sm">
+                          Read More
                         </Button>
                       </div>
-                      <Button variant="outline" size="sm">
-                        Read More
-                      </Button>
                     </CardFooter>
                   </Card>
                 </motion.div>
@@ -201,10 +197,17 @@ const LegacyVaultPage: React.FC = () => {
                       </div>
                       <p className="line-clamp-3">{post.content}</p>
                     </CardContent>
-                    <CardFooter>
-                      <Button variant="outline" size="sm" className="ml-auto">
-                        View Details
-                      </Button>
+                    <CardFooter className="flex flex-col items-stretch">
+                      <PostInteractions 
+                        postId={post.id} 
+                        postType="legacy_post"
+                        onUpdate={fetchPosts}
+                      />
+                      <div className="flex justify-end mt-4">
+                        <Button variant="outline" size="sm">
+                          View Details
+                        </Button>
+                      </div>
                     </CardFooter>
                   </Card>
                 </motion.div>
@@ -264,20 +267,17 @@ const LegacyVaultPage: React.FC = () => {
                       </div>
                       <p className="line-clamp-3">{post.content}</p>
                     </CardContent>
-                    <CardFooter className="flex justify-between">
-                      <div className="flex items-center gap-4">
-                        <Button variant="ghost" size="sm" className="flex items-center gap-1">
-                          <Heart className="h-4 w-4" />
-                          <span>Like</span>
-                        </Button>
-                        <Button variant="ghost" size="sm" className="flex items-center gap-1">
-                          <MessageSquare className="h-4 w-4" />
-                          <span>Comment</span>
+                    <CardFooter className="flex flex-col items-stretch">
+                      <PostInteractions 
+                        postId={post.id} 
+                        postType="legacy_post"
+                        onUpdate={fetchPosts}
+                      />
+                      <div className="flex justify-end mt-4">
+                        <Button variant="outline" size="sm">
+                          View on Map
                         </Button>
                       </div>
-                      <Button variant="outline" size="sm">
-                        View on Map
-                      </Button>
                     </CardFooter>
                   </Card>
                 </motion.div>
