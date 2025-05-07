@@ -2,10 +2,11 @@
 import React from 'react';
 import { Outlet } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
-import { Loader2 } from 'lucide-react';
+import { Loader2, LogOut } from 'lucide-react';
 import DashboardSidebar from './DashboardSidebar';
 import { Button } from './ui/button';
 import { useToast } from '@/hooks/use-toast';
+import { motion } from 'framer-motion';
 
 const DashboardLayout: React.FC = () => {
   const { signOut, isLoading } = useAuth();
@@ -36,17 +37,27 @@ const DashboardLayout: React.FC = () => {
   }
 
   return (
-    <div className="flex h-screen w-full bg-background">
+    <div className="flex h-screen w-full bg-background overflow-hidden">
       <DashboardSidebar />
       
-      <main className="flex-1 overflow-auto">
-        <div className="flex justify-end p-4 border-b border-border">
-          <Button variant="ghost" onClick={handleSignOut}>
-            Sign Out
+      <main className="flex-1 overflow-auto flex flex-col">
+        <motion.div 
+          className="flex justify-end p-4 border-b border-border"
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+        >
+          <Button 
+            variant="ghost" 
+            onClick={handleSignOut}
+            className="flex items-center gap-2 hover:bg-secondary/80 transition-colors"
+          >
+            <LogOut size={16} />
+            <span>Sign Out</span>
           </Button>
-        </div>
+        </motion.div>
         
-        <div className="p-6">
+        <div className="p-6 flex-1 overflow-auto">
           <Outlet />
         </div>
       </main>

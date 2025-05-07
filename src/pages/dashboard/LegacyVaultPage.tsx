@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
@@ -9,6 +10,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import PostInteractions from '@/components/social/PostInteractions';
 import { Badge } from "@/components/ui/badge";
+import DashboardAnimatedBackground from '@/components/dashboard/DashboardAnimatedBackground';
 
 const LegacyVaultPage: React.FC = () => {
   const [posts, setPosts] = useState<any[]>([]);
@@ -69,242 +71,269 @@ const LegacyVaultPage: React.FC = () => {
     }
   };
 
+  // Helper function to safely render content
+  const renderContent = (content: string) => {
+    // If content appears to be HTML, render it safely
+    return content ? (
+      <p className="line-clamp-3" dangerouslySetInnerHTML={{ __html: content }} />
+    ) : (
+      <p className="line-clamp-3 text-muted-foreground">No content available</p>
+    );
+  };
+
   return (
-    <div className="container mx-auto max-w-6xl">
-      <motion.div
-        className="mb-8"
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-      >
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-3xl font-bold">Legacy Vault</h1>
-            <p className="text-muted-foreground mt-2">
-              Browse and interact with legacy posts
-            </p>
+    <DashboardAnimatedBackground objectCount={6}>
+      <div className="container mx-auto max-w-6xl">
+        <motion.div
+          className="mb-8"
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <div className="flex justify-between items-center">
+            <div>
+              <h1 className="text-3xl font-bold">Legacy Vault</h1>
+              <p className="text-muted-foreground mt-2">
+                Browse and interact with legacy posts
+              </p>
+            </div>
+            <Button 
+              className="flex items-center gap-2"
+              onClick={handleCreateLegacy}
+            >
+              <Plus className="h-4 w-4" />
+              Create Legacy
+            </Button>
           </div>
-          <Button 
-            className="flex items-center gap-2"
-            onClick={handleCreateLegacy}
-          >
-            <Plus className="h-4 w-4" />
-            Create Legacy
-          </Button>
-        </div>
-      </motion.div>
+        </motion.div>
 
-      <Tabs defaultValue="public" className="mb-8">
-        <TabsList className="grid grid-cols-3 mb-8">
-          <TabsTrigger value="public">Public Gallery</TabsTrigger>
-          <TabsTrigger value="timeCapsule">Time Capsule</TabsTrigger>
-          <TabsTrigger value="location">Location-Based</TabsTrigger>
-        </TabsList>
+        <Tabs defaultValue="public" className="mb-8">
+          <TabsList className="grid grid-cols-3 mb-8">
+            <TabsTrigger value="public">Public Gallery</TabsTrigger>
+            <TabsTrigger value="timeCapsule">Time Capsule</TabsTrigger>
+            <TabsTrigger value="location">Location-Based</TabsTrigger>
+          </TabsList>
 
-        <TabsContent value="public">
-          {loading ? (
-            <div className="flex justify-center py-12">
-              <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full"></div>
-            </div>
-          ) : (
-            <motion.div
-              variants={containerVariants}
-              initial="hidden"
-              animate="visible"
-              className="grid grid-cols-1 gap-6"
-            >
-              {posts.filter(post => post.subcategory === "public-gallery").map(post => (
-                <motion.div key={post.id} variants={itemVariants}>
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>{post.title}</CardTitle>
-                      <CardDescription>
-                        {new Date(post.created_at).toLocaleDateString()}
-                        {post.categories && post.categories.length > 0 && (
-                          <span> • Tags: {post.categories.join(', ')}</span>
-                        )}
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <p className="line-clamp-3">{post.content}</p>
-                    </CardContent>
-                    <CardFooter className="flex flex-col items-stretch">
-                      <PostInteractions 
-                        postId={post.id} 
-                        postType="legacy_post"
-                        onUpdate={fetchPosts}
-                      />
-                      <div className="flex justify-end mt-4">
-                        <Button variant="outline" size="sm">
-                          Read More
-                        </Button>
-                      </div>
-                    </CardFooter>
-                  </Card>
-                </motion.div>
-              ))}
+          <TabsContent value="public">
+            {loading ? (
+              <div className="flex justify-center py-12">
+                <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full"></div>
+              </div>
+            ) : (
+              <motion.div
+                variants={containerVariants}
+                initial="hidden"
+                animate="visible"
+                className="grid grid-cols-1 gap-6"
+              >
+                {posts.filter(post => post.subcategory === "public-gallery").map(post => (
+                  <motion.div 
+                    key={post.id} 
+                    variants={itemVariants}
+                    whileHover={{ scale: 1.01 }}
+                    transition={{ type: "spring", stiffness: 300 }}
+                  >
+                    <Card className="hover:shadow-lg transition-all duration-300">
+                      <CardHeader>
+                        <CardTitle>{post.title}</CardTitle>
+                        <CardDescription>
+                          {new Date(post.created_at).toLocaleDateString()}
+                          {post.categories && post.categories.length > 0 && (
+                            <span> • Tags: {post.categories.join(', ')}</span>
+                          )}
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        {renderContent(post.content)}
+                      </CardContent>
+                      <CardFooter className="flex flex-col items-stretch">
+                        <PostInteractions 
+                          postId={post.id} 
+                          postType="legacy_post"
+                          onUpdate={fetchPosts}
+                        />
+                        <div className="flex justify-end mt-4">
+                          <Button variant="outline" size="sm">
+                            Read More
+                          </Button>
+                        </div>
+                      </CardFooter>
+                    </Card>
+                  </motion.div>
+                ))}
 
-              {posts.filter(post => post.subcategory === "public-gallery").length === 0 && (
-                <motion.div variants={itemVariants}>
-                  <Card className="border-dashed">
-                    <CardContent className="flex flex-col items-center justify-center py-12">
-                      <MessageSquare className="h-12 w-12 mb-4 text-muted-foreground" />
-                      <h3 className="text-xl font-medium mb-2">No public legacy posts yet</h3>
-                      <p className="text-muted-foreground mb-6 text-center max-w-md">
-                        Create your first legacy post to share your wisdom and memories
-                      </p>
-                      <Button onClick={handleCreateLegacy}>
-                        <Plus className="h-4 w-4 mr-2" /> Create Your First Legacy
-                      </Button>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              )}
-            </motion.div>
-          )}
-        </TabsContent>
-
-        <TabsContent value="timeCapsule">
-          {loading ? (
-            <div className="flex justify-center py-12">
-              <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full"></div>
-            </div>
-          ) : (
-            <motion.div
-              variants={containerVariants}
-              initial="hidden"
-              animate="visible"
-              className="grid grid-cols-1 gap-6"
-            >
-              {posts.filter(post => post.subcategory === "time-capsule").map(post => (
-                <motion.div key={post.id} variants={itemVariants}>
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <Clock className="h-5 w-5 text-primary" />
-                        {post.title}
-                      </CardTitle>
-                      <CardDescription>
-                        Created on {new Date(post.created_at).toLocaleDateString()}
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="bg-secondary/50 p-4 rounded-md mb-4">
-                        <p className="font-medium">
-                          Will be revealed on: {post.release_date 
-                            ? new Date(post.release_date).toLocaleDateString() 
-                            : 'Date not specified'}
+                {posts.filter(post => post.subcategory === "public-gallery").length === 0 && (
+                  <motion.div variants={itemVariants}>
+                    <Card className="border-dashed">
+                      <CardContent className="flex flex-col items-center justify-center py-12">
+                        <MessageSquare className="h-12 w-12 mb-4 text-muted-foreground" />
+                        <h3 className="text-xl font-medium mb-2">No public legacy posts yet</h3>
+                        <p className="text-muted-foreground mb-6 text-center max-w-md">
+                          Create your first legacy post to share your wisdom and memories
                         </p>
-                      </div>
-                      <p className="line-clamp-3">{post.content}</p>
-                    </CardContent>
-                    <CardFooter className="flex flex-col items-stretch">
-                      <PostInteractions 
-                        postId={post.id} 
-                        postType="legacy_post"
-                        onUpdate={fetchPosts}
-                      />
-                      <div className="flex justify-end mt-4">
-                        <Button variant="outline" size="sm">
-                          View Details
+                        <Button onClick={handleCreateLegacy}>
+                          <Plus className="h-4 w-4 mr-2" /> Create Your First Legacy
                         </Button>
-                      </div>
-                    </CardFooter>
-                  </Card>
-                </motion.div>
-              ))}
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                )}
+              </motion.div>
+            )}
+          </TabsContent>
 
-              {posts.filter(post => post.subcategory === "time-capsule").length === 0 && (
-                <motion.div variants={itemVariants}>
-                  <Card className="border-dashed">
-                    <CardContent className="flex flex-col items-center justify-center py-12">
-                      <Clock className="h-12 w-12 mb-4 text-muted-foreground" />
-                      <h3 className="text-xl font-medium mb-2">No time capsules yet</h3>
-                      <p className="text-muted-foreground mb-6 text-center max-w-md">
-                        Create your first time capsule to preserve memories for the future
-                      </p>
-                      <Button onClick={handleCreateLegacy}>
-                        <Plus className="h-4 w-4 mr-2" /> Create Time Capsule
-                      </Button>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              )}
-            </motion.div>
-          )}
-        </TabsContent>
+          <TabsContent value="timeCapsule">
+            {loading ? (
+              <div className="flex justify-center py-12">
+                <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full"></div>
+              </div>
+            ) : (
+              <motion.div
+                variants={containerVariants}
+                initial="hidden"
+                animate="visible"
+                className="grid grid-cols-1 gap-6"
+              >
+                {posts.filter(post => post.subcategory === "time-capsule").map(post => (
+                  <motion.div 
+                    key={post.id} 
+                    variants={itemVariants}
+                    whileHover={{ scale: 1.01 }}
+                    transition={{ type: "spring", stiffness: 300 }}
+                  >
+                    <Card className="hover:shadow-lg transition-all duration-300">
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                          <Clock className="h-5 w-5 text-primary" />
+                          {post.title}
+                        </CardTitle>
+                        <CardDescription>
+                          Created on {new Date(post.created_at).toLocaleDateString()}
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="bg-secondary/50 p-4 rounded-md mb-4">
+                          <p className="font-medium">
+                            Will be revealed on: {post.release_date 
+                              ? new Date(post.release_date).toLocaleDateString() 
+                              : 'Date not specified'}
+                          </p>
+                        </div>
+                        {renderContent(post.content)}
+                      </CardContent>
+                      <CardFooter className="flex flex-col items-stretch">
+                        <PostInteractions 
+                          postId={post.id} 
+                          postType="legacy_post"
+                          onUpdate={fetchPosts}
+                        />
+                        <div className="flex justify-end mt-4">
+                          <Button variant="outline" size="sm">
+                            View Details
+                          </Button>
+                        </div>
+                      </CardFooter>
+                    </Card>
+                  </motion.div>
+                ))}
 
-        <TabsContent value="location">
-          {loading ? (
-            <div className="flex justify-center py-12">
-              <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full"></div>
-            </div>
-          ) : (
-            <motion.div
-              variants={containerVariants}
-              initial="hidden"
-              animate="visible"
-              className="grid grid-cols-1 gap-6"
-            >
-              {posts.filter(post => post.subcategory === "location-based").map(post => (
-                <motion.div key={post.id} variants={itemVariants}>
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <MapPin className="h-5 w-5 text-red-500" />
-                        {post.title}
-                      </CardTitle>
-                      <CardDescription>
-                        Created on {new Date(post.created_at).toLocaleDateString()}
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="bg-secondary/50 p-4 rounded-md mb-4">
-                        <p className="font-medium">
-                          Location: {post.location && typeof post.location === 'object' 
-                            ? post.location.name || 'Unnamed location'
-                            : 'Location details not available'}
+                {posts.filter(post => post.subcategory === "time-capsule").length === 0 && (
+                  <motion.div variants={itemVariants}>
+                    <Card className="border-dashed">
+                      <CardContent className="flex flex-col items-center justify-center py-12">
+                        <Clock className="h-12 w-12 mb-4 text-muted-foreground" />
+                        <h3 className="text-xl font-medium mb-2">No time capsules yet</h3>
+                        <p className="text-muted-foreground mb-6 text-center max-w-md">
+                          Create your first time capsule to preserve memories for the future
                         </p>
-                      </div>
-                      <p className="line-clamp-3">{post.content}</p>
-                    </CardContent>
-                    <CardFooter className="flex flex-col items-stretch">
-                      <PostInteractions 
-                        postId={post.id} 
-                        postType="legacy_post"
-                        onUpdate={fetchPosts}
-                      />
-                      <div className="flex justify-end mt-4">
-                        <Button variant="outline" size="sm">
-                          View on Map
+                        <Button onClick={handleCreateLegacy}>
+                          <Plus className="h-4 w-4 mr-2" /> Create Time Capsule
                         </Button>
-                      </div>
-                    </CardFooter>
-                  </Card>
-                </motion.div>
-              ))}
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                )}
+              </motion.div>
+            )}
+          </TabsContent>
 
-              {posts.filter(post => post.subcategory === "location-based").length === 0 && (
-                <motion.div variants={itemVariants}>
-                  <Card className="border-dashed">
-                    <CardContent className="flex flex-col items-center justify-center py-12">
-                      <MapPin className="h-12 w-12 mb-4 text-muted-foreground" />
-                      <h3 className="text-xl font-medium mb-2">No location-based memories yet</h3>
-                      <p className="text-muted-foreground mb-6 text-center max-w-md">
-                        Create your first location-based memory to preserve stories tied to special places
-                      </p>
-                      <Button onClick={handleCreateLegacy}>
-                        <Plus className="h-4 w-4 mr-2" /> Create Location Memory
-                      </Button>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              )}
-            </motion.div>
-          )}
-        </TabsContent>
-      </Tabs>
-    </div>
+          <TabsContent value="location">
+            {loading ? (
+              <div className="flex justify-center py-12">
+                <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full"></div>
+              </div>
+            ) : (
+              <motion.div
+                variants={containerVariants}
+                initial="hidden"
+                animate="visible"
+                className="grid grid-cols-1 gap-6"
+              >
+                {posts.filter(post => post.subcategory === "location-based").map(post => (
+                  <motion.div 
+                    key={post.id} 
+                    variants={itemVariants}
+                    whileHover={{ scale: 1.01 }}
+                    transition={{ type: "spring", stiffness: 300 }}
+                  >
+                    <Card className="hover:shadow-lg transition-all duration-300">
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                          <MapPin className="h-5 w-5 text-red-500" />
+                          {post.title}
+                        </CardTitle>
+                        <CardDescription>
+                          Created on {new Date(post.created_at).toLocaleDateString()}
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="bg-secondary/50 p-4 rounded-md mb-4">
+                          <p className="font-medium">
+                            Location: {post.location && typeof post.location === 'object' 
+                              ? post.location.name || 'Unnamed location'
+                              : 'Location details not available'}
+                          </p>
+                        </div>
+                        {renderContent(post.content)}
+                      </CardContent>
+                      <CardFooter className="flex flex-col items-stretch">
+                        <PostInteractions 
+                          postId={post.id} 
+                          postType="legacy_post"
+                          onUpdate={fetchPosts}
+                        />
+                        <div className="flex justify-end mt-4">
+                          <Button variant="outline" size="sm">
+                            View on Map
+                          </Button>
+                        </div>
+                      </CardFooter>
+                    </Card>
+                  </motion.div>
+                ))}
+
+                {posts.filter(post => post.subcategory === "location-based").length === 0 && (
+                  <motion.div variants={itemVariants}>
+                    <Card className="border-dashed">
+                      <CardContent className="flex flex-col items-center justify-center py-12">
+                        <MapPin className="h-12 w-12 mb-4 text-muted-foreground" />
+                        <h3 className="text-xl font-medium mb-2">No location-based memories yet</h3>
+                        <p className="text-muted-foreground mb-6 text-center max-w-md">
+                          Create your first location-based memory to preserve stories tied to special places
+                        </p>
+                        <Button onClick={handleCreateLegacy}>
+                          <Plus className="h-4 w-4 mr-2" /> Create Location Memory
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                )}
+              </motion.div>
+            )}
+          </TabsContent>
+        </Tabs>
+      </div>
+    </DashboardAnimatedBackground>
   );
 };
 

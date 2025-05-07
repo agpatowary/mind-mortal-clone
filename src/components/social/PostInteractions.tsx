@@ -6,6 +6,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from '@/hooks/use-toast';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Textarea } from '@/components/ui/textarea';
 
 interface LikeData {
   id: string;
@@ -141,11 +142,16 @@ const PostInteractions: React.FC<PostInteractionsProps> = ({
       if (error) {
         console.error('Error fetching comments:', error);
       } else if (data) {
+        // Transform the data to match the CommentData interface
         const formattedComments = data.map(comment => ({
           ...comment,
-          user: comment.profiles
+          user: {
+            full_name: comment.profiles?.full_name || 'Anonymous',
+            avatar_url: comment.profiles?.avatar_url || null
+          }
         }));
         setComments(formattedComments);
+        console.log('Comments fetched:', formattedComments);
       }
     } catch (err) {
       console.error('Error in fetch comments operation:', err);
@@ -267,13 +273,20 @@ const PostInteractions: React.FC<PostInteractionsProps> = ({
         
         if (showComments) {
           // Add the new comment to the list with user profile info
+          const { data: userData } = await supabase
+            .from('profiles')
+            .select('full_name, avatar_url')
+            .eq('id', user.id)
+            .single();
+            
           const newComment = {
             ...data[0],
             user: {
-              full_name: user.profile?.full_name || 'Anonymous',
-              avatar_url: user.profile?.avatar_url || null
+              full_name: userData?.full_name || 'Anonymous',
+              avatar_url: userData?.avatar_url || null
             }
           };
+          
           setComments([newComment, ...comments]);
         }
         
@@ -329,8 +342,8 @@ const PostInteractions: React.FC<PostInteractionsProps> = ({
       {showComments && (
         <div className="space-y-4 border-t pt-4">
           <div className="flex gap-2">
-            <textarea
-              className="min-h-20 flex-1 p-2 border rounded-md resize-none"
+            <Textarea
+              className="min-h-20 flex-1 p-2 border rounded-md resize-none bg-muted"
               placeholder="Write a comment..."
               value={commentText}
               onChange={(e) => setCommentText(e.target.value)}
