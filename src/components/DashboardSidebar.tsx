@@ -6,7 +6,8 @@ import {
   LayoutDashboard, 
   PlusSquare, 
   User,
-  LogOut
+  LogOut,
+  LucideIcon
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import Logo from './Logo';
@@ -48,11 +49,19 @@ const TimelessIcon = () => (
   </svg>
 );
 
+// Define a menu item type with appropriate icon type
+interface MenuItem {
+  title: string;
+  icon: LucideIcon | React.FC;
+  path: string;
+  isActive: boolean;
+}
+
 const DashboardSidebar: React.FC = () => {
   const location = useLocation();
   const { signOut } = useAuth();
   
-  const menuItems = [
+  const menuItems: MenuItem[] = [
     { 
       title: 'Dashboard', 
       icon: LayoutDashboard, 
@@ -110,11 +119,7 @@ const DashboardSidebar: React.FC = () => {
                   tooltip={item.title} // Show tooltip with the name
                 >
                   <Link to={item.path} className="w-full">
-                    {typeof item.icon === 'function' ? (
-                      React.createElement(item.icon)
-                    ) : (
-                      <item.icon className="h-5 w-5" />
-                    )}
+                    {React.createElement(item.icon)}
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
