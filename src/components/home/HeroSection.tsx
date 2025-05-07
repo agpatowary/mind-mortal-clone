@@ -1,8 +1,7 @@
-
 import React, { useState, useEffect } from 'react';
 import { motion, useMotionValue, useTransform, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import Logo from '../Logo';
+import BlobLogo from '../BlobLogo';
 import { useNavigate } from 'react-router-dom';
 
 interface HeroSectionProps {
@@ -170,16 +169,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ data }) => {
         >
           {/* Fixed the logo positioning by adding proper centering classes */}
           <div className="flex justify-center items-center mb-6">
-            <motion.div 
-              whileHover={{ scale: 1.05, rotate: 2 }}
-              whileTap={{ scale: 0.95, rotate: -2 }}
-              transition={{ type: "spring", stiffness: 300 }}
-              drag
-              dragConstraints={{ top: -10, right: 10, bottom: 10, left: -10 }}
-              dragElastic={0.1}
-            >
-              <Logo className="mx-auto" />
-            </motion.div>
+            <BlobLogo size="lg" />
           </div>
           
           <motion.h1 

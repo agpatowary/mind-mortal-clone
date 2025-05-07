@@ -15,49 +15,69 @@ import NotFound from "./pages/NotFound";
 import WisdomExchangePage from "./pages/features/WisdomExchangePage";
 import LegacyVaultPage from "./pages/features/LegacyVaultPage";
 import TimelessMessagesPage from "./pages/features/TimelessMessagesPage";
+import { useState, useEffect } from "react";
+import LoadingScreen from "./components/LoadingScreen";
 
 // Import framer-motion for animations
 import { MotionConfig } from "framer-motion";
 
 const queryClient = new QueryClient();
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <MotionConfig reducedMotion="user">
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <AuthProvider>
-            <Routes>
-              <Route path="/" element={<HomePage />} />
-              <Route path="/features/wisdom-exchange" element={<WisdomExchangePage />} />
-              <Route path="/features/legacy-vault" element={<LegacyVaultPage />} />
-              <Route path="/features/timeless-messages" element={<TimelessMessagesPage />} />
-              <Route path="/signin" element={
-                <AuthGuard requireAuth={false}>
-                  <SignIn />
-                </AuthGuard>
-              } />
-              <Route path="/signup" element={
-                <AuthGuard requireAuth={false}>
-                  <SignUp />
-                </AuthGuard>
-              } />
-              <Route path="/dashboard" element={
-                <AuthGuard requireAuth={true}>
-                  <Dashboard />
-                </AuthGuard>
-              } />
-              <Route path="/unauthorized" element={<UnauthorizedPage />} />
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </AuthProvider>
-        </BrowserRouter>
-      </MotionConfig>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+const App = () => {
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    // Simulate loading for a minimum time (better UX)
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 2000);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  return (
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <MotionConfig reducedMotion="user">
+          <LoadingScreen isLoading={isLoading} />
+          {!isLoading && (
+            <>
+              <Toaster />
+              <Sonner />
+              <BrowserRouter>
+                <AuthProvider>
+                  <Routes>
+                    <Route path="/" element={<HomePage />} />
+                    <Route path="/features/wisdom-exchange" element={<WisdomExchangePage />} />
+                    <Route path="/features/legacy-vault" element={<LegacyVaultPage />} />
+                    <Route path="/features/timeless-messages" element={<TimelessMessagesPage />} />
+                    <Route path="/signin" element={
+                      <AuthGuard requireAuth={false}>
+                        <SignIn />
+                      </AuthGuard>
+                    } />
+                    <Route path="/signup" element={
+                      <AuthGuard requireAuth={false}>
+                        <SignUp />
+                      </AuthGuard>
+                    } />
+                    <Route path="/dashboard" element={
+                      <AuthGuard requireAuth={true}>
+                        <Dashboard />
+                      </AuthGuard>
+                    } />
+                    <Route path="/unauthorized" element={<UnauthorizedPage />} />
+                    {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                </AuthProvider>
+              </BrowserRouter>
+            </>
+          )}
+        </MotionConfig>
+      </TooltipProvider>
+    </QueryClientProvider>
+  );
+};
 
 export default App;
