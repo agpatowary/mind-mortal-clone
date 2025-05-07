@@ -32,9 +32,10 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ fileInputRef, quillRef })
       // Insert the image into the editor
       if (quillRef.current) {
         const quill = quillRef.current.getEditor();
-        const range = quill.getSelection(true);
+        // Get the current selection or default to the end of the document
+        const range = quill.getSelection() || { index: quill.getLength(), length: 0 };
         quill.insertEmbed(range.index, 'image', publicUrl);
-        quill.setSelection(range.index + 1);
+        quill.setSelection(range.index + 1, 0);
         
         toast({
           title: "Image uploaded",

@@ -27,7 +27,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
         [{ 'header': [1, 2, 3, false] }],
         ['bold', 'italic', 'underline'],
         [{ 'list': 'ordered' }, { 'list': 'bullet' }],
-        ['link', 'table'],
+        ['link', 'image'],
         ['clean']
       ]
     }
@@ -37,7 +37,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
     'header',
     'bold', 'italic', 'underline',
     'list', 'bullet',
-    'link', 'image', 'table'
+    'link', 'image'
   ];
 
   const handleChange = (newContent: string) => {

@@ -3,7 +3,7 @@ import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Button } from '@/components/ui/button';
 import { Archive, Home, MessageSquare, Plus, User, Users } from 'lucide-react';
 import Logo from './Logo';
@@ -90,43 +90,45 @@ const DashboardSidebar: React.FC = () => {
       </div>
 
       <nav className="flex-1 flex flex-col items-center space-y-4 w-full">
-        {menuItems.map((item) => {
-          const isActive = location.pathname === item.path || 
-                          (item.path !== '/dashboard' && location.pathname.startsWith(item.path));
-          
-          return (
-            <motion.div key={item.name} variants={itemAnimation} className="w-full px-2">
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Link to={item.path} className="w-full block">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className={cn(
-                        "w-full h-10 rounded-md",
-                        isActive 
-                          ? "bg-primary/10 text-primary border border-primary/20" 
-                          : "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-                      )}
-                    >
-                      {React.createElement(item.icon, {
-                        className: cn(
-                          "h-5 w-5",
-                          isActive ? "text-primary" : "text-sidebar-foreground"
-                        ),
-                        "aria-hidden": "true"
-                      })}
-                      <span className="sr-only">{item.name}</span>
-                    </Button>
-                  </Link>
-                </TooltipTrigger>
-                <TooltipContent side="right">
-                  <p>{item.name}</p>
-                </TooltipContent>
-              </Tooltip>
-            </motion.div>
-          );
-        })}
+        <TooltipProvider>
+          {menuItems.map((item) => {
+            const isActive = location.pathname === item.path || 
+                            (item.path !== '/dashboard' && location.pathname.startsWith(item.path));
+            
+            return (
+              <motion.div key={item.name} variants={itemAnimation} className="w-full px-2">
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Link to={item.path} className="w-full block">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className={cn(
+                          "w-full h-10 rounded-md",
+                          isActive 
+                            ? "bg-primary/10 text-primary border border-primary/20" 
+                            : "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                        )}
+                      >
+                        {React.createElement(item.icon, {
+                          className: cn(
+                            "h-5 w-5",
+                            isActive ? "text-primary" : "text-sidebar-foreground"
+                          ),
+                          "aria-hidden": "true"
+                        })}
+                        <span className="sr-only">{item.name}</span>
+                      </Button>
+                    </Link>
+                  </TooltipTrigger>
+                  <TooltipContent side="right">
+                    <p>{item.name}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </motion.div>
+            );
+          })}
+        </TooltipProvider>
       </nav>
     </motion.aside>
   );
