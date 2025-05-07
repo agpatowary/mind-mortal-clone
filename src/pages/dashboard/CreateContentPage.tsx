@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from '@/components/ui/button';
 import { Archive, MessageSquare, Users } from 'lucide-react';
+import ContentCreationContainer from '@/components/content/ContentCreationContainer';
 
 type ContentType = 'legacy' | 'wisdom' | 'timeless' | null;
 
@@ -59,88 +60,74 @@ const CreateContentPage: React.FC = () => {
 
   return (
     <div className="container mx-auto max-w-6xl">
-      <motion.div
-        className="mb-8"
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-      >
-        <h1 className="text-3xl font-bold">Create New Content</h1>
-        <p className="text-muted-foreground mt-2">
-          Select the type of content you'd like to create
-        </p>
-      </motion.div>
+      {!selectedType ? (
+        <>
+          <motion.div
+            className="mb-8"
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+          >
+            <h1 className="text-3xl font-bold">Create New Content</h1>
+            <p className="text-muted-foreground mt-2">
+              Select the type of content you'd like to create
+            </p>
+          </motion.div>
 
-      <motion.div
-        variants={containerVariants}
-        initial="hidden"
-        animate="visible"
-        className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10"
-      >
-        {contentTypes.map((content) => (
-          <motion.div key={content.type} variants={itemVariants}>
-            <Card 
-              className={`cursor-pointer transition-all ${
-                selectedType === content.type 
-                  ? 'ring-2 ring-primary shadow-lg' 
-                  : 'hover:shadow-md'
-              }`}
-              onClick={() => setSelectedType(content.type)}
-            >
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <content.icon className={`h-5 w-5 ${content.color}`} />
-                  {content.title}
-                </CardTitle>
-                <CardDescription>{content.description}</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Button 
-                  className="w-full"
-                  variant={selectedType === content.type ? "default" : "outline"}
+          <motion.div
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10"
+          >
+            {contentTypes.map((content) => (
+              <motion.div key={content.type} variants={itemVariants}>
+                <Card 
+                  className={`cursor-pointer transition-all hover:shadow-md`}
                   onClick={() => setSelectedType(content.type)}
                 >
-                  {selectedType === content.type ? 'Selected' : 'Select'}
-                </Button>
-              </CardContent>
-            </Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <content.icon className={`h-5 w-5 ${content.color}`} />
+                      {content.title}
+                    </CardTitle>
+                    <CardDescription>{content.description}</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <Button 
+                      className="w-full"
+                      variant="outline"
+                      onClick={() => setSelectedType(content.type)}
+                    >
+                      Select
+                    </Button>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            ))}
           </motion.div>
-        ))}
-      </motion.div>
-
-      {selectedType && (
+        </>
+      ) : (
         <motion.div
-          initial={{ opacity: 0, height: 0 }}
-          animate={{ opacity: 1, height: 'auto' }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
           transition={{ duration: 0.5 }}
+          className="mb-8"
         >
-          <Card>
-            <CardHeader>
-              <CardTitle>
-                Create {selectedType === 'legacy' 
-                  ? 'Legacy Vault Post' 
-                  : selectedType === 'wisdom' 
-                    ? 'Wisdom Exchange Post' 
-                    : 'Timeless Message'}
-              </CardTitle>
-              <CardDescription>
-                Fill in the details to create your content
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-center text-muted-foreground py-12">
-                Content creation form will be implemented here based on the selected type.
-              </p>
-              <div className="flex justify-end gap-4 mt-4">
-                <Button variant="outline" onClick={() => setSelectedType(null)}>
-                  Cancel
-                </Button>
-                <Button>
-                  Continue
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+          <div className="flex justify-between items-center mb-6">
+            <h1 className="text-3xl font-bold">
+              {selectedType === 'legacy' 
+                ? 'Create Legacy Vault Content' 
+                : selectedType === 'wisdom' 
+                  ? 'Share Your Wisdom' 
+                  : 'Create Timeless Message'}
+            </h1>
+            <Button variant="outline" onClick={() => setSelectedType(null)}>
+              Back to Selection
+            </Button>
+          </div>
+          
+          <ContentCreationContainer />
         </motion.div>
       )}
     </div>

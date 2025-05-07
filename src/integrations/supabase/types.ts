@@ -15,8 +15,10 @@ export type Database = {
           content: string
           created_at: string | null
           id: string
+          location: Json | null
           media_urls: string[] | null
           release_date: string | null
+          subcategory: string | null
           title: string
           updated_at: string | null
           user_id: string
@@ -27,8 +29,10 @@ export type Database = {
           content: string
           created_at?: string | null
           id?: string
+          location?: Json | null
           media_urls?: string[] | null
           release_date?: string | null
+          subcategory?: string | null
           title: string
           updated_at?: string | null
           user_id: string
@@ -39,8 +43,10 @@ export type Database = {
           content?: string
           created_at?: string | null
           id?: string
+          location?: Json | null
           media_urls?: string[] | null
           release_date?: string | null
+          subcategory?: string | null
           title?: string
           updated_at?: string | null
           user_id?: string
@@ -562,6 +568,7 @@ export type Database = {
           delivery_event: string | null
           delivery_type: string
           id: string
+          recipient_emails: Json | null
           recipients: Json | null
           status: string
           title: string
@@ -575,6 +582,7 @@ export type Database = {
           delivery_event?: string | null
           delivery_type?: string
           id?: string
+          recipient_emails?: Json | null
           recipients?: Json | null
           status?: string
           title: string
@@ -588,6 +596,7 @@ export type Database = {
           delivery_event?: string | null
           delivery_type?: string
           id?: string
+          recipient_emails?: Json | null
           recipients?: Json | null
           status?: string
           title?: string
@@ -644,6 +653,7 @@ export type Database = {
           description: string | null
           file_path: string | null
           id: string
+          published_status: string | null
           resource_type: string
           resource_url: string | null
           tags: string[] | null
@@ -658,6 +668,7 @@ export type Database = {
           description?: string | null
           file_path?: string | null
           id?: string
+          published_status?: string | null
           resource_type: string
           resource_url?: string | null
           tags?: string[] | null
@@ -672,6 +683,7 @@ export type Database = {
           description?: string | null
           file_path?: string | null
           id?: string
+          published_status?: string | null
           resource_type?: string
           resource_url?: string | null
           tags?: string[] | null
