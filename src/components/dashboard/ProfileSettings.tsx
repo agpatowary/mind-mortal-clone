@@ -6,6 +6,7 @@ import * as z from 'zod';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Form,
@@ -75,7 +76,7 @@ const ProfileSettings: React.FC = () => {
         </TabsList>
         
         <TabsContent value="profile" className="space-y-4 mt-4">
-          <Card>
+          <Card className="rounded-lg">
             <CardHeader>
               <CardTitle>Profile Information</CardTitle>
               <CardDescription>
@@ -178,7 +179,7 @@ const ProfileSettings: React.FC = () => {
         </TabsContent>
         
         <TabsContent value="account" className="space-y-4 mt-4">
-          <Card>
+          <Card className="rounded-lg">
             <CardHeader>
               <CardTitle>Account Settings</CardTitle>
               <CardDescription>
@@ -204,7 +205,7 @@ const ProfileSettings: React.FC = () => {
             </CardContent>
           </Card>
           
-          <Card>
+          <Card className="rounded-lg">
             <CardHeader>
               <CardTitle>Danger Zone</CardTitle>
               <CardDescription>
@@ -218,7 +219,7 @@ const ProfileSettings: React.FC = () => {
         </TabsContent>
         
         <TabsContent value="subscription" className="space-y-4 mt-4">
-          <Card>
+          <Card className="rounded-lg">
             <CardHeader>
               <CardTitle>Subscription Plan</CardTitle>
               <CardDescription>

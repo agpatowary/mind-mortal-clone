@@ -73,6 +73,18 @@ const TimelessMessages: React.FC = () => {
             <TabsTrigger value="drafts">Drafts</TabsTrigger>
             <TabsTrigger value="scheduled">Scheduled</TabsTrigger>
           </TabsList>
+          
+          <TabsContent value="all" className="mt-0">
+            {renderMessages(filteredMessages)}
+          </TabsContent>
+          
+          <TabsContent value="drafts" className="mt-0">
+            {renderMessages(filteredMessages)}
+          </TabsContent>
+          
+          <TabsContent value="scheduled" className="mt-0">
+            {renderMessages(filteredMessages)}
+          </TabsContent>
         </Tabs>
         
         <Button asChild>
@@ -82,81 +94,86 @@ const TimelessMessages: React.FC = () => {
           </Link>
         </Button>
       </div>
+    </div>
+  );
+};
 
-      <TabsContent value={activeTab} className="mt-0">
-        {filteredMessages.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-12">
-            <p className="text-muted-foreground mb-4">No messages found.</p>
-            <Button asChild>
-              <Link to="/dashboard/create?type=timeless">Create Your First Message</Link>
+// Helper function to render message cards
+const renderMessages = (messages: typeof mockMessages) => {
+  if (messages.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center py-12">
+        <p className="text-muted-foreground mb-4">No messages found.</p>
+        <Button asChild>
+          <Link to="/dashboard/create?type=timeless">Create Your First Message</Link>
+        </Button>
+      </div>
+    );
+  }
+  
+  return (
+    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      {messages.map(message => (
+        <Card key={message.id} className="overflow-hidden rounded-lg">
+          <CardHeader className="pb-3">
+            <div className="flex justify-between items-start">
+              <CardTitle className="text-xl">{message.title}</CardTitle>
+              <Badge variant={message.status === 'draft' ? "outline" : "default"}>
+                {message.status === 'draft' ? 'Draft' : 'Scheduled'}
+              </Badge>
+            </div>
+            <CardDescription>
+              Created on {message.createdAt.toLocaleDateString()}
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="pb-3">
+            <div className="mb-3">
+              <div className="text-sm font-medium mb-1">Recipients:</div>
+              <div className="flex flex-wrap gap-1">
+                {message.recipients.map(recipient => (
+                  <Badge key={recipient} variant="secondary" className="text-xs">
+                    {recipient}
+                  </Badge>
+                ))}
+              </div>
+            </div>
+            
+            <div className="flex items-center text-sm text-muted-foreground mb-3">
+              {message.deliveryType === 'date' ? (
+                <>
+                  <Calendar className="w-4 h-4 mr-1" />
+                  <span>
+                    Delivers on {message.deliveryDate?.toLocaleDateString()}
+                  </span>
+                </>
+              ) : (
+                <>
+                  <Clock className="w-4 h-4 mr-1" />
+                  <span>
+                    Delivers after: {message.deliveryEvent}
+                  </span>
+                </>
+              )}
+            </div>
+            
+            <p className="text-sm text-muted-foreground line-clamp-3">
+              {message.content}
+            </p>
+          </CardContent>
+          <CardFooter className="flex justify-between pt-0">
+            <Button variant="outline" size="sm">
+              <Eye className="w-4 h-4 mr-1" />
+              View
             </Button>
-          </div>
-        ) : (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {filteredMessages.map(message => (
-              <Card key={message.id} className="overflow-hidden">
-                <CardHeader className="pb-3">
-                  <div className="flex justify-between items-start">
-                    <CardTitle className="text-xl">{message.title}</CardTitle>
-                    <Badge variant={message.status === 'draft' ? "outline" : "default"}>
-                      {message.status === 'draft' ? 'Draft' : 'Scheduled'}
-                    </Badge>
-                  </div>
-                  <CardDescription>
-                    Created on {message.createdAt.toLocaleDateString()}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="pb-3">
-                  <div className="mb-3">
-                    <div className="text-sm font-medium mb-1">Recipients:</div>
-                    <div className="flex flex-wrap gap-1">
-                      {message.recipients.map(recipient => (
-                        <Badge key={recipient} variant="secondary" className="text-xs">
-                          {recipient}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center text-sm text-muted-foreground mb-3">
-                    {message.deliveryType === 'date' ? (
-                      <>
-                        <Calendar className="w-4 h-4 mr-1" />
-                        <span>
-                          Delivers on {message.deliveryDate?.toLocaleDateString()}
-                        </span>
-                      </>
-                    ) : (
-                      <>
-                        <Clock className="w-4 h-4 mr-1" />
-                        <span>
-                          Delivers after: {message.deliveryEvent}
-                        </span>
-                      </>
-                    )}
-                  </div>
-                  
-                  <p className="text-sm text-muted-foreground line-clamp-3">
-                    {message.content}
-                  </p>
-                </CardContent>
-                <CardFooter className="flex justify-between pt-0">
-                  <Button variant="outline" size="sm">
-                    <Eye className="w-4 h-4 mr-1" />
-                    View
-                  </Button>
-                  {message.status === 'draft' && (
-                    <Button size="sm">
-                      <Mail className="w-4 h-4 mr-1" />
-                      Schedule
-                    </Button>
-                  )}
-                </CardFooter>
-              </Card>
-            ))}
-          </div>
-        )}
-      </TabsContent>
+            {message.status === 'draft' && (
+              <Button size="sm">
+                <Mail className="w-4 h-4 mr-1" />
+                Schedule
+              </Button>
+            )}
+          </CardFooter>
+        </Card>
+      ))}
     </div>
   );
 };
