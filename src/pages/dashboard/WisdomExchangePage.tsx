@@ -1,68 +1,64 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Heart, MessageSquare, User, UserPlus, Search } from 'lucide-react';
-import { Input } from '@/components/ui/input';
+import { MessageSquare, Heart, Clock, Search, Plus } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
+import { useNavigate } from 'react-router-dom';
+import { Badge } from '@/components/ui/badge';
+
+interface WisdomResource {
+  id: string;
+  created_by: string;
+  title: string;
+  description: string | null;
+  resource_type: string;
+  tags: string[] | null;
+  published_status: string | null;
+  resource_url: string | null;
+  file_path: string | null;
+  created_at: string | null;
+  views_count: number | null;
+}
 
 const WisdomExchangePage: React.FC = () => {
-  // Mock data for wisdom posts and mentors
-  const wisdomPosts = [
-    {
-      id: 1,
-      title: "Finding Work-Life Balance",
-      content: "After 20 years in the tech industry, I've found these strategies to be most effective...",
-      author: "David Miller",
-      authorRole: "Career Mentor",
-      date: "2023-12-02",
-      likes: 78,
-      comments: 23,
-      category: "Career"
-    },
-    {
-      id: 2,
-      title: "Investment Strategies for Beginners",
-      content: "If you're just starting your investment journey, here are the key principles to follow...",
-      author: "Sarah Chen",
-      authorRole: "Finance Mentor",
-      date: "2023-11-28",
-      likes: 112,
-      comments: 45,
-      category: "Finance"
-    }
-  ];
+  const [resources, setResources] = useState<WisdomResource[]>([]);
+  const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
+  const navigate = useNavigate();
 
-  const mentors = [
-    {
-      id: 1,
-      name: "David Miller",
-      role: "Career Mentor",
-      expertise: "Technology, Leadership, Work-Life Balance",
-      followers: 1243,
-      bio: "20+ years in tech leadership, helping professionals navigate career transitions.",
-      isFollowing: true
-    },
-    {
-      id: 2,
-      name: "Sarah Chen",
-      role: "Finance Mentor",
-      expertise: "Investments, Personal Finance, Retirement Planning",
-      followers: 2567,
-      bio: "Former investment banker with a passion for helping others achieve financial freedom.",
-      isFollowing: false
-    },
-    {
-      id: 3,
-      name: "Robert Jackson",
-      role: "Life Mentor",
-      expertise: "Relationships, Personal Growth, Mindfulness",
-      followers: 1892,
-      bio: "Dedicated to helping people live more fulfilling lives through mindfulness and purpose.",
-      isFollowing: false
+  useEffect(() => {
+    if (user) {
+      fetchResources();
     }
-  ];
+  }, [user]);
+
+  const fetchResources = async () => {
+    try {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('wisdom_resources')
+        .select('*')
+        .eq('published_status', 'published')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching resources:', error);
+      } else {
+        setResources(data || []);
+      }
+    } catch (err) {
+      console.error('Error in fetch operation:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCreateWisdom = () => {
+    navigate('/dashboard/create', { state: { contentType: 'wisdom-exchange' } });
+  };
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -95,202 +91,127 @@ const WisdomExchangePage: React.FC = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <h1 className="text-3xl font-bold">Wisdom Exchange</h1>
-        <p className="text-muted-foreground mt-2">
-          Connect with mentors and discover valuable insights
-        </p>
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-3xl font-bold">Wisdom Exchange</h1>
+            <p className="text-muted-foreground mt-2">
+              Discover and share knowledge and wisdom
+            </p>
+          </div>
+          <Button 
+            className="flex items-center gap-2"
+            onClick={handleCreateWisdom}
+          >
+            <Plus className="h-4 w-4" />
+            Share Wisdom
+          </Button>
+        </div>
       </motion.div>
 
-      <Tabs defaultValue="feed" className="mb-8">
-        <TabsList className="grid grid-cols-3 mb-8">
-          <TabsTrigger value="feed">Feed</TabsTrigger>
-          <TabsTrigger value="mentors">Find Mentors</TabsTrigger>
-          <TabsTrigger value="following">Following</TabsTrigger>
-        </TabsList>
+      <div className="flex flex-col md:flex-row gap-6 mb-6">
+        <div className="flex-1 relative">
+          <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+          <input 
+            type="text" 
+            placeholder="Search wisdom resources..." 
+            className="w-full rounded-md border border-input bg-background py-2 pl-10 pr-4 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+          />
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <Badge variant="outline" className="cursor-pointer">All</Badge>
+          <Badge variant="outline" className="cursor-pointer">Articles</Badge>
+          <Badge variant="outline" className="cursor-pointer">Videos</Badge>
+          <Badge variant="outline" className="cursor-pointer">Courses</Badge>
+          <Badge variant="outline" className="cursor-pointer">Audio</Badge>
+        </div>
+      </div>
 
-        <TabsContent value="feed">
-          <motion.div
-            variants={containerVariants}
-            initial="hidden"
-            animate="visible"
-            className="grid grid-cols-1 gap-6"
-          >
-            {wisdomPosts.map(post => (
-              <motion.div key={post.id} variants={itemVariants}>
-                <Card>
-                  <CardHeader>
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <CardTitle>{post.title}</CardTitle>
-                        <CardDescription>
-                          By {post.author} • {post.authorRole} • {new Date(post.date).toLocaleDateString()}
-                        </CardDescription>
-                      </div>
-                      <div className="bg-secondary/50 px-3 py-1 rounded-full text-xs font-medium">
-                        {post.category}
-                      </div>
+      {loading ? (
+        <div className="flex justify-center py-12">
+          <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full"></div>
+        </div>
+      ) : (
+        <motion.div
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+        >
+          {resources.map(resource => (
+            <motion.div key={resource.id} variants={itemVariants}>
+              <Card className="h-full flex flex-col">
+                <CardHeader>
+                  <div className="flex justify-between items-start mb-2">
+                    <Badge variant="outline" className="bg-secondary/50">
+                      {resource.resource_type}
+                    </Badge>
+                    <div className="flex items-center gap-1 text-muted-foreground text-xs">
+                      <Clock className="h-3 w-3" />
+                      <span>
+                        {resource.created_at 
+                          ? new Date(resource.created_at).toLocaleDateString() 
+                          : 'Unknown date'}
+                      </span>
                     </div>
-                  </CardHeader>
-                  <CardContent>
-                    <p>{post.content}</p>
-                  </CardContent>
-                  <CardFooter className="flex justify-between">
-                    <div className="flex items-center gap-4">
-                      <Button variant="ghost" size="sm" className="flex items-center gap-1">
-                        <Heart className="h-4 w-4" />
-                        <span>{post.likes}</span>
-                      </Button>
-                      <Button variant="ghost" size="sm" className="flex items-center gap-1">
-                        <MessageSquare className="h-4 w-4" />
-                        <span>{post.comments}</span>
-                      </Button>
+                  </div>
+                  <CardTitle className="line-clamp-2">{resource.title}</CardTitle>
+                  <CardDescription className="line-clamp-2">
+                    {resource.description || 'No description provided'}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="flex-1">
+                  {resource.tags && resource.tags.length > 0 && (
+                    <div className="flex flex-wrap gap-1 mb-4">
+                      {resource.tags.map((tag, idx) => (
+                        <Badge key={idx} variant="secondary" className="text-xs">
+                          {tag}
+                        </Badge>
+                      ))}
                     </div>
-                    <Button variant="outline" size="sm">
-                      Read More
-                    </Button>
-                  </CardFooter>
-                </Card>
-              </motion.div>
-            ))}
-          </motion.div>
-        </TabsContent>
-
-        <TabsContent value="mentors">
-          <div className="mb-6">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search mentors by name or expertise..."
-                className="pl-10"
-              />
-            </div>
-          </div>
-
-          <motion.div
-            variants={containerVariants}
-            initial="hidden"
-            animate="visible"
-            className="grid grid-cols-1 md:grid-cols-2 gap-6"
-          >
-            {mentors.map(mentor => (
-              <motion.div key={mentor.id} variants={itemVariants}>
-                <Card>
-                  <CardHeader>
-                    <div className="flex justify-between items-start">
-                      <div className="flex items-center gap-4">
-                        <div className="h-12 w-12 rounded-full bg-secondary flex items-center justify-center">
-                          <User className="h-6 w-6 text-secondary-foreground" />
-                        </div>
-                        <div>
-                          <CardTitle>{mentor.name}</CardTitle>
-                          <CardDescription>{mentor.role}</CardDescription>
-                        </div>
-                      </div>
-                      <Button 
-                        size="sm" 
-                        variant={mentor.isFollowing ? "outline" : "default"}
-                        className="flex items-center gap-1"
-                      >
-                        {mentor.isFollowing ? (
-                          "Following"
-                        ) : (
-                          <>
-                            <UserPlus className="h-4 w-4" />
-                            Follow
-                          </>
-                        )}
+                  )}
+                  
+                  <div className="mt-auto pt-4 flex justify-between">
+                    <div className="flex items-center space-x-4">
+                      <Button variant="ghost" size="sm" className="flex items-center space-x-1 p-0 h-auto">
+                        <Heart className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-xs text-muted-foreground">
+                          {Math.floor(Math.random() * 100)}
+                        </span>
+                      </Button>
+                      <Button variant="ghost" size="sm" className="flex items-center space-x-1 p-0 h-auto">
+                        <MessageSquare className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-xs text-muted-foreground">
+                          {Math.floor(Math.random() * 20)}
+                        </span>
                       </Button>
                     </div>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-sm mb-4">{mentor.bio}</p>
-                    <div className="bg-secondary/50 p-3 rounded-md">
-                      <p className="text-xs font-medium mb-2">EXPERTISE</p>
-                      <div className="flex flex-wrap gap-2">
-                        {mentor.expertise.split(', ').map(skill => (
-                          <span key={skill} className="text-xs bg-background px-2 py-1 rounded-full">
-                            {skill}
-                          </span>
-                        ))}
-                      </div>
+                    <div className="text-xs text-muted-foreground flex items-center">
+                      <span>{resource.views_count || Math.floor(Math.random() * 500)} views</span>
                     </div>
-                  </CardContent>
-                  <CardFooter className="text-sm text-muted-foreground">
-                    {mentor.followers.toLocaleString()} followers
-                  </CardFooter>
-                </Card>
-              </motion.div>
-            ))}
-          </motion.div>
-        </TabsContent>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+          ))}
 
-        <TabsContent value="following">
-          <motion.div
-            variants={containerVariants}
-            initial="hidden"
-            animate="visible"
-            className="grid grid-cols-1 md:grid-cols-2 gap-6"
-          >
-            {mentors.filter(mentor => mentor.isFollowing).map(mentor => (
-              <motion.div key={mentor.id} variants={itemVariants}>
-                <Card>
-                  <CardHeader>
-                    <div className="flex justify-between items-start">
-                      <div className="flex items-center gap-4">
-                        <div className="h-12 w-12 rounded-full bg-secondary flex items-center justify-center">
-                          <User className="h-6 w-6 text-secondary-foreground" />
-                        </div>
-                        <div>
-                          <CardTitle>{mentor.name}</CardTitle>
-                          <CardDescription>{mentor.role}</CardDescription>
-                        </div>
-                      </div>
-                      <Button 
-                        size="sm" 
-                        variant="outline"
-                      >
-                        Following
-                      </Button>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-sm mb-4">{mentor.bio}</p>
-                    <div className="bg-secondary/50 p-3 rounded-md">
-                      <p className="text-xs font-medium mb-2">EXPERTISE</p>
-                      <div className="flex flex-wrap gap-2">
-                        {mentor.expertise.split(', ').map(skill => (
-                          <span key={skill} className="text-xs bg-background px-2 py-1 rounded-full">
-                            {skill}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  </CardContent>
-                  <CardFooter className="flex justify-between">
-                    <span className="text-sm text-muted-foreground">{mentor.followers.toLocaleString()} followers</span>
-                    <Button size="sm">View Posts</Button>
-                  </CardFooter>
-                </Card>
-              </motion.div>
-            ))}
-
-            {mentors.filter(mentor => mentor.isFollowing).length === 0 && (
-              <motion.div variants={itemVariants} className="col-span-2">
-                <Card className="border-dashed">
-                  <CardContent className="flex flex-col items-center justify-center py-12">
-                    <User className="h-12 w-12 mb-4 text-muted-foreground" />
-                    <h3 className="text-xl font-medium mb-2">You're not following any mentors yet</h3>
-                    <p className="text-muted-foreground mb-6 text-center max-w-md">
-                      Find and follow mentors to see their wisdom posts in your feed
-                    </p>
-                    <Button>Find Mentors</Button>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            )}
-          </motion.div>
-        </TabsContent>
-      </Tabs>
+          {resources.length === 0 && (
+            <motion.div variants={itemVariants} className="col-span-full">
+              <Card className="border-dashed">
+                <CardContent className="flex flex-col items-center justify-center py-12">
+                  <MessageSquare className="h-12 w-12 mb-4 text-muted-foreground" />
+                  <h3 className="text-xl font-medium mb-2">No wisdom resources yet</h3>
+                  <p className="text-muted-foreground mb-6 text-center max-w-md">
+                    Be the first to share your knowledge and wisdom with the community
+                  </p>
+                  <Button onClick={handleCreateWisdom}>
+                    <Plus className="h-4 w-4 mr-2" /> Share Your Wisdom
+                  </Button>
+                </CardContent>
+              </Card>
+            </motion.div>
+          )}
+        </motion.div>
+      )}
     </div>
   );
 };
