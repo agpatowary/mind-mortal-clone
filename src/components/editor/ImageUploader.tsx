@@ -31,7 +31,12 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ editor }) => {
         .getPublicUrl(filePath);
 
       if (editor) {
-        editor.chain().focus().setImage({ src: publicUrl }).run();
+        // Use insertContent instead of setImage which might not be available in all versions
+        editor.chain().focus().insertContent({
+          type: 'image',
+          attrs: { src: publicUrl }
+        }).run();
+        
         toast({
           title: "Image uploaded",
           description: "Your image has been uploaded successfully.",
