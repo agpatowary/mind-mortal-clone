@@ -17,18 +17,6 @@ const Logo: React.FC<LogoProps> = ({
                     variant === 'dark' ? 'text-primary' : 
                     'text-[#F97316]';
 
-  const letterM = {
-    hidden: { pathLength: 0, opacity: 0 },
-    visible: { 
-      pathLength: 1, 
-      opacity: 1,
-      transition: { 
-        pathLength: { type: "spring", duration: 1.5, bounce: 0 },
-        opacity: { duration: 0.3 }
-      }
-    }
-  };
-
   return (
     <div className={`flex flex-col items-center ${className}`}>
       {interactive ? (
@@ -49,84 +37,20 @@ const Logo: React.FC<LogoProps> = ({
             initial="hidden"
             animate="visible"
           >
-            <svg 
-              viewBox="0 0 100 100" 
-              className="w-full h-full"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <motion.path
-                d="M 50 10 L 80 30 L 80 70 L 50 90 L 20 70 L 20 30 Z"
-                stroke="currentColor"
-                strokeWidth="4"
-                variants={letterM}
-                initial="hidden"
-                animate="visible"
-                fill="transparent"
-              />
-              <motion.path
-                d="M 50 10 L 50 90"
-                stroke="currentColor"
-                strokeWidth="4"
-                variants={letterM}
-                initial="hidden"
-                animate="visible"
-                fill="transparent"
-              />
-              <motion.path
-                d="M 20 30 L 50 50 L 80 30"
-                stroke="currentColor"
-                strokeWidth="4"
-                variants={letterM}
-                initial="hidden"
-                animate="visible"
-                fill="transparent"
-              />
-              <motion.circle
-                cx="50"
-                cy="50"
-                r="5"
-                fill="#CCFF00"
-                initial={{ scale: 0, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{ delay: 1, duration: 0.5 }}
-              />
-            </svg>
+            <img 
+              src="/lovable-uploads/bcc0ccf7-c2c6-48ef-af7c-832d8c5bdaa7.png" 
+              alt="MMortal Logo" 
+              className="w-full h-full object-contain"
+            />
           </motion.div>
         </motion.div>
       ) : (
         <div className={`relative w-16 h-16 md:w-20 md:h-20 ${logoColor}`}>
-          <svg 
-            viewBox="0 0 100 100" 
-            className="w-full h-full"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              d="M 50 10 L 80 30 L 80 70 L 50 90 L 20 70 L 20 30 Z"
-              stroke="currentColor"
-              strokeWidth="4"
-              fill="transparent"
-            />
-            <path
-              d="M 50 10 L 50 90"
-              stroke="currentColor"
-              strokeWidth="4"
-              fill="transparent"
-            />
-            <path
-              d="M 20 30 L 50 50 L 80 30"
-              stroke="currentColor"
-              strokeWidth="4"
-              fill="transparent"
-            />
-            <circle
-              cx="50"
-              cy="50"
-              r="5"
-              fill="#CCFF00"
-            />
-          </svg>
+          <img 
+            src="/lovable-uploads/bcc0ccf7-c2c6-48ef-af7c-832d8c5bdaa7.png" 
+            alt="MMortal Logo" 
+            className="w-full h-full object-contain"
+          />
         </div>
       )}
       <motion.div 

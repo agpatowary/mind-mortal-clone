@@ -131,16 +131,13 @@ const HeroSection: React.FC<HeroSectionProps> = ({ data }) => {
         );
       })}
       
-      {/* Content */}
+      {/* Content - removed the card/container and made it transparent */}
       <motion.div
-        className="relative z-10 text-center max-w-4xl glass-card p-10 backdrop-blur-md border border-white/10"
+        className="relative z-10 text-center max-w-4xl"
         style={{ 
           rotateX, 
           rotateY,
           perspective: 1000,
-        }}
-        whileHover={{
-          boxShadow: "0 0 30px rgba(249, 115, 22, 0.2)",
         }}
       >
         <motion.div

@@ -12,6 +12,9 @@ import SignUp from "./pages/SignUp";
 import Dashboard from "./pages/Dashboard";
 import UnauthorizedPage from "./pages/UnauthorizedPage";
 import NotFound from "./pages/NotFound";
+import WisdomExchangePage from "./pages/features/WisdomExchangePage";
+import LegacyVaultPage from "./pages/features/LegacyVaultPage";
+import TimelessMessagesPage from "./pages/features/TimelessMessagesPage";
 
 // Import framer-motion for animations
 import { MotionConfig } from "framer-motion";
@@ -28,6 +31,9 @@ const App = () => (
           <AuthProvider>
             <Routes>
               <Route path="/" element={<HomePage />} />
+              <Route path="/features/wisdom-exchange" element={<WisdomExchangePage />} />
+              <Route path="/features/legacy-vault" element={<LegacyVaultPage />} />
+              <Route path="/features/timeless-messages" element={<TimelessMessagesPage />} />
               <Route path="/signin" element={
                 <AuthGuard requireAuth={false}>
                   <SignIn />

@@ -3,11 +3,13 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Archive, Users, Clock } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useNavigate } from 'react-router-dom';
 
 interface Feature {
   title: string;
   description: string;
   icon: string;
+  link: string;
 }
 
 interface FeaturesSectionProps {
@@ -31,6 +33,21 @@ const FeatureIcon = ({ icon }: { icon: string }) => {
 };
 
 const FeaturesSection: React.FC<FeaturesSectionProps> = ({ data }) => {
+  const navigate = useNavigate();
+  
+  // Add links for the feature pages
+  const featuresWithLinks = data.items.map(feature => {
+    let link = '';
+    if (feature.title === 'Legacy Vault') {
+      link = '/features/legacy-vault';
+    } else if (feature.title === 'Knowledge Exchange') {
+      link = '/features/wisdom-exchange';
+    } else if (feature.title === 'Timeless Messages') {
+      link = '/features/timeless-messages';
+    }
+    return { ...feature, link };
+  });
+
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -53,7 +70,7 @@ const FeaturesSection: React.FC<FeaturesSectionProps> = ({ data }) => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center py-20 px-4">
+    <div className="min-h-screen flex flex-col items-center justify-center py-20 px-4" id="features-section">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -70,11 +87,14 @@ const FeaturesSection: React.FC<FeaturesSectionProps> = ({ data }) => {
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true, amount: 0.2 }}
-        className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto"
+        className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto w-full"
       >
-        {data.items.map((feature, index) => (
+        {featuresWithLinks.map((feature, index) => (
           <motion.div key={feature.title} variants={itemVariants}>
-            <Card className="h-full hover:shadow-lg transition-shadow duration-300">
+            <Card 
+              className="h-full hover:shadow-lg transition-shadow duration-300 cursor-pointer overflow-hidden"
+              onClick={() => feature.link && navigate(feature.link)}
+            >
               <CardHeader className="pb-2 text-center">
                 <div className="flex justify-center mb-4">
                   <FeatureIcon icon={feature.icon} />
@@ -85,6 +105,13 @@ const FeaturesSection: React.FC<FeaturesSectionProps> = ({ data }) => {
                 <p className="text-center text-muted-foreground">
                   {feature.description}
                 </p>
+                <motion.div 
+                  className="mt-4 text-primary text-center font-medium"
+                  initial={{ opacity: 0.7 }}
+                  whileHover={{ opacity: 1, scale: 1.05 }}
+                >
+                  Learn More →
+                </motion.div>
               </CardContent>
             </Card>
           </motion.div>
