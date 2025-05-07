@@ -18,7 +18,7 @@ const Logo: React.FC<LogoProps> = ({
                     'text-[#c8ff00]';
 
   return (
-    <div className={`flex flex-col items-center ${className}`}>
+    <div className={`flex items-center ${className}`}>
       {interactive ? (
         <motion.div 
           className={`relative w-16 h-16 md:w-20 md:h-20 ${logoColor}`}
@@ -53,16 +53,6 @@ const Logo: React.FC<LogoProps> = ({
           />
         </div>
       )}
-      <motion.div 
-        className="font-bold mt-2 text-sm md:text-base"
-        whileHover={interactive ? { 
-          scale: 1.2, 
-          color: "#c8ff00",
-          textShadow: "0px 0px 8px rgba(200, 255, 0, 0.6)"
-        } : undefined}
-      >
-        <span className="gradient-text">MMORTAL</span>
-      </motion.div>
     </div>
   );
 };

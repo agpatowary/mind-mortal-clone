@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { motion, useMotionValue, useTransform, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
@@ -175,8 +174,9 @@ const HeroSection: React.FC<HeroSectionProps> = ({ data }) => {
             drag
             dragConstraints={{ top: -10, right: 10, bottom: 10, left: -10 }}
             dragElastic={0.1}
+            className="mb-6"
           >
-            <Logo className="mx-auto mb-8" />
+            <Logo className="mx-auto" />
           </motion.div>
           
           <motion.h1 
