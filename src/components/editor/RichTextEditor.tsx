@@ -11,9 +11,8 @@ import TableHeader from '@tiptap/extension-table-header';
 import { Button } from '../ui/button';
 import { 
   Bold, Italic, List, ListOrdered, Link as LinkIcon, 
-  Image as ImageIcon, AlignLeft, AlignCenter, AlignRight, 
-  Table as TableIcon, Heading1, Heading2, Heading3,
-  Redo, Undo, FileVideo
+  Image as ImageIcon, Table as TableIcon, Heading1, Heading2, Heading3,
+  Redo, Undo
 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
