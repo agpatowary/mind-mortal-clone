@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Card, 
   CardHeader, 
@@ -12,12 +12,24 @@ import { Archive, Users, Clock } from 'lucide-react';
 import LegacyPostForm from './forms/LegacyPostForm';
 import WisdomPostForm from './forms/WisdomPostForm';
 import TimelessMessageForm from './forms/TimelessMessageForm';
+import { useLocation } from 'react-router-dom';
 
 const CreateContent: React.FC = () => {
   const [activeTab, setActiveTab] = useState('legacy');
+  const location = useLocation();
+  
+  // Check if there's a type parameter in the URL
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const type = params.get('type');
+    
+    if (type === 'legacy') setActiveTab('legacy');
+    else if (type === 'wisdom') setActiveTab('wisdom');
+    else if (type === 'timeless') setActiveTab('timeless');
+  }, [location]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 w-full">
       <div className="flex flex-col space-y-2">
         <h1 className="text-3xl font-bold">Create Content</h1>
         <p className="text-muted-foreground">
@@ -25,7 +37,7 @@ const CreateContent: React.FC = () => {
         </p>
       </div>
 
-      <Card className="rounded-lg">
+      <Card className="rounded-lg w-full">
         <CardContent className="pt-6">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="grid w-full grid-cols-3">

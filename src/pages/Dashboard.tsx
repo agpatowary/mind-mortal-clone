@@ -45,7 +45,7 @@ const Dashboard: React.FC = () => {
           variants={containerVariants}
           initial="hidden"
           animate="visible"
-          className="flex-1 p-4 md:p-8 overflow-auto"
+          className="flex-1 p-4 md:p-8 overflow-auto w-full max-w-full"
         >
           {/* Render the outlet if we're on a sub-route, otherwise render the dashboard home */}
           {location.pathname === '/dashboard' ? <DashboardHome /> : <Outlet />}
