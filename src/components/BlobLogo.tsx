@@ -3,146 +3,142 @@ import React, { useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 
 interface BlobLogoProps {
-  className?: string;
-  size?: 'sm' | 'md' | 'lg';
   interactive?: boolean;
+  size?: 'sm' | 'md' | 'lg';
+  className?: string;
 }
 
 const BlobLogo: React.FC<BlobLogoProps> = ({ 
-  className = '', 
+  interactive = true, 
   size = 'md',
-  interactive = true
+  className = '' 
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const requestRef = useRef<number>();
+  const noiseOffsetRef = useRef<number>(0);
   
-  // Define the size based on prop
-  const sizeClass = size === 'sm' ? 'w-12 h-12' : 
-                    size === 'lg' ? 'w-24 h-24' : 
-                    'w-16 h-16';
-
+  // Calculate size based on the prop
+  const sizeValue = size === 'sm' ? 100 : size === 'md' ? 150 : 200;
+  
   useEffect(() => {
-    if (!canvasRef.current) return;
-    
     const canvas = canvasRef.current;
+    if (!canvas) return;
+    
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
     
-    let animationFrameId: number;
-    let hue = 0;
+    // Set canvas size and ensure pixel ratio is correct
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = sizeValue * dpr;
+    canvas.height = sizeValue * dpr;
     
-    // Set canvas size
-    const setCanvasSize = () => {
-      const rect = canvas.getBoundingClientRect();
-      canvas.width = rect.width;
-      canvas.height = rect.height;
-    };
+    ctx.scale(dpr, dpr);
     
-    setCanvasSize();
-    window.addEventListener('resize', setCanvasSize);
+    // Blob colors
+    const gradient = ctx.createLinearGradient(0, 0, sizeValue, sizeValue);
+    gradient.addColorStop(0, '#C8FF00');
+    gradient.addColorStop(1, '#F97316');
     
-    // Animation parameters
-    const center = { x: canvas.width / 2, y: canvas.height / 2 };
-    const baseRadius = Math.min(canvas.width, canvas.height) * 0.35;
-    const blobPoints = 6;
-    const amplitude = baseRadius * 0.2;
+    // Create points around a circle
+    const points = 8;
+    const angleStep = (Math.PI * 2) / points;
+    const center = sizeValue / 2;
+    const radius = sizeValue * 0.35;
     
     // Animation function
     const animate = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       
-      // Increment hue for color change
-      hue = (hue + 0.5) % 360;
-      const blobColor = `hsl(${hue}, 100%, 50%)`;
-      const time = Date.now() * 0.001;
+      noiseOffsetRef.current += 0.01;
       
-      // Draw blob
-      ctx.save();
-      ctx.translate(center.x, center.y);
-      
+      // Draw blob with noise
       ctx.beginPath();
       
-      for (let angle = 0; angle < Math.PI * 2; angle += 0.01) {
-        let radius = baseRadius;
+      for (let i = 0; i < points; i++) {
+        const angle = i * angleStep;
         
-        // Add variation to each point
-        for (let i = 1; i <= blobPoints; i++) {
-          radius += Math.sin(angle * i + time) * amplitude / i;
-        }
+        // Add some noise to the radius
+        const noise = interactive 
+          ? Math.sin(noiseOffsetRef.current + i) * (sizeValue * 0.05) 
+          : Math.sin(noiseOffsetRef.current + i) * (sizeValue * 0.02);
         
-        const x = Math.cos(angle) * radius;
-        const y = Math.sin(angle) * radius;
+        const pointRadius = radius + noise;
         
-        if (angle === 0) {
+        const x = center + Math.cos(angle) * pointRadius;
+        const y = center + Math.sin(angle) * pointRadius;
+        
+        if (i === 0) {
           ctx.moveTo(x, y);
         } else {
-          ctx.lineTo(x, y);
+          // Use quadratic curves for smoother blob
+          const prevAngle = (i - 1) * angleStep;
+          const prevX = center + Math.cos(prevAngle) * (radius + noise);
+          const prevY = center + Math.sin(prevAngle) * (radius + noise);
+          
+          const cpX = (prevX + x) / 2;
+          const cpY = (prevY + y) / 2;
+          
+          ctx.quadraticCurveTo(prevX, prevY, cpX, cpY);
         }
       }
       
-      ctx.closePath();
+      // Close the path
+      const firstAngle = 0;
+      const firstX = center + Math.cos(firstAngle) * (radius + Math.sin(noiseOffsetRef.current) * (sizeValue * 0.05));
+      const firstY = center + Math.sin(firstAngle) * (radius + Math.sin(noiseOffsetRef.current) * (sizeValue * 0.05));
       
-      // Gradient fill for blob
-      const gradient = ctx.createRadialGradient(0, 0, 0, 0, 0, baseRadius * 1.5);
-      gradient.addColorStop(0, '#C8FF00');
-      gradient.addColorStop(1, '#F97316');
+      const lastAngle = (points - 1) * angleStep;
+      const lastX = center + Math.cos(lastAngle) * (radius + Math.sin(noiseOffsetRef.current + points - 1) * (sizeValue * 0.05));
+      const lastY = center + Math.sin(lastAngle) * (radius + Math.sin(noiseOffsetRef.current + points - 1) * (sizeValue * 0.05));
       
+      const cpX = (lastX + firstX) / 2;
+      const cpY = (lastY + firstY) / 2;
+      
+      ctx.quadraticCurveTo(lastX, lastY, cpX, cpY);
+      
+      // Fill the blob
       ctx.fillStyle = gradient;
-      ctx.globalAlpha = 0.8;
       ctx.fill();
       
-      ctx.restore();
+      // Draw the text
+      ctx.font = `${sizeValue * 0.15}px Arial`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillStyle = '#fff';
       
-      // Continue animation
-      animationFrameId = requestAnimationFrame(animate);
+      // Draw the "MM" text
+      ctx.fillText('MM', center, center);
+      
+      requestRef.current = requestAnimationFrame(animate);
     };
     
+    // Start animation
     animate();
     
+    // Cleanup
     return () => {
-      window.removeEventListener('resize', setCanvasSize);
-      cancelAnimationFrame(animationFrameId);
+      if (requestRef.current) {
+        cancelAnimationFrame(requestRef.current);
+      }
     };
-  }, []);
+  }, [interactive, sizeValue]);
   
   return (
-    <div className={`relative ${sizeClass} ${className}`}>
-      {interactive ? (
-        <motion.div
-          className="w-full h-full"
-          whileHover={{ 
-            scale: 1.1,
-            rotate: [0, -5, 5, -3, 3, 0],
-            transition: { duration: 0.5 }
-          }}
-          whileTap={{ scale: 0.9 }}
-          drag={interactive}
-          dragConstraints={{ top: -10, right: 10, bottom: 10, left: -10 }}
-          dragElastic={0.2}
-        >
-          <canvas 
-            ref={canvasRef} 
-            className="absolute inset-0 w-full h-full"
-          />
-          <img 
-            src="/lovable-uploads/dee5eb1f-c8e0-4606-9178-09c2c914ca98.png" 
-            alt="MMortal Logo" 
-            className="absolute inset-0 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-3/4 h-3/4 object-contain z-10"
-          />
-        </motion.div>
-      ) : (
-        <div className="w-full h-full">
-          <canvas 
-            ref={canvasRef} 
-            className="absolute inset-0 w-full h-full"
-          />
-          <img 
-            src="/lovable-uploads/dee5eb1f-c8e0-4606-9178-09c2c914ca98.png" 
-            alt="MMortal Logo" 
-            className="absolute inset-0 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-3/4 h-3/4 object-contain z-10"
-          />
-        </div>
-      )}
-    </div>
+    <motion.div 
+      className={`relative ${className}`}
+      style={{ width: sizeValue, height: sizeValue }}
+      whileHover={interactive ? { scale: 1.05 } : {}}
+      whileTap={interactive ? { scale: 0.95 } : {}}
+    >
+      <canvas 
+        ref={canvasRef} 
+        style={{ 
+          width: sizeValue, 
+          height: sizeValue,
+          cursor: interactive ? 'pointer' : 'default' 
+        }}
+      />
+    </motion.div>
   );
 };
 
