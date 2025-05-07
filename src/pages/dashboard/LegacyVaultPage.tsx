@@ -8,6 +8,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import PostInteractions from '@/components/social/PostInteractions';
+import { Badge } from "@/components/ui/badge";
 
 const LegacyVaultPage: React.FC = () => {
   const [posts, setPosts] = useState<any[]>([]);

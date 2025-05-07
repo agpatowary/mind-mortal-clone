@@ -5,6 +5,7 @@ import { Heart, MessageSquare, Share2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from '@/hooks/use-toast';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 interface LikeData {
   id: string;
@@ -54,6 +55,7 @@ const PostInteractions: React.FC<PostInteractionsProps> = ({
   useEffect(() => {
     if (user) {
       checkIfUserLiked();
+      fetchLikesCount();
       fetchCommentCount();
     }
   }, [user, postId]);
@@ -66,7 +68,7 @@ const PostInteractions: React.FC<PostInteractionsProps> = ({
         .from('post_likes')
         .select('id')
         .eq('post_id', postId)
-        .eq('post_type', postType)
+        .eq('post_type', getPostTypeValue(postType))
         .eq('user_id', user.id)
         .single();
 
@@ -86,7 +88,7 @@ const PostInteractions: React.FC<PostInteractionsProps> = ({
         .from('post_likes')
         .select('id', { count: 'exact', head: true })
         .eq('post_id', postId)
-        .eq('post_type', postType);
+        .eq('post_type', getPostTypeValue(postType));
 
       if (error) {
         console.error('Error fetching likes count:', error);
@@ -104,7 +106,7 @@ const PostInteractions: React.FC<PostInteractionsProps> = ({
         .from('post_comments')
         .select('id', { count: 'exact', head: true })
         .eq('post_id', postId)
-        .eq('post_type', postType);
+        .eq('post_type', getPostTypeValue(postType));
 
       if (error) {
         console.error('Error fetching comment count:', error);
@@ -133,19 +135,30 @@ const PostInteractions: React.FC<PostInteractionsProps> = ({
           )
         `)
         .eq('post_id', postId)
-        .eq('post_type', postType)
+        .eq('post_type', getPostTypeValue(postType))
         .order('created_at', { ascending: false });
 
       if (error) {
         console.error('Error fetching comments:', error);
-      } else {
-        setComments(data.map(comment => ({
+      } else if (data) {
+        const formattedComments = data.map(comment => ({
           ...comment,
           user: comment.profiles
-        })));
+        }));
+        setComments(formattedComments);
       }
     } catch (err) {
       console.error('Error in fetch comments operation:', err);
+    }
+  };
+
+  // Helper function to convert our prop type to the database value
+  const getPostTypeValue = (type: 'legacy_post' | 'timeless_message' | 'wisdom_resource'): string => {
+    switch (type) {
+      case 'legacy_post': return 'legacy_post';
+      case 'timeless_message': return 'timeless_message';
+      case 'wisdom_resource': return 'wisdom_resource';
+      default: return 'legacy_post';
     }
   };
 
@@ -166,7 +179,7 @@ const PostInteractions: React.FC<PostInteractionsProps> = ({
           .from('post_likes')
           .delete()
           .eq('post_id', postId)
-          .eq('post_type', postType)
+          .eq('post_type', getPostTypeValue(postType))
           .eq('user_id', user.id);
 
         if (error) {
@@ -187,7 +200,7 @@ const PostInteractions: React.FC<PostInteractionsProps> = ({
           .from('post_likes')
           .insert({
             post_id: postId,
-            post_type: postType,
+            post_type: getPostTypeValue(postType),
             user_id: user.id
           });
 
@@ -228,11 +241,18 @@ const PostInteractions: React.FC<PostInteractionsProps> = ({
         .from('post_comments')
         .insert({
           post_id: postId,
-          post_type: postType,
+          post_type: getPostTypeValue(postType),
           user_id: user.id,
           content: commentText.trim()
         })
-        .select();
+        .select(`
+          id,
+          post_id,
+          post_type,
+          user_id,
+          content,
+          created_at
+        `);
 
       if (error) {
         console.error('Error posting comment:', error);
@@ -241,11 +261,12 @@ const PostInteractions: React.FC<PostInteractionsProps> = ({
           description: "Could not post your comment",
           variant: "destructive"
         });
-      } else {
+      } else if (data && data.length > 0) {
         setCommentText('');
         setCommentCount(prev => prev + 1);
+        
         if (showComments) {
-          // Add the new comment to the list
+          // Add the new comment to the list with user profile info
           const newComment = {
             ...data[0],
             user: {
@@ -255,6 +276,7 @@ const PostInteractions: React.FC<PostInteractionsProps> = ({
           };
           setComments([newComment, ...comments]);
         }
+        
         if (onUpdate) onUpdate();
       }
     } catch (err) {
