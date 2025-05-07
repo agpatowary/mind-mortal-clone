@@ -1,14 +1,9 @@
 
-import React, { useRef } from 'react';
-import { useEditor, EditorContent } from '@tiptap/react';
-import StarterKit from '@tiptap/starter-kit';
-import Link from '@tiptap/extension-link';
-import Image from '@tiptap/extension-image';
-import Table from '@tiptap/extension-table';
-import TableRow from '@tiptap/extension-table-row';
-import TableCell from '@tiptap/extension-table-cell';
-import TableHeader from '@tiptap/extension-table-header';
-import EditorToolbar from './EditorToolbar';
+import React, { useState, useRef } from 'react';
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css';
+import { Button } from '../ui/button';
+import { ImageIcon } from 'lucide-react';
 import ImageUploader from './ImageUploader';
 
 interface RichTextEditorProps {
@@ -22,48 +17,69 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
   onChange,
   placeholder = 'Start writing...'
 }) => {
-  const imageUploaderRef = useRef<HTMLInputElement>(null);
+  const [value, setValue] = useState(content);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const quillRef = useRef<ReactQuill>(null);
   
-  const editor = useEditor({
-    extensions: [
-      StarterKit,
-      Link.configure({
-        openOnClick: false,
-        validate: href => /^https?:\/\//.test(href),
-      }),
-      Image.configure({
-        allowBase64: true,
-      }),
-      Table.configure({
-        resizable: true,
-      }),
-      TableRow,
-      TableHeader,
-      TableCell,
-    ],
-    content,
-    onUpdate: ({ editor }) => {
-      onChange(editor.getHTML());
-    },
-    editorProps: {
-      attributes: {
-        class: 'prose dark:prose-invert prose-sm sm:prose-base lg:prose-lg xl:prose-xl focus:outline-none w-full max-w-none min-h-[200px] p-4',
-      },
-    },
-  });
+  const modules = {
+    toolbar: {
+      container: [
+        [{ 'header': [1, 2, 3, false] }],
+        ['bold', 'italic', 'underline'],
+        [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+        ['link', 'table'],
+        ['clean']
+      ]
+    }
+  };
+
+  const formats = [
+    'header',
+    'bold', 'italic', 'underline',
+    'list', 'bullet',
+    'link', 'image', 'table'
+  ];
+
+  const handleChange = (newContent: string) => {
+    setValue(newContent);
+    onChange(newContent);
+  };
 
   const triggerImageUpload = () => {
-    imageUploaderRef.current?.click();
+    fileInputRef.current?.click();
   };
 
   return (
     <div className="border border-border rounded-md overflow-hidden bg-background">
-      <EditorToolbar 
-        editor={editor} 
-        onImageUploadClick={triggerImageUpload} 
+      <div className="flex items-center p-2 border-b border-border bg-muted/30">
+        <div className="flex-1">
+          {/* ReactQuill will show its own toolbar */}
+        </div>
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          onClick={triggerImageUpload}
+          className="ml-2"
+        >
+          <ImageIcon className="h-4 w-4" />
+        </Button>
+      </div>
+      
+      <ReactQuill
+        ref={quillRef}
+        theme="snow"
+        value={value}
+        onChange={handleChange}
+        modules={modules}
+        formats={formats}
+        placeholder={placeholder}
+        className="min-h-[300px]"
       />
-      <EditorContent editor={editor} className="min-h-[300px]" />
-      <ImageUploader editor={editor} />
+      
+      <ImageUploader 
+        fileInputRef={fileInputRef} 
+        quillRef={quillRef} 
+      />
     </div>
   );
 };

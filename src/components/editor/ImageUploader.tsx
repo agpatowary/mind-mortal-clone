@@ -1,16 +1,15 @@
 
-import React, { useRef } from 'react';
-import { Editor } from '@tiptap/react';
+import React from 'react';
+import ReactQuill from 'react-quill';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 
 interface ImageUploaderProps {
-  editor: Editor | null;
+  fileInputRef: React.RefObject<HTMLInputElement>;
+  quillRef: React.RefObject<ReactQuill>;
 }
 
-const ImageUploader: React.FC<ImageUploaderProps> = ({ editor }) => {
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
+const ImageUploader: React.FC<ImageUploaderProps> = ({ fileInputRef, quillRef }) => {
   const handleImageUpload = async (file: File) => {
     try {
       const fileExt = file.name.split('.').pop();
@@ -30,12 +29,12 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ editor }) => {
         .from('content_media')
         .getPublicUrl(filePath);
 
-      if (editor) {
-        // Use insertContent instead of setImage which might not be available in all versions
-        editor.chain().focus().insertContent({
-          type: 'image',
-          attrs: { src: publicUrl }
-        }).run();
+      // Insert the image into the editor
+      if (quillRef.current) {
+        const quill = quillRef.current.getEditor();
+        const range = quill.getSelection(true);
+        quill.insertEmbed(range.index, 'image', publicUrl);
+        quill.setSelection(range.index + 1);
         
         toast({
           title: "Image uploaded",
@@ -50,10 +49,6 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ editor }) => {
         variant: "destructive"
       });
     }
-  };
-
-  const triggerFileInput = () => {
-    fileInputRef.current?.click();
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
