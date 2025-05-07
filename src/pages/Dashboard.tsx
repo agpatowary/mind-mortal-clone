@@ -14,7 +14,7 @@ const Dashboard: React.FC = () => {
   
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-[#1A1F2C]">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
@@ -37,10 +37,10 @@ const Dashboard: React.FC = () => {
   };
 
   return (
-    <div className="flex h-screen w-full bg-background">
+    <div className="flex h-screen overflow-hidden bg-[#1A1F2C] text-white">
       <DashboardSidebar />
       
-      <SidebarInset>
+      <SidebarInset className="bg-[#1A1F2C]">
         <motion.div
           variants={containerVariants}
           initial="hidden"

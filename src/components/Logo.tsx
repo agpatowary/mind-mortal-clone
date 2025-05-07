@@ -1,6 +1,7 @@
 
 import React from 'react';
 import BlobLogo from './BlobLogo';
+import { motion } from 'framer-motion';
 
 interface LogoProps {
   className?: string;
@@ -14,9 +15,15 @@ const Logo: React.FC<LogoProps> = ({
   interactive = true
 }) => {
   return (
-    <div className={`flex items-center ${className}`}>
-      <BlobLogo interactive={interactive} />
-    </div>
+    <motion.div 
+      className={`flex items-center ${className}`}
+      whileHover={interactive ? { scale: 1.02 } : {}}
+    >
+      <BlobLogo size="sm" interactive={interactive} />
+      <div className="ml-2 text-lg font-bold gradient-text">
+        MemoryMind
+      </div>
+    </motion.div>
   );
 };
 

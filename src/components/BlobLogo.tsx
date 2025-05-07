@@ -17,8 +17,8 @@ const BlobLogo: React.FC<BlobLogoProps> = ({
   const requestRef = useRef<number>();
   const noiseOffsetRef = useRef<number>(0);
   
-  // Calculate size based on the prop
-  const sizeValue = size === 'sm' ? 100 : size === 'md' ? 150 : 200;
+  // Calculate size based on the prop - make it smaller
+  const sizeValue = size === 'sm' ? 50 : size === 'md' ? 80 : 120;
   
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -34,16 +34,16 @@ const BlobLogo: React.FC<BlobLogoProps> = ({
     
     ctx.scale(dpr, dpr);
     
-    // Blob colors
+    // Modern gradient with deeper colors
     const gradient = ctx.createLinearGradient(0, 0, sizeValue, sizeValue);
-    gradient.addColorStop(0, '#C8FF00');
-    gradient.addColorStop(1, '#F97316');
+    gradient.addColorStop(0, '#22c55e'); // New green color
+    gradient.addColorStop(1, '#0ea5e9'); // New blue color
     
     // Create points around a circle
-    const points = 8;
+    const points = 12; // More points for smoother blob
     const angleStep = (Math.PI * 2) / points;
     const center = sizeValue / 2;
-    const radius = sizeValue * 0.35;
+    const radius = sizeValue * 0.3; // Smaller radius
     
     // Animation function
     const animate = () => {
@@ -57,10 +57,10 @@ const BlobLogo: React.FC<BlobLogoProps> = ({
       for (let i = 0; i < points; i++) {
         const angle = i * angleStep;
         
-        // Add some noise to the radius
+        // Reduced noise for more subtle movement
         const noise = interactive 
-          ? Math.sin(noiseOffsetRef.current + i) * (sizeValue * 0.05) 
-          : Math.sin(noiseOffsetRef.current + i) * (sizeValue * 0.02);
+          ? Math.sin(noiseOffsetRef.current + i) * (sizeValue * 0.03) 
+          : Math.sin(noiseOffsetRef.current + i) * (sizeValue * 0.01);
         
         const pointRadius = radius + noise;
         
@@ -84,12 +84,12 @@ const BlobLogo: React.FC<BlobLogoProps> = ({
       
       // Close the path
       const firstAngle = 0;
-      const firstX = center + Math.cos(firstAngle) * (radius + Math.sin(noiseOffsetRef.current) * (sizeValue * 0.05));
-      const firstY = center + Math.sin(firstAngle) * (radius + Math.sin(noiseOffsetRef.current) * (sizeValue * 0.05));
+      const firstX = center + Math.cos(firstAngle) * (radius + Math.sin(noiseOffsetRef.current) * (sizeValue * 0.03));
+      const firstY = center + Math.sin(firstAngle) * (radius + Math.sin(noiseOffsetRef.current) * (sizeValue * 0.03));
       
       const lastAngle = (points - 1) * angleStep;
-      const lastX = center + Math.cos(lastAngle) * (radius + Math.sin(noiseOffsetRef.current + points - 1) * (sizeValue * 0.05));
-      const lastY = center + Math.sin(lastAngle) * (radius + Math.sin(noiseOffsetRef.current + points - 1) * (sizeValue * 0.05));
+      const lastX = center + Math.cos(lastAngle) * (radius + Math.sin(noiseOffsetRef.current + points - 1) * (sizeValue * 0.03));
+      const lastY = center + Math.sin(lastAngle) * (radius + Math.sin(noiseOffsetRef.current + points - 1) * (sizeValue * 0.03));
       
       const cpX = (lastX + firstX) / 2;
       const cpY = (lastY + firstY) / 2;
@@ -100,8 +100,12 @@ const BlobLogo: React.FC<BlobLogoProps> = ({
       ctx.fillStyle = gradient;
       ctx.fill();
       
+      // Add a subtle glow effect
+      ctx.shadowColor = 'rgba(14, 165, 233, 0.5)';
+      ctx.shadowBlur = 15;
+      
       // Draw the text
-      ctx.font = `${sizeValue * 0.15}px Arial`;
+      ctx.font = `bold ${sizeValue * 0.25}px sans-serif`;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.fillStyle = '#fff';
