@@ -10,7 +10,10 @@
     ],
     "description": "A platform for preserving legacies, sharing knowledge, and sending timeless messages.",
     "backgroundImages": [
-      "/lovable-uploads/c7971a89-c468-49b1-ab5a-14b1d463c990.png"
+      "/lovable-uploads/photo-1488590528505-98d2b5aba04b.jpeg",
+      "/lovable-uploads/photo-1531297484001-80022131f5a1.jpeg",
+      "/lovable-uploads/photo-1487058792275-0ad4aaf24ca7.jpeg",
+      "/lovable-uploads/photo-1460925895917-afdab827c52f.jpeg"
     ]
   },
   "features": {
@@ -19,17 +22,20 @@
       {
         "title": "Legacy Vault",
         "description": "Share and preserve your ideas, memories, and important documents for future generations.",
-        "icon": "archive"
+        "icon": "archive",
+        "link": "/features/legacy-vault"
       },
       {
         "title": "Knowledge Exchange",
         "description": "Connect retired professionals with newcomers for mentorship and knowledge sharing.",
-        "icon": "users"
+        "icon": "users",
+        "link": "/features/wisdom-exchange"
       },
       {
         "title": "Timeless Messages",
         "description": "Create messages to be delivered at future dates or triggered by specific events.",
-        "icon": "clock"
+        "icon": "clock",
+        "link": "/features/timeless-messages"
       }
     ]
   },

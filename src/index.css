@@ -118,8 +118,14 @@
                0 0 30px rgba(255, 165, 0, 0.3);
 }
 
+.shadow-glow {
+  text-shadow: 0 0 10px rgba(200, 255, 0, 0.7), 
+               0 0 20px rgba(200, 255, 0, 0.5), 
+               0 0 30px rgba(200, 255, 0, 0.3);
+}
+
 .gradient-text {
-  background: linear-gradient(90deg, #F97316, #F97316, #CCFF00);
+  background: linear-gradient(90deg, #C8FF00, #C8FF00, #F97316);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;

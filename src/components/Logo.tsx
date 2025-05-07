@@ -15,7 +15,7 @@ const Logo: React.FC<LogoProps> = ({
 }) => {
   const logoColor = variant === 'light' ? 'text-white' : 
                     variant === 'dark' ? 'text-primary' : 
-                    'text-[#F97316]';
+                    'text-[#c8ff00]';
 
   return (
     <div className={`flex flex-col items-center ${className}`}>
@@ -38,7 +38,7 @@ const Logo: React.FC<LogoProps> = ({
             animate="visible"
           >
             <img 
-              src="/lovable-uploads/bcc0ccf7-c2c6-48ef-af7c-832d8c5bdaa7.png" 
+              src="/lovable-uploads/dee5eb1f-c8e0-4606-9178-09c2c914ca98.png" 
               alt="MMortal Logo" 
               className="w-full h-full object-contain"
             />
@@ -47,7 +47,7 @@ const Logo: React.FC<LogoProps> = ({
       ) : (
         <div className={`relative w-16 h-16 md:w-20 md:h-20 ${logoColor}`}>
           <img 
-            src="/lovable-uploads/bcc0ccf7-c2c6-48ef-af7c-832d8c5bdaa7.png" 
+            src="/lovable-uploads/dee5eb1f-c8e0-4606-9178-09c2c914ca98.png" 
             alt="MMortal Logo" 
             className="w-full h-full object-contain"
           />
@@ -57,8 +57,8 @@ const Logo: React.FC<LogoProps> = ({
         className="font-bold mt-2 text-sm md:text-base"
         whileHover={interactive ? { 
           scale: 1.2, 
-          color: "#F97316",
-          textShadow: "0px 0px 8px rgba(249, 115, 22, 0.6)"
+          color: "#c8ff00",
+          textShadow: "0px 0px 8px rgba(200, 255, 0, 0.6)"
         } : undefined}
       >
         <span className="gradient-text">MMORTAL</span>

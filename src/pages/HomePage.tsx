@@ -9,6 +9,7 @@ import FeaturesSection from '../components/home/FeaturesSection';
 import StoriesSection from '../components/home/StoriesSection';
 import CtaSection from '../components/home/CtaSection';
 import AnimatedBackground from '../components/AnimatedBackground';
+import { Feature } from '../types';
 
 const HomePage: React.FC = () => {
   const [activeSection, setActiveSection] = useState(0);
@@ -100,10 +101,16 @@ const HomePage: React.FC = () => {
     };
   }, [activeSection, isScrolling]);
   
+  // Type-safe feature data
+  const featuresData = {
+    title: homeContent.features.title,
+    items: homeContent.features.items as unknown as Feature[]
+  };
+  
   // Section components and their variants for animations
   const sections = [
     <HeroSection key="hero" data={homeContent.hero} />,
-    <FeaturesSection key="features" data={homeContent.features} />,
+    <FeaturesSection key="features" data={featuresData} />,
     <StoriesSection key="stories" data={homeContent.stories} />,
     <CtaSection key="cta" data={homeContent.cta} />
   ];
@@ -167,12 +174,12 @@ const HomePage: React.FC = () => {
               onClick={() => navigateToSection(index)}
               className={`rounded-full transition-all duration-300 border ${
                 activeSection === index 
-                  ? "bg-primary w-3 h-3 border-primary" 
-                  : "bg-muted-foreground/20 w-2 h-2 border-transparent hover:border-primary/50"
+                  ? "bg-[#C8FF00] w-3 h-3 border-[#C8FF00]" 
+                  : "bg-muted-foreground/20 w-2 h-2 border-transparent hover:border-[#C8FF00]/50"
               }`}
               whileHover={{ 
                 scale: 1.5,
-                backgroundColor: "rgba(249, 115, 22, 0.5)",
+                backgroundColor: "rgba(200, 255, 0, 0.5)",
               }}
               whileTap={{ scale: 0.9 }}
               aria-label={`Navigate to section ${index + 1}`}
@@ -183,7 +190,7 @@ const HomePage: React.FC = () => {
         {/* Section indicators */}
         <div className="fixed left-6 top-1/2 transform -translate-y-1/2 z-50 hidden md:block">
           <motion.div 
-            className="text-primary font-bold text-5xl gradient-text"
+            className="text-[#C8FF00] font-bold text-5xl shadow-glow"
             animate={{ opacity: [0, 1], y: [20, 0] }}
             transition={{ duration: 0.5 }}
             key={`section-number-${activeSection}`}
