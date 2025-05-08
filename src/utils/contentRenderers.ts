@@ -86,12 +86,14 @@ export const truncateContent = (content: string, maxLength: number = 150): strin
 };
 
 /**
- * Creates HTML content with React
+ * Creates props for dangerouslySetInnerHTML
  */
-export const createReactHtml = (htmlContent: string): JSX.Element => {
-  return (
-    <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(htmlContent) }} />
-  );
+export const createReactHtmlProps = (htmlContent: string): { dangerouslySetInnerHTML: { __html: string } } => {
+  return {
+    dangerouslySetInnerHTML: { 
+      __html: DOMPurify.sanitize(htmlContent) 
+    }
+  };
 };
 
 /**
