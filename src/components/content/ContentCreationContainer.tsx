@@ -7,20 +7,30 @@ import TimelessMessagesForm from './TimelessMessagesForm';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const ContentCreationContainer: React.FC = () => {
-  const location = useLocation();
   const [activeTab, setActiveTab] = useState<string>("legacy-vault");
   
-  // Set initial tab based on URL path
+  // Safely get location if we're in a Router context
+  let locationPathname = '';
+  try {
+    const location = useLocation();
+    locationPathname = location.pathname;
+  } catch (error) {
+    // If useLocation fails (not in Router context), we'll use default values
+    console.log('Router context not available, using default tab');
+  }
+  
+  // Set initial tab based on URL path or state param if available
   useEffect(() => {
-    const path = location.pathname;
-    if (path.includes('legacy-vault')) {
-      setActiveTab('legacy-vault');
-    } else if (path.includes('wisdom-exchange')) {
-      setActiveTab('wisdom-exchange');
-    } else if (path.includes('timeless-messages')) {
-      setActiveTab('timeless-messages');
+    if (locationPathname) {
+      if (locationPathname.includes('legacy-vault')) {
+        setActiveTab('legacy-vault');
+      } else if (locationPathname.includes('wisdom-exchange')) {
+        setActiveTab('wisdom-exchange');
+      } else if (locationPathname.includes('timeless-messages')) {
+        setActiveTab('timeless-messages');
+      }
     }
-  }, [location]);
+  }, [locationPathname]);
 
   return (
     <div className="container mx-auto py-6">

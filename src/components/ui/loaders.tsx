@@ -200,3 +200,72 @@ export const InteractiveLoader = ({ size = "default" }: { size?: "sm" | "default
     </motion.div>
   );
 };
+
+export const ContentLoader = ({ type = "pulse" }: { type?: "pulse" | "wave" | "dots" }) => {
+  if (type === "dots") {
+    return (
+      <div className="flex items-center space-x-2 justify-center py-4">
+        {[1, 2, 3].map((i) => (
+          <motion.div
+            key={i}
+            className="h-2 w-2 rounded-full bg-primary"
+            animate={{
+              scale: [1, 1.5, 1],
+              opacity: [0.3, 1, 0.3]
+            }}
+            transition={{
+              duration: 1,
+              repeat: Infinity,
+              delay: i * 0.2,
+              ease: "easeInOut"
+            }}
+          />
+        ))}
+      </div>
+    );
+  }
+  
+  if (type === "wave") {
+    return (
+      <div className="py-4 flex justify-center">
+        <div className="relative h-8 w-24">
+          {[1, 2, 3, 4, 5].map((i) => (
+            <motion.div
+              key={i}
+              className="absolute bottom-0 w-1 bg-primary rounded-full"
+              style={{ left: `${(i - 1) * 6}px` }}
+              animate={{
+                height: ["20%", "100%", "20%"]
+              }}
+              transition={{
+                duration: 1,
+                repeat: Infinity,
+                delay: i * 0.1,
+                ease: "easeInOut"
+              }}
+            />
+          ))}
+        </div>
+      </div>
+    );
+  }
+  
+  // Default pulse loader
+  return (
+    <div className="flex justify-center py-4">
+      <motion.div
+        className="h-10 w-10 rounded-full border-2 border-primary"
+        animate={{
+          scale: [1, 1.2, 1],
+          opacity: [0.6, 1, 0.6],
+          boxShadow: ["0 0 0 0 rgba(249, 115, 22, 0.4)", "0 0 0 10px rgba(249, 115, 22, 0)", "0 0 0 0 rgba(249, 115, 22, 0)"]
+        }}
+        transition={{
+          duration: 2,
+          repeat: Infinity,
+          ease: "easeInOut"
+        }}
+      />
+    </div>
+  );
+};

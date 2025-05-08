@@ -45,11 +45,11 @@ const FloatingObject: React.FC<FloatingObjectProps> = ({
 
     if (distance < interactiveDistance) {
       setIsHovered(true);
-      // Create a repulsion effect
+      // Create a stronger repulsion effect
       const angle = Math.atan2(distanceY, distanceX);
       const force = (interactiveDistance - distance) / interactiveDistance;
-      const moveX = -Math.cos(angle) * force * 20;
-      const moveY = -Math.sin(angle) * force * 20;
+      const moveX = -Math.cos(angle) * force * 30; // Increased force
+      const moveY = -Math.sin(angle) * force * 30; // Increased force
 
       setPosition(prev => ({
         x: prev.x + moveX,
@@ -95,10 +95,12 @@ const FloatingObject: React.FC<FloatingObjectProps> = ({
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        boxShadow: isHovered ? '0 0 20px rgba(255, 255, 255, 0.3)' : 'none',
+        boxShadow: isHovered ? '0 0 25px rgba(255, 255, 255, 0.5)' : 'none', // Brighter glow
         cursor: 'pointer',
         zIndex: 1
       }}
+      whileHover={{ scale: 1.5 }} // More dramatic scale effect
+      whileTap={{ scale: 0.8 }} // Add tap effect
     >
       {children}
     </motion.div>
@@ -112,7 +114,7 @@ interface DashboardAnimatedBackgroundProps {
 
 const DashboardAnimatedBackground: React.FC<DashboardAnimatedBackgroundProps> = ({
   children,
-  objectCount = 8
+  objectCount = 12 // Increased default object count
 }) => {
   const [dimensions, setDimensions] = useState({ width: 1000, height: 800 });
   
@@ -132,27 +134,38 @@ const DashboardAnimatedBackground: React.FC<DashboardAnimatedBackgroundProps> = 
     };
   }, []);
 
+  // More vibrant colors for floating objects
   const colors = [
-    'rgba(155, 135, 245, 0.3)',
-    'rgba(249, 115, 22, 0.2)',
-    'rgba(204, 255, 0, 0.2)',
-    'rgba(51, 195, 240, 0.2)',
-    'rgba(255, 149, 0, 0.2)',
+    'rgba(155, 135, 245, 0.4)', // Brighter purple
+    'rgba(249, 115, 22, 0.3)', // Brighter orange
+    'rgba(204, 255, 0, 0.3)',  // Brighter yellow-green
+    'rgba(51, 195, 240, 0.3)',  // Brighter blue
+    'rgba(255, 149, 0, 0.3)',   // Brighter amber
+    'rgba(236, 72, 153, 0.3)',  // Pink
+    'rgba(16, 185, 129, 0.3)',  // Green
   ];
 
+  // Create objects with more random variety
   const objects = Array.from({ length: objectCount }).map((_, index) => ({
     id: index,
-    x: Math.random() * dimensions.width * 0.8,
-    y: Math.random() * dimensions.height * 0.8,
-    size: Math.random() * 30 + 20,
+    x: Math.random() * dimensions.width * 0.9,
+    y: Math.random() * dimensions.height * 0.9,
+    size: Math.random() * 50 + 15, // More varied sizes
     color: colors[index % colors.length],
-    delay: Math.random() * 2,
-    speed: Math.random() * 3 + 1
+    delay: Math.random() * 3,
+    speed: Math.random() * 4 + 1, // Increased speed range
+    symbol: ['✨', '•', '○', '◇', '⬤', '◌', '◦'][Math.floor(Math.random() * 7)] // Different symbols
   }));
 
   return (
     <div className="relative min-h-screen overflow-hidden">
-      {/* Floating objects */}
+      {/* Background blur gradient */}
+      <div className="absolute inset-0 bg-gradient-to-br from-background/70 via-background/80 to-background/60 backdrop-blur-[2px] z-0" />
+      
+      {/* Grid overlay for tech effect */}
+      <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIHN0cm9rZT0iIzMzMzMzMyIgc3Ryb2tlLXdpZHRoPSIwLjIiPjxwYXRoIGQ9Ik0zMCAwdjYwTTYwIDMwSDBNNDUgMTVMNjAgME0xNSAxNUwwIDBNMTUgNDVMMCA2ME00NSA0NUw2MCA2MCIvPjwvZz48L2c+PC9zdmc+')] opacity-5 z-0"></div>
+      
+      {/* Floating objects with enhanced interactivity */}
       {objects.map(obj => (
         <FloatingObject
           key={obj.id}
@@ -162,8 +175,9 @@ const DashboardAnimatedBackground: React.FC<DashboardAnimatedBackgroundProps> = 
           color={obj.color}
           delay={obj.delay}
           speed={obj.speed}
+          interactiveDistance={120} // Increased interaction distance
         >
-          {obj.id % 3 === 0 && <span className="text-xs text-white/80">✨</span>}
+          <span className="text-xs text-white/90">{obj.symbol}</span>
         </FloatingObject>
       ))}
 

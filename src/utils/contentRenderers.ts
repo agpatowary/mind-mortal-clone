@@ -42,7 +42,7 @@ export const renderContent = (content: any): string => {
           if (node.text) return node.text;
           
           if (Array.isArray(node.content)) {
-            return node.content.map(extractText).join('');
+            return node.content.map(extractText).join(' ');
           }
           
           return '';
@@ -83,4 +83,53 @@ export const truncateContent = (content: string, maxLength: number = 150): strin
     : content.substring(0, maxLength);
     
   return `${truncatedText}...`;
+};
+
+/**
+ * Creates HTML content with React
+ */
+export const createReactHtml = (htmlContent: string): JSX.Element => {
+  return (
+    <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(htmlContent) }} />
+  );
+};
+
+/**
+ * Formats a date string in a user-friendly way
+ */
+export const formatDate = (dateString: string): string => {
+  if (!dateString) return '';
+  
+  try {
+    const date = new Date(dateString);
+    return new Intl.DateTimeFormat('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    }).format(date);
+  } catch (e) {
+    console.error('Error formatting date:', e);
+    return dateString;
+  }
+};
+
+/**
+ * Safely get a property from an object without errors
+ */
+export const safelyGetProperty = (obj: any, path: string, defaultValue: any = ''): any => {
+  if (!obj) return defaultValue;
+  
+  const properties = path.split('.');
+  let value = obj;
+  
+  for (const prop of properties) {
+    if (value === null || value === undefined || typeof value !== 'object') {
+      return defaultValue;
+    }
+    value = value[prop];
+  }
+  
+  return value !== undefined && value !== null ? value : defaultValue;
 };

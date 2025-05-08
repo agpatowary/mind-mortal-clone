@@ -55,16 +55,20 @@ const DashboardLayout: React.FC = () => {
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ delay: 0.2 }}
               >
-                <Button 
-                  variant="ghost" 
-                  onClick={handleSignOut}
-                  className="flex items-center gap-2 hover:bg-secondary/80 transition-colors"
+                {/* Use the motion component to wrap the Button instead of adding motion props to Button */}
+                <motion.div 
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                 >
-                  <LogOut size={16} />
-                  <span>Sign Out</span>
-                </Button>
+                  <Button 
+                    variant="ghost" 
+                    onClick={handleSignOut}
+                    className="flex items-center gap-2 hover:bg-secondary/80 transition-colors"
+                  >
+                    <LogOut size={16} />
+                    <span>Sign Out</span>
+                  </Button>
+                </motion.div>
               </motion.div>
             </AnimatePresence>
           </motion.div>

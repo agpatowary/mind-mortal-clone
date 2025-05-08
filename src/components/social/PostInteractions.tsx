@@ -23,6 +23,7 @@ interface PostInteractionsProps {
   initialLikesCount?: number;
   initialCommentsCount?: number;
   userLiked?: boolean;
+  onUpdate?: () => void; // Add the missing onUpdate prop
 }
 
 interface Comment {
@@ -39,7 +40,8 @@ const PostInteractions: React.FC<PostInteractionsProps> = ({
   postType,
   initialLikesCount = 0,
   initialCommentsCount = 0,
-  userLiked = false
+  userLiked = false,
+  onUpdate
 }) => {
   const { toast } = useToast();
   const { user } = useAuth();
@@ -144,6 +146,11 @@ const PostInteractions: React.FC<PostInteractionsProps> = ({
         setLikesCount(prev => prev + 1);
         setIsLiked(true);
       }
+      
+      // Call onUpdate callback if provided
+      if (onUpdate) {
+        onUpdate();
+      }
     } catch (error) {
       console.error('Error toggling like:', error);
       toast({
@@ -200,6 +207,11 @@ const PostInteractions: React.FC<PostInteractionsProps> = ({
       setComments(prev => [newCommentObject, ...prev]);
       setCommentsCount(prev => prev + 1);
       setNewComment('');
+      
+      // Call onUpdate callback if provided
+      if (onUpdate) {
+        onUpdate();
+      }
     } catch (error) {
       console.error('Error posting comment:', error);
       toast({
