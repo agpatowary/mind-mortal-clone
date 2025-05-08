@@ -6,7 +6,8 @@ import { Loader2, LogOut } from 'lucide-react';
 import DashboardSidebar from './DashboardSidebar';
 import { Button } from './ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
+import DashboardAnimatedBackground from './dashboard/DashboardAnimatedBackground';
 
 const DashboardLayout: React.FC = () => {
   const { signOut, isLoading } = useAuth();
@@ -37,31 +38,54 @@ const DashboardLayout: React.FC = () => {
   }
 
   return (
-    <div className="flex h-screen w-full bg-background overflow-hidden">
-      <DashboardSidebar />
-      
-      <main className="flex-1 overflow-auto flex flex-col">
-        <motion.div 
-          className="flex justify-end p-4 border-b border-border"
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3 }}
-        >
-          <Button 
-            variant="ghost" 
-            onClick={handleSignOut}
-            className="flex items-center gap-2 hover:bg-secondary/80 transition-colors"
-          >
-            <LogOut size={16} />
-            <span>Sign Out</span>
-          </Button>
-        </motion.div>
+    <DashboardAnimatedBackground objectCount={6}>
+      <div className="flex h-screen w-full bg-background/80 backdrop-blur-sm overflow-hidden">
+        <DashboardSidebar />
         
-        <div className="p-6 flex-1 overflow-auto">
-          <Outlet />
-        </div>
-      </main>
-    </div>
+        <main className="flex-1 overflow-auto flex flex-col">
+          <motion.div 
+            className="flex justify-end p-4 border-b border-border"
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <AnimatePresence>
+              <motion.div
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ delay: 0.2 }}
+              >
+                <Button 
+                  variant="ghost" 
+                  onClick={handleSignOut}
+                  className="flex items-center gap-2 hover:bg-secondary/80 transition-colors"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <LogOut size={16} />
+                  <span>Sign Out</span>
+                </Button>
+              </motion.div>
+            </AnimatePresence>
+          </motion.div>
+          
+          <div className="p-6 flex-1 overflow-auto">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={window.location.pathname}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.3 }}
+                className="h-full"
+              >
+                <Outlet />
+              </motion.div>
+            </AnimatePresence>
+          </div>
+        </main>
+      </div>
+    </DashboardAnimatedBackground>
   );
 };
 

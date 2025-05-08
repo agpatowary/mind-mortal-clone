@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -15,6 +14,7 @@ interface AuthContextType {
   signUp: (email: string, password: string, fullName: string) => Promise<void>;
   signIn: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
+  refreshProfile: () => Promise<void>;
   isAdmin: () => boolean;
   isMentor: () => boolean;
   isDisciple: () => boolean;
@@ -111,6 +111,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } catch (error) {
       console.error('Error fetching user roles:', error);
       setRoles(['disciple']); // Fallback to default role
+    }
+  };
+
+  const refreshProfile = async () => {
+    if (!user) return;
+    
+    try {
+      // Call the RPC function to refresh profile data
+      await supabase.rpc('refresh_profile_data');
+      
+      // Re-fetch the profile
+      await fetchUserProfile(user.id);
+      
+      return;
+    } catch (error) {
+      console.error('Error refreshing profile:', error);
+      toast({
+        title: "Profile refresh failed",
+        description: "There was an error refreshing your profile data.",
+        variant: "destructive"
+      });
     }
   };
 
@@ -214,6 +235,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     signUp,
     signIn,
     signOut,
+    refreshProfile,
     isAdmin,
     isMentor,
     isDisciple,

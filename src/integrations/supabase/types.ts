@@ -473,6 +473,7 @@ export type Database = {
           id: string
           location: string | null
           phone: string | null
+          profile_completion: string[] | null
           updated_at: string | null
           username: string | null
         }
@@ -483,6 +484,7 @@ export type Database = {
           id: string
           location?: string | null
           phone?: string | null
+          profile_completion?: string[] | null
           updated_at?: string | null
           username?: string | null
         }
@@ -493,6 +495,7 @@ export type Database = {
           id?: string
           location?: string | null
           phone?: string | null
+          profile_completion?: string[] | null
           updated_at?: string | null
           username?: string | null
         }
@@ -859,6 +862,10 @@ export type Database = {
       is_super_admin: {
         Args: Record<PropertyKey, never>
         Returns: boolean
+      }
+      refresh_profile_data: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
       }
       request_mentor_verification: {
         Args: {
