@@ -27,33 +27,115 @@ const WisdomExchangePage = () => {
 
   useEffect(() => {
     fetchResources();
-  }, []);
+  }, [user?.id]);
 
   const fetchResources = async () => {
+    if (!user) {
+      console.log("No user found, skipping resource fetch");
+      setIsLoadingResources(false);
+      return;
+    }
+
     try {
       setIsLoadingResources(true);
+      console.log("Fetching wisdom resources for user:", user.id);
       
-      const { data, error } = await supabase
+      // First, get the wisdom resources
+      const { data: resourcesData, error: resourcesError } = await supabase
         .from('wisdom_resources')
         .select(`
-          *,
-          profiles:created_by (
-            full_name,
-            avatar_url
-          ),
-          likes_count:post_likes!wisdom_resources_id_fkey(count),
-          comments_count:post_comments!wisdom_resources_id_fkey(count),
-          user_liked:post_likes!inner(id)
+          id,
+          title,
+          description,
+          resource_type,
+          resource_url,
+          tags,
+          created_at,
+          views_count,
+          created_by,
+          published_status
         `)
         .eq('published_status', 'published')
-        .eq('post_likes.user_id', user?.id)
         .limit(10);
         
-      if (error) throw error;
+      if (resourcesError) {
+        console.error('Error fetching wisdom resources:', resourcesError);
+        throw resourcesError;
+      }
       
-      setResources(data || []);
+      console.log("Resources fetched:", resourcesData);
+      
+      if (!resourcesData || resourcesData.length === 0) {
+        setResources([]);
+        setIsLoadingResources(false);
+        return;
+      }
+
+      // For each resource, fetch additional data
+      const resourcesWithDetails = await Promise.all(
+        resourcesData.map(async (resource) => {
+          // Get creator profile
+          const { data: profileData, error: profileError } = await supabase
+            .from('profiles')
+            .select('full_name, avatar_url')
+            .eq('id', resource.created_by)
+            .single();
+            
+          if (profileError) {
+            console.warn('Error fetching profile for resource creator:', profileError);
+          }
+          
+          // Get likes count
+          const { count: likesCount, error: likesError } = await supabase
+            .from('post_likes')
+            .select('id', { count: 'exact', head: true })
+            .eq('post_id', resource.id)
+            .eq('post_type', 'wisdom_resources');
+            
+          if (likesError) {
+            console.warn('Error fetching likes count:', likesError);
+          }
+          
+          // Check if user liked the post
+          const { data: userLikeData, error: userLikeError } = await supabase
+            .from('post_likes')
+            .select('id')
+            .eq('post_id', resource.id)
+            .eq('post_type', 'wisdom_resources')
+            .eq('user_id', user.id);
+            
+          if (userLikeError) {
+            console.warn('Error checking if user liked post:', userLikeError);
+          }
+          
+          // Get comments count
+          const { count: commentsCount, error: commentsError } = await supabase
+            .from('post_comments')
+            .select('id', { count: 'exact', head: true })
+            .eq('post_id', resource.id)
+            .eq('post_type', 'wisdom_resources');
+            
+          if (commentsError) {
+            console.warn('Error fetching comments count:', commentsError);
+          }
+          
+          return {
+            ...resource,
+            profiles: {
+              full_name: profileData?.full_name || 'Anonymous',
+              avatar_url: profileData?.avatar_url
+            },
+            likes_count: { count: likesCount || 0 },
+            comments_count: { count: commentsCount || 0 },
+            user_liked: userLikeData && userLikeData.length > 0
+          };
+        })
+      );
+      
+      console.log("Resources with details:", resourcesWithDetails);
+      setResources(resourcesWithDetails);
     } catch (error) {
-      console.error('Error fetching wisdom resources:', error);
+      console.error('Error in fetchResources function:', error);
       toast({
         title: "Error fetching resources",
         description: "There was a problem loading the wisdom resources.",
@@ -106,12 +188,15 @@ const WisdomExchangePage = () => {
     <DashboardAnimatedBackground objectCount={8}>
       <div className="container mx-auto max-w-7xl">
         <motion.div
-          variants={containerVariants}
-          initial="hidden"
-          animate="visible"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
           className="space-y-6"
         >
-          <motion.div variants={itemVariants} className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <motion.div 
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            className="flex flex-col md:flex-row md:items-center justify-between gap-4"
+          >
             <div>
               <h1 className="text-3xl font-bold">Wisdom Exchange</h1>
               <p className="text-muted-foreground mt-1">
@@ -131,7 +216,11 @@ const WisdomExchangePage = () => {
             </div>
           </motion.div>
 
-          <motion.div variants={itemVariants}>
+          <motion.div 
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.1 }}
+          >
             <Tabs defaultValue="explore" value={activeTab} onValueChange={setActiveTab}>
               <TabsList className="grid grid-cols-3 w-full md:w-[400px]">
                 <TabsTrigger value="explore">Explore</TabsTrigger>
@@ -169,7 +258,8 @@ const WisdomExchangePage = () => {
                     {resources.map((resource, index) => (
                       <motion.div 
                         key={resource.id}
-                        variants={itemVariants}
+                        initial={{ y: 20, opacity: 0 }}
+                        animate={{ y: 0, opacity: 1 }}
                         transition={{ delay: index * 0.05 }}
                       >
                         <Card className="h-full flex flex-col overflow-hidden">
@@ -242,6 +332,7 @@ const WisdomExchangePage = () => {
                               initialLikesCount={resource.likes_count?.count || 0}
                               initialCommentsCount={resource.comments_count?.count || 0}
                               userLiked={!!resource.user_liked}
+                              onUpdate={fetchResources}
                             />
                           </CardFooter>
                         </Card>

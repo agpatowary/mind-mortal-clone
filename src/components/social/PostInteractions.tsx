@@ -23,7 +23,7 @@ interface PostInteractionsProps {
   initialLikesCount?: number;
   initialCommentsCount?: number;
   userLiked?: boolean;
-  onUpdate?: () => void; // Add the missing onUpdate prop
+  onUpdate?: () => void;
 }
 
 interface Comment {
@@ -65,38 +65,55 @@ const PostInteractions: React.FC<PostInteractionsProps> = ({
     
     setIsLoading(true);
     try {
-      // Join with profiles to get user names and avatars
-      const { data, error } = await supabase
+      console.log('Fetching comments for:', postId, postType);
+      
+      // Get comments first
+      const { data: commentData, error: commentError } = await supabase
         .from('post_comments')
-        .select(`
-          id,
-          content,
-          created_at,
-          user_id,
-          profiles:user_id (
-            full_name,
-            avatar_url
-          )
-        `)
+        .select('id, content, created_at, user_id')
         .eq('post_id', postId)
         .eq('post_type', postType)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (commentError) {
+        console.error('Error fetching comments:', commentError);
+        throw commentError;
+      }
       
-      const formattedComments = data.map(comment => ({
-        id: comment.id,
-        content: comment.content,
-        created_at: comment.created_at,
-        user_id: comment.user_id,
-        user_name: comment.profiles?.full_name || 'Anonymous User',
-        user_avatar: comment.profiles?.avatar_url || null
-      }));
+      console.log('Comments fetched:', commentData);
       
-      setComments(formattedComments);
-      setCommentsCount(formattedComments.length);
+      // For each comment, fetch the user information separately
+      const commentsWithUserInfo = await Promise.all(
+        (commentData || []).map(async (comment) => {
+          // Get user profile info
+          const { data: profileData, error: profileError } = await supabase
+            .from('profiles')
+            .select('full_name, avatar_url')
+            .eq('id', comment.user_id)
+            .single();
+            
+          if (profileError) {
+            console.warn('Error fetching profile for user:', comment.user_id, profileError);
+            return {
+              ...comment,
+              user_name: 'Anonymous User',
+              user_avatar: null
+            };
+          }
+          
+          return {
+            ...comment,
+            user_name: profileData?.full_name || 'Anonymous User',
+            user_avatar: profileData?.avatar_url || null
+          };
+        })
+      );
+      
+      console.log('Comments with user info:', commentsWithUserInfo);
+      setComments(commentsWithUserInfo);
+      setCommentsCount(commentsWithUserInfo.length);
     } catch (error) {
-      console.error('Error fetching comments:', error);
+      console.error('Error in fetchComments function:', error);
       toast({
         title: "Failed to load comments",
         description: "There was an error loading the comments.",
@@ -175,6 +192,9 @@ const PostInteractions: React.FC<PostInteractionsProps> = ({
 
     setIsSubmitting(true);
     try {
+      console.log('Submitting comment for:', postId, postType);
+      
+      // Insert the comment
       const { data, error } = await supabase
         .from('post_comments')
         .insert({
@@ -185,15 +205,24 @@ const PostInteractions: React.FC<PostInteractionsProps> = ({
         })
         .select();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error inserting comment:', error);
+        throw error;
+      }
+      
+      console.log('Comment inserted:', data);
       
       // Get user profile data
-      const { data: profile } = await supabase
+      const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('full_name, avatar_url')
         .eq('id', user.id)
         .single();
         
+      if (profileError) {
+        console.warn('Error fetching profile after comment:', profileError);
+      }
+      
       // Add the new comment to the list
       const newCommentObject: Comment = {
         id: data[0].id,
@@ -203,6 +232,8 @@ const PostInteractions: React.FC<PostInteractionsProps> = ({
         user_name: profile?.full_name || 'Anonymous User',
         user_avatar: profile?.avatar_url || null
       };
+      
+      console.log('New comment object:', newCommentObject);
       
       setComments(prev => [newCommentObject, ...prev]);
       setCommentsCount(prev => prev + 1);
