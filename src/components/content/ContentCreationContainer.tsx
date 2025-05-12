@@ -23,8 +23,8 @@ const ContentCreationContainer: React.FC<{
     } else if (routeInfo && routeInfo.pathname) {
       if (routeInfo.pathname.includes('legacy-vault')) {
         setActiveTab('legacy-vault');
-      } else if (routeInfo.pathname.includes('wisdom-exchange')) {
-        setActiveTab('wisdom-exchange');
+      } else if (routeInfo.pathname.includes('wisdom-exchange') || routeInfo.pathname.includes('mentorship')) {
+        setActiveTab('mentorship');
       } else if (routeInfo.pathname.includes('timeless-messages')) {
         setActiveTab('timeless-messages');
       }
@@ -36,7 +36,7 @@ const ContentCreationContainer: React.FC<{
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="legacy-vault">Legacy Vault</TabsTrigger>
-          <TabsTrigger value="wisdom-exchange">Wisdom Exchange</TabsTrigger>
+          <TabsTrigger value="mentorship">Mentorship</TabsTrigger>
           <TabsTrigger value="timeless-messages">Timeless Messages</TabsTrigger>
         </TabsList>
         
@@ -44,7 +44,7 @@ const ContentCreationContainer: React.FC<{
           <LegacyVaultForm />
         </TabsContent>
         
-        <TabsContent value="wisdom-exchange" className="mt-6">
+        <TabsContent value="mentorship" className="mt-6">
           <WisdomExchangeForm />
         </TabsContent>
         

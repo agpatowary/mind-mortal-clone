@@ -1,147 +1,117 @@
 
 import React from 'react';
-import { motion } from 'framer-motion';
-import { useAuth } from '@/hooks/useAuth';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Archive, MessageSquare, Users } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
+import { motion } from 'framer-motion';
+import { Archive, Clock, MessageSquare, Users } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import SubscriptionStatus from '@/components/subscription/SubscriptionStatus';
 
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.1
-    }
-  }
-};
+const FeatureCard = ({ icon, title, description, to }: { icon: React.ReactNode, title: string, description: string, to: string }) => (
+  <motion.div
+    whileHover={{ y: -5, boxShadow: '0 10px 30px -15px rgba(0, 0, 0, 0.1)' }}
+    transition={{ duration: 0.2 }}
+  >
+    <Link to={to}>
+      <Card className="h-full hover:border-primary/50 transition-colors">
+        <CardHeader className="flex flex-row items-center gap-4 pb-2">
+          <div className="bg-primary/10 p-2 rounded-full">
+            {icon}
+          </div>
+          <CardTitle className="text-xl">{title}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <CardDescription className="text-base">{description}</CardDescription>
+        </CardContent>
+      </Card>
+    </Link>
+  </motion.div>
+);
 
-const itemVariants = {
-  hidden: { y: 20, opacity: 0 },
-  visible: {
-    y: 0,
-    opacity: 1,
-    transition: {
-      type: "spring",
-      stiffness: 100,
-      damping: 10
-    }
-  }
-};
-
-const DashboardHome: React.FC = () => {
+const DashboardHome = () => {
   const { user, profile } = useAuth();
   
-  // These would be fetched from an API in a real application
-  const analytics = {
-    legacyPosts: 12,
-    wisdomPosts: 8,
-    timelessMessages: 5,
-    quotas: {
-      legacy: 50,
-      wisdom: 30,
-      timeless: 20
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+        delayChildren: 0.1,
+      },
     },
-    subscription: {
-      plan: "Premium",
-      expiry: "2025-12-31"
-    }
   };
-
+  
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: {
+      y: 0,
+      opacity: 1,
+      transition: { duration: 0.4 },
+    },
+  };
+  
   return (
-    <div className="container mx-auto max-w-6xl">
-      <motion.div
-        className="mb-8"
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-      >
-        <h1 className="text-3xl font-bold">
-          Welcome, {profile?.full_name || user?.email}
-        </h1>
-        <p className="text-muted-foreground mt-2">
-          Here's an overview of your activity and remaining quotas.
-        </p>
-      </motion.div>
-
+    <div className="space-y-8">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <motion.div
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <h1 className="text-3xl font-bold tracking-tight">Welcome back{profile?.full_name ? `, ${profile.full_name}` : ''}!</h1>
+          <p className="text-muted-foreground">
+            What would you like to do today?
+          </p>
+        </motion.div>
+      </div>
+      
       <motion.div
         variants={containerVariants}
         initial="hidden"
         animate="visible"
-        className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10"
       >
-        <motion.div variants={itemVariants}>
-          <Card className="overflow-hidden">
-            <CardHeader className="pb-2 bg-gradient-to-r from-amber-500/10 to-amber-600/5">
-              <CardTitle className="flex items-center gap-2">
-                <Archive className="h-5 w-5 text-amber-500" />
-                Legacy Vault
-              </CardTitle>
-              <CardDescription>Your stored memories and wisdom</CardDescription>
-            </CardHeader>
-            <CardContent className="pt-6">
-              <div className="text-4xl font-bold mb-2">{analytics.legacyPosts}</div>
-              <div className="text-sm text-muted-foreground">
-                <span className="font-medium">{analytics.quotas.legacy - analytics.legacyPosts}</span> posts remaining out of <span className="font-medium">{analytics.quotas.legacy}</span>
-              </div>
-            </CardContent>
-          </Card>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+          <motion.div variants={itemVariants}>
+            <FeatureCard
+              icon={<Archive className="h-6 w-6 text-primary" />}
+              title="Legacy Vault"
+              description="Start or continue documenting your legacy for future generations."
+              to="/dashboard/legacy-vault"
+            />
+          </motion.div>
+          
+          <motion.div variants={itemVariants}>
+            <FeatureCard
+              icon={<Users className="h-6 w-6 text-primary" />}
+              title="Mentorship"
+              description="Share your knowledge or connect with mentors."
+              to="/dashboard/wisdom-exchange"
+            />
+          </motion.div>
+          
+          <motion.div variants={itemVariants}>
+            <FeatureCard
+              icon={<Clock className="h-6 w-6 text-primary" />}
+              title="Timeless Messages"
+              description="Create messages to be delivered in the future."
+              to="/dashboard/timeless-messages"
+            />
+          </motion.div>
+          
+          <motion.div variants={itemVariants}>
+            <FeatureCard
+              icon={<MessageSquare className="h-6 w-6 text-primary" />}
+              title="Create Content"
+              description="Add new content to your MMORTAL account."
+              to="/dashboard/create"
+            />
+          </motion.div>
+        </div>
+        
+        <motion.div variants={itemVariants} className="mt-8">
+          <SubscriptionStatus />
         </motion.div>
-
-        <motion.div variants={itemVariants}>
-          <Card className="overflow-hidden">
-            <CardHeader className="pb-2 bg-gradient-to-r from-primary/10 to-primary/5">
-              <CardTitle className="flex items-center gap-2">
-                <Users className="h-5 w-5 text-primary" />
-                Wisdom Exchange
-              </CardTitle>
-              <CardDescription>Your shared knowledge and insights</CardDescription>
-            </CardHeader>
-            <CardContent className="pt-6">
-              <div className="text-4xl font-bold mb-2">{analytics.wisdomPosts}</div>
-              <div className="text-sm text-muted-foreground">
-                <span className="font-medium">{analytics.quotas.wisdom - analytics.wisdomPosts}</span> posts remaining out of <span className="font-medium">{analytics.quotas.wisdom}</span>
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
-
-        <motion.div variants={itemVariants}>
-          <Card className="overflow-hidden">
-            <CardHeader className="pb-2 bg-gradient-to-r from-green-500/10 to-green-600/5">
-              <CardTitle className="flex items-center gap-2">
-                <MessageSquare className="h-5 w-5 text-green-500" />
-                Timeless Messages
-              </CardTitle>
-              <CardDescription>Your scheduled future communications</CardDescription>
-            </CardHeader>
-            <CardContent className="pt-6">
-              <div className="text-4xl font-bold mb-2">{analytics.timelessMessages}</div>
-              <div className="text-sm text-muted-foreground">
-                <span className="font-medium">{analytics.quotas.timeless - analytics.timelessMessages}</span> messages remaining out of <span className="font-medium">{analytics.quotas.timeless}</span>
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
-      </motion.div>
-
-      <motion.div variants={itemVariants} initial="hidden" animate="visible">
-        <Card>
-          <CardHeader>
-            <CardTitle>Subscription Information</CardTitle>
-            <CardDescription>Your current plan and status</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-col md:flex-row md:items-center justify-between">
-              <div>
-                <h3 className="text-lg font-medium">{analytics.subscription.plan} Plan</h3>
-                <p className="text-muted-foreground">Active until {new Date(analytics.subscription.expiry).toLocaleDateString()}</p>
-              </div>
-              <div className="mt-4 md:mt-0">
-                <button className="text-primary hover:underline">Manage Subscription</button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
       </motion.div>
     </div>
   );

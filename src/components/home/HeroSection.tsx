@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { motion, useMotionValue, useTransform, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
@@ -67,10 +68,10 @@ const HeroSection: React.FC<HeroSectionProps> = ({ data }) => {
   // Tech-themed floating elements
   const floatingElements = [
     { id: 1, shape: 'circle', size: 60, x: 15, y: 20, color: '#F97316' },
-    { id: 2, shape: 'hexagon', size: 80, x: 85, y: 15, color: '#C8FF00' },
-    { id: 3, shape: 'triangle', size: 70, x: 75, y: 75, color: '#C8FF00' },
+    { id: 2, shape: 'hexagon', size: 80, x: 85, y: 15, color: '#F97316' },
+    { id: 3, shape: 'triangle', size: 70, x: 75, y: 75, color: '#F97316' },
     { id: 4, shape: 'square', size: 50, x: 20, y: 70, color: '#F97316' },
-    { id: 5, shape: 'circle', size: 40, x: 50, y: 30, color: '#C8FF00' },
+    { id: 5, shape: 'circle', size: 40, x: 50, y: 30, color: '#F97316' },
   ];
   
   return (
@@ -183,7 +184,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ data }) => {
           
           <div className="h-16 md:h-20 flex items-center justify-center">
             <motion.h2 
-              className="text-2xl md:text-4xl font-semibold text-[#C8FF00] min-h-[4rem] flex items-center shadow-glow"
+              className="text-2xl md:text-4xl font-semibold text-[#F97316] min-h-[4rem] flex items-center shadow-glow"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.4, duration: 0.8 }}
@@ -217,30 +218,30 @@ const HeroSection: React.FC<HeroSectionProps> = ({ data }) => {
             <motion.div 
               whileHover={{ 
                 scale: 1.05, 
-                boxShadow: "0px 0px 20px rgba(200, 255, 0, 0.5)" 
+                boxShadow: "0px 0px 20px rgba(249, 115, 22, 0.5)" 
               }} 
               whileTap={{ scale: 0.95 }}
             >
               <Button 
                 size="lg" 
-                className="w-full sm:w-auto bg-[#C8FF00] hover:bg-[#C8FF00]/90 text-black rounded-full"
+                className="w-full sm:w-auto bg-[#F97316] hover:bg-[#F97316]/90 text-white rounded-full"
                 onClick={() => navigate("/signup")}
               >
-                Get Started
+                Start Your Journey
               </Button>
             </motion.div>
             
             <motion.div 
               whileHover={{ 
                 scale: 1.05, 
-                boxShadow: "0px 0px 20px rgba(200, 255, 0, 0.3)" 
+                boxShadow: "0px 0px 20px rgba(249, 115, 22, 0.3)" 
               }} 
               whileTap={{ scale: 0.95 }}
             >
               <Button 
                 size="lg" 
                 variant="outline" 
-                className="w-full sm:w-auto border-[#C8FF00]/50 text-[#C8FF00] hover:bg-[#C8FF00]/10 hover:text-[#C8FF00] rounded-full"
+                className="w-full sm:w-auto border-[#F97316]/50 text-[#F97316] hover:bg-[#F97316]/10 hover:text-[#F97316] rounded-full"
                 onClick={() => {
                   const featuresSection = document.getElementById('features-section');
                   if (featuresSection) {
@@ -248,7 +249,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ data }) => {
                   }
                 }}
               >
-                Learn More
+                Explore Features
               </Button>
             </motion.div>
           </motion.div>
@@ -259,7 +260,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ data }) => {
       <svg className="absolute bottom-10 left-10 w-40 h-40 opacity-10" viewBox="0 0 100 100">
         <motion.path
           d="M 10 10 L 90 10 L 90 90 L 10 90 Z"
-          stroke="#C8FF00"
+          stroke="#F97316"
           strokeWidth="1"
           fill="none"
           initial={{ pathLength: 0 }}
@@ -273,7 +274,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ data }) => {
           cx="50"
           cy="50"
           r="40"
-          stroke="#C8FF00"
+          stroke="#F97316"
           strokeWidth="1"
           fill="none"
           initial={{ pathLength: 0 }}

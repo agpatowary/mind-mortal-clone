@@ -1,205 +1,105 @@
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
-import homeContent from '../data/homeContent.json';
-import HomeNavigation from '../components/HomeNavigation';
-import HeroSection from '../components/home/HeroSection';
-import FeaturesSection from '../components/home/FeaturesSection';
-import StoriesSection from '../components/home/StoriesSection';
-import CtaSection from '../components/home/CtaSection';
-import AnimatedBackground from '../components/AnimatedBackground';
-import { Feature } from '../types';
+import HeroSection from '@/components/home/HeroSection';
+import FeaturesSection from '@/components/home/FeaturesSection';
+import StoriesSection from '@/components/home/StoriesSection';
+import CtaSection from '@/components/home/CtaSection';
+import HomeNavigation from '@/components/HomeNavigation';
+import AnimatedBackground from '@/components/AnimatedBackground';
+import CaseStudiesSection from '@/components/home/CaseStudiesSection';
+import FeaturedMentorsSection from '@/components/home/FeaturedMentorsSection';
 
-const HomePage: React.FC = () => {
-  const [activeSection, setActiveSection] = useState(0);
-  const [isScrolling, setIsScrolling] = useState(false);
-  const sectionsRef = useRef<(HTMLDivElement | null)[]>([]);
-  const totalSections = 4;
+// Import JSON data
+import homeContent from '@/data/homeContent.json';
+
+const HomePage = () => {
+  const navigate = useNavigate();
+  const [currentSection, setCurrentSection] = useState(0);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   
-  // Function to navigate to a section
-  const navigateToSection = (index: number) => {
-    if (index >= 0 && index < totalSections && !isScrolling) {
-      setIsScrolling(true);
-      setActiveSection(index);
-      
-      // Reset scrolling state after animation completes
-      setTimeout(() => {
-        setIsScrolling(false);
-      }, 1000);
+  // Update isMobile state on window resize
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+  
+  // Handle section navigation from HomeNavigation component
+  const handleNavigate = (index: number) => {
+    setCurrentSection(index);
+    const sections = ['hero', 'features', 'stories', 'cta'];
+    const element = document.getElementById(`${sections[index]}-section`);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
     }
   };
   
-  // Handle keyboard navigation
+  // Update currentSection based on scroll position
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'ArrowDown' || e.key === 'PageDown') {
-        navigateToSection(activeSection + 1);
-      } else if (e.key === 'ArrowUp' || e.key === 'PageUp') {
-        navigateToSection(activeSection - 1);
+    const handleScroll = () => {
+      const heroSection = document.getElementById('hero-section');
+      const featuresSection = document.getElementById('features-section');
+      const storiesSection = document.getElementById('stories-section');
+      const ctaSection = document.getElementById('cta-section');
+      
+      const scrollPosition = window.scrollY + window.innerHeight / 3;
+      
+      if (ctaSection && scrollPosition >= ctaSection.offsetTop) {
+        setCurrentSection(3);
+      } else if (storiesSection && scrollPosition >= storiesSection.offsetTop) {
+        setCurrentSection(2);
+      } else if (featuresSection && scrollPosition >= featuresSection.offsetTop) {
+        setCurrentSection(1);
+      } else {
+        setCurrentSection(0);
       }
     };
     
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [activeSection]);
-  
-  // Handle wheel/scroll events
-  useEffect(() => {
-    const handleWheel = (e: WheelEvent) => {
-      // Prevent default to disable normal scrolling
-      e.preventDefault();
-      
-      if (isScrolling) return;
-      
-      // Determine scroll direction and navigate
-      if (e.deltaY > 20) {
-        navigateToSection(activeSection + 1);
-      } else if (e.deltaY < -20) {
-        navigateToSection(activeSection - 1);
-      }
-    };
-    
-    // Add wheel event listener with passive: false to allow preventDefault
-    window.addEventListener('wheel', handleWheel, { passive: false });
-    return () => window.removeEventListener('wheel', handleWheel);
-  }, [activeSection, isScrolling]);
-  
-  // Handle touch events for mobile
-  useEffect(() => {
-    let touchStartY = 0;
-    
-    const handleTouchStart = (e: TouchEvent) => {
-      touchStartY = e.touches[0].clientY;
-    };
-    
-    const handleTouchMove = (e: TouchEvent) => {
-      if (isScrolling) return;
-      
-      const touchEndY = e.touches[0].clientY;
-      const diff = touchStartY - touchEndY;
-      
-      // Threshold for vertical swipe
-      if (Math.abs(diff) > 50) {
-        if (diff > 0) {
-          // Swipe up (next section)
-          navigateToSection(activeSection + 1);
-        } else {
-          // Swipe down (previous section)
-          navigateToSection(activeSection - 1);
-        }
-        touchStartY = touchEndY; // Reset for next swipe
-      }
-    };
-    
-    window.addEventListener('touchstart', handleTouchStart);
-    window.addEventListener('touchmove', handleTouchMove);
-    
-    return () => {
-      window.removeEventListener('touchstart', handleTouchStart);
-      window.removeEventListener('touchmove', handleTouchMove);
-    };
-  }, [activeSection, isScrolling]);
-  
-  // Type-safe feature data
-  const featuresData = {
-    title: homeContent.features.title,
-    items: homeContent.features.items as unknown as Feature[]
-  };
-  
-  // Section components and their variants for animations
-  const sections = [
-    <HeroSection key="hero" data={homeContent.hero} />,
-    <FeaturesSection key="features" data={featuresData} />,
-    <StoriesSection key="stories" data={homeContent.stories} />,
-    <CtaSection key="cta" data={homeContent.cta} />
-  ];
-  
-  const sectionVariants = {
-    enter: (direction: number) => ({
-      y: direction > 0 ? '100vh' : '-100vh',
-      opacity: 0
-    }),
-    center: {
-      y: 0,
-      opacity: 1
-    },
-    exit: (direction: number) => ({
-      y: direction < 0 ? '100vh' : '-100vh',
-      opacity: 0
-    })
-  };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
   
   return (
-    <AnimatedBackground 
-      mouseInteraction={true} 
-      density={40} 
-      speed={15} 
-      interactionStrength={150}
-      particleSize="mixed"
-    >
-      <div className="overflow-hidden h-screen">
-        <HomeNavigation 
-          currentSection={activeSection} 
-          onNavigate={navigateToSection} 
-        />
+    <div className="min-h-screen bg-background antialiased">
+      <AnimatedBackground objectCount={isMobile ? 5 : 10}>
+        {/* Hero Section */}
+        <section id="hero-section">
+          <HeroSection data={homeContent.hero} />
+        </section>
         
-        <AnimatePresence 
-          initial={false} 
-          custom={activeSection > 0 ? -1 : 1}
-          mode="wait"
-        >
-          <motion.div
-            key={activeSection}
-            custom={activeSection > 0 ? 1 : -1}
-            variants={sectionVariants}
-            initial="enter"
-            animate="center"
-            exit="exit"
-            transition={{
-              y: { type: "tween", duration: 0.8 },
-              opacity: { duration: 0.5 }
-            }}
-            className="h-screen w-screen"
-          >
-            {sections[activeSection]}
-          </motion.div>
-        </AnimatePresence>
+        {/* Features Section */}
+        <section id="features-section">
+          <FeaturesSection data={homeContent.features} />
+        </section>
         
-        {/* Pagination dots */}
-        <div className="fixed right-6 top-1/2 transform -translate-y-1/2 z-50 hidden md:flex flex-col gap-3">
-          {Array.from({ length: totalSections }).map((_, index) => (
-            <motion.button
-              key={`dot-${index}`}
-              onClick={() => navigateToSection(index)}
-              className={`rounded-full transition-all duration-300 border ${
-                activeSection === index 
-                  ? "bg-[#C8FF00] w-3 h-3 border-[#C8FF00]" 
-                  : "bg-muted-foreground/20 w-2 h-2 border-transparent hover:border-[#C8FF00]/50"
-              }`}
-              whileHover={{ 
-                scale: 1.5,
-                backgroundColor: "rgba(200, 255, 0, 0.5)",
-              }}
-              whileTap={{ scale: 0.9 }}
-              aria-label={`Navigate to section ${index + 1}`}
-            />
-          ))}
-        </div>
+        {/* Case Studies Section */}
+        <section id="case-studies-section">
+          <CaseStudiesSection data={homeContent.caseStudies} />
+        </section>
         
-        {/* Section indicators */}
-        <div className="fixed left-6 top-1/2 transform -translate-y-1/2 z-50 hidden md:block">
-          <motion.div 
-            className="text-[#C8FF00] font-bold text-5xl shadow-glow"
-            animate={{ opacity: [0, 1], y: [20, 0] }}
-            transition={{ duration: 0.5 }}
-            key={`section-number-${activeSection}`}
-          >
-            {activeSection + 1}
-          </motion.div>
-        </div>
-      </div>
-    </AnimatedBackground>
+        {/* Featured Mentors Section */}
+        <section id="mentors-section">
+          <FeaturedMentorsSection />
+        </section>
+        
+        {/* User Stories Section */}
+        <section id="stories-section">
+          <StoriesSection data={homeContent.stories} />
+        </section>
+        
+        {/* CTA Section */}
+        <section id="cta-section">
+          <CtaSection data={homeContent.cta} />
+        </section>
+        
+        {/* Navigation */}
+        <HomeNavigation currentSection={currentSection} onNavigate={handleNavigate} />
+      </AnimatedBackground>
+    </div>
   );
 };
 

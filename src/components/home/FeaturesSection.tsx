@@ -35,17 +35,24 @@ const FeatureIcon = ({ icon }: { icon: string }) => {
 const FeaturesSection: React.FC<FeaturesSectionProps> = ({ data }) => {
   const navigate = useNavigate();
   
-  // Add links for the feature pages
-  const featuresWithLinks = data.items.map(feature => {
-    let link = '';
-    if (feature.title === 'Legacy Vault') {
-      link = '/features/legacy-vault';
-    } else if (feature.title === 'Knowledge Exchange') {
-      link = '/features/wisdom-exchange';
+  // Map new title and links for features
+  const updatedFeatures = data.items.map(feature => {
+    let updatedFeature = { ...feature };
+    
+    // Update "Knowledge Exchange" to "Mentorship"
+    if (feature.title === 'Knowledge Exchange') {
+      updatedFeature.title = 'Mentorship';
+      updatedFeature.description = 'Guidance from experience to ignite your growth.';
+      updatedFeature.link = '/features/mentorship';
+    } else if (feature.title === 'Legacy Vault') {
+      updatedFeature.description = 'Preserve your legacy for future generations.';
+      updatedFeature.link = '/features/legacy-vault';
     } else if (feature.title === 'Timeless Messages') {
-      link = '/features/timeless-messages';
+      updatedFeature.description = 'Leave a message that lasts forever.';
+      updatedFeature.link = '/features/timeless-messages';
     }
-    return { ...feature, link };
+    
+    return updatedFeature;
   });
 
   const containerVariants = {
@@ -89,7 +96,7 @@ const FeaturesSection: React.FC<FeaturesSectionProps> = ({ data }) => {
         viewport={{ once: true, amount: 0.2 }}
         className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-8 max-w-6xl mx-auto w-full"
       >
-        {featuresWithLinks.map((feature, index) => (
+        {updatedFeatures.map((feature, index) => (
           <motion.div key={feature.title} variants={itemVariants}>
             <Card 
               className="h-full hover:shadow-lg transition-shadow duration-300 cursor-pointer overflow-hidden max-w-[90vw] md:max-w-none mx-auto"

@@ -1,148 +1,98 @@
 
-import React, { useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 
 interface BlobLogoProps {
-  className?: string;
-  size?: 'sm' | 'md' | 'lg';
   interactive?: boolean;
+  size?: 'sm' | 'md' | 'lg' | 'xl';
+  className?: string;
+  variant?: 'default' | 'light' | 'dark';
 }
 
 const BlobLogo: React.FC<BlobLogoProps> = ({ 
-  className = '', 
+  interactive = true, 
   size = 'md',
-  interactive = true
+  className = '',
+  variant = 'default'
 }) => {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [isHovered, setIsHovered] = useState(false);
+  const [isTapped, setIsTapped] = useState(false);
   
-  // Define the size based on prop
-  const sizeClass = size === 'sm' ? 'w-12 h-12' : 
-                    size === 'lg' ? 'w-24 h-24' : 
-                    'w-16 h-16';
+  const logoSizes = {
+    'sm': "w-8 h-8",
+    'md': "w-12 h-12",
+    'lg': "w-16 h-16",
+    'xl': "w-20 h-20"
+  };
+  
+  // Orange M logo path
+  const logoPath = "M29.4 12.17L24.76 25h-1.54L19.24 15.11 15.26 25h-1.54L9.13 12.17h1.79l3.61 10.12 3.9-10.12h1.52l3.9 10.15 3.67-10.15h1.88z";
+  
+  // Logo variants
+  const colorVariants = {
+    'default': {
+      bgGradient: "from-[#F97316] to-[#F97316]/80",
+      textColor: "text-white",
+      logoColor: "#FFFFFF"
+    },
+    'light': {
+      bgGradient: "from-white to-white/90",
+      textColor: "text-[#F97316]",
+      logoColor: "#F97316"
+    },
+    'dark': {
+      bgGradient: "from-[#F97316] to-[#F97316]/80",
+      textColor: "text-white",
+      logoColor: "#FFFFFF"
+    }
+  };
+  
+  const currentVariant = colorVariants[variant];
 
+  // Handle tap/click effects
   useEffect(() => {
-    if (!canvasRef.current) return;
-    
-    const canvas = canvasRef.current;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-    
-    let animationFrameId: number;
-    let hue = 0;
-    
-    // Set canvas size
-    const setCanvasSize = () => {
-      const rect = canvas.getBoundingClientRect();
-      canvas.width = rect.width;
-      canvas.height = rect.height;
-    };
-    
-    setCanvasSize();
-    window.addEventListener('resize', setCanvasSize);
-    
-    // Animation parameters
-    const center = { x: canvas.width / 2, y: canvas.height / 2 };
-    const baseRadius = Math.min(canvas.width, canvas.height) * 0.35;
-    const blobPoints = 6;
-    const amplitude = baseRadius * 0.2;
-    
-    // Animation function
-    const animate = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      
-      // Increment hue for color change
-      hue = (hue + 0.5) % 360;
-      const blobColor = `hsl(${hue}, 100%, 50%)`;
-      const time = Date.now() * 0.001;
-      
-      // Draw blob
-      ctx.save();
-      ctx.translate(center.x, center.y);
-      
-      ctx.beginPath();
-      
-      for (let angle = 0; angle < Math.PI * 2; angle += 0.01) {
-        let radius = baseRadius;
-        
-        // Add variation to each point
-        for (let i = 1; i <= blobPoints; i++) {
-          radius += Math.sin(angle * i + time) * amplitude / i;
-        }
-        
-        const x = Math.cos(angle) * radius;
-        const y = Math.sin(angle) * radius;
-        
-        if (angle === 0) {
-          ctx.moveTo(x, y);
-        } else {
-          ctx.lineTo(x, y);
-        }
-      }
-      
-      ctx.closePath();
-      
-      // Gradient fill for blob
-      const gradient = ctx.createRadialGradient(0, 0, 0, 0, 0, baseRadius * 1.5);
-      gradient.addColorStop(0, '#C8FF00');
-      gradient.addColorStop(1, '#F97316');
-      
-      ctx.fillStyle = gradient;
-      ctx.globalAlpha = 0.8;
-      ctx.fill();
-      
-      ctx.restore();
-      
-      // Continue animation
-      animationFrameId = requestAnimationFrame(animate);
-    };
-    
-    animate();
-    
-    return () => {
-      window.removeEventListener('resize', setCanvasSize);
-      cancelAnimationFrame(animationFrameId);
-    };
-  }, []);
-  
+    if (isTapped) {
+      const timer = setTimeout(() => {
+        setIsTapped(false);
+      }, 150);
+      return () => clearTimeout(timer);
+    }
+  }, [isTapped]);
+
   return (
-    <div className={`relative ${sizeClass} ${className}`}>
-      {interactive ? (
+    <motion.div
+      className={`relative flex items-center justify-center rounded-full shadow-md bg-gradient-to-br ${currentVariant.bgGradient} ${logoSizes[size]} ${className}`}
+      onHoverStart={interactive ? () => setIsHovered(true) : undefined}
+      onHoverEnd={interactive ? () => setIsHovered(false) : undefined}
+      onTapStart={interactive ? () => setIsTapped(true) : undefined}
+      animate={{
+        scale: isTapped ? 0.95 : isHovered ? 1.05 : 1,
+      }}
+      transition={{
+        type: "spring",
+        stiffness: 400,
+        damping: 10
+      }}
+    >
+      <svg 
+        viewBox="0 0 40 40" 
+        className={`w-full h-full ${currentVariant.textColor}`}
+      >
+        <path 
+          d={logoPath}
+          fill={currentVariant.logoColor}
+        />
+      </svg>
+      
+      {interactive && isHovered && (
         <motion.div
-          className="w-full h-full"
-          whileHover={{ 
-            scale: 1.1,
-            rotate: [0, -5, 5, -3, 3, 0],
-            transition: { duration: 0.5 }
-          }}
-          whileTap={{ scale: 0.9 }}
-          drag={interactive}
-          dragConstraints={{ top: -10, right: 10, bottom: 10, left: -10 }}
-          dragElastic={0.2}
-        >
-          <canvas 
-            ref={canvasRef} 
-            className="absolute inset-0 w-full h-full"
-          />
-          <img 
-            src="/lovable-uploads/dee5eb1f-c8e0-4606-9178-09c2c914ca98.png" 
-            alt="MMortal Logo" 
-            className="absolute inset-0 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-3/4 h-3/4 object-contain z-10"
-          />
-        </motion.div>
-      ) : (
-        <div className="w-full h-full">
-          <canvas 
-            ref={canvasRef} 
-            className="absolute inset-0 w-full h-full"
-          />
-          <img 
-            src="/lovable-uploads/dee5eb1f-c8e0-4606-9178-09c2c914ca98.png" 
-            alt="MMortal Logo" 
-            className="absolute inset-0 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-3/4 h-3/4 object-contain z-10"
-          />
-        </div>
+          className="absolute inset-0 rounded-full bg-white opacity-10"
+          initial={{ scale: 0 }}
+          animate={{ scale: 1.1 }}
+          transition={{ duration: 0.3 }}
+        />
       )}
-    </div>
+    </motion.div>
   );
 };
 
