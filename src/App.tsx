@@ -16,7 +16,6 @@ import LegacyVaultPage from "./pages/features/LegacyVaultPage";
 import TimelessMessagesPage from "./pages/features/TimelessMessagesPage";
 import { useState, useEffect } from "react";
 import LoadingScreen from "./components/LoadingScreen";
-import Footer from "./components/Footer";
 
 // Dashboard imports
 import DashboardLayout from "./components/DashboardLayout";
@@ -115,7 +114,6 @@ const App = () => {
                         <Route path="*" element={<NotFound />} />
                       </Routes>
                     </div>
-                    <Footer />
                   </div>
                 </AuthProvider>
               </BrowserRouter>

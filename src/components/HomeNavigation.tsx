@@ -51,105 +51,103 @@ const HomeNavigation: React.FC<HomeNavigationProps> = ({
   }, [onNavigate]);
   
   return (
-    <div className="fixed top-6 left-0 right-0 z-50 flex justify-center">
-      <motion.div 
-        className="flex items-center gap-2 bg-background/80 backdrop-blur-md rounded-full px-4 py-2 shadow-lg border border-border"
-        initial={{ y: -100, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ type: "spring", stiffness: 100, damping: 20 }}
-      >
-        {!isMobile && (
-          <div className="flex items-center mr-4">
-            <Logo variant={isDarkMode ? 'light' : 'default'} className="w-8 h-8" />
-          </div>
-        )}
-        
-        <div className="flex items-center gap-2 overflow-x-auto scrollbar-none">
-          {sections.map((section, index) => (
-            <motion.div
-              key={section}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              <Button
-                variant={currentSection === index ? "default" : "ghost"}
-                size={isMobile ? "sm" : "sm"}
-                onClick={() => onNavigate(index)}
-                className={`whitespace-nowrap ${isMobile ? 'px-2' : ''} ${currentSection === index ? "font-medium" : ""}`}
-              >
-                {section}
-              </Button>
-            </motion.div>
-          ))}
+    <motion.div 
+      className="flex items-center gap-2 bg-background/80 backdrop-blur-md rounded-full px-4 py-2 shadow-lg border border-border"
+      initial={{ y: 100, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      transition={{ type: "spring", stiffness: 100, damping: 20 }}
+    >
+      {!isMobile && (
+        <div className="flex items-center mr-4">
+          <Logo variant={isDarkMode ? 'light' : 'default'} className="w-8 h-8" />
         </div>
-        
-        <div className="w-px h-6 bg-border mx-2" />
-        
-        <motion.div
-          whileHover={{ scale: 1.1, rotate: 15 }}
-          whileTap={{ scale: 0.9 }}
-        >
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            onClick={toggleDarkMode}
-            title={isDarkMode ? "Switch to light mode" : "Switch to dark mode"}
+      )}
+      
+      <div className="flex items-center gap-2 overflow-x-auto scrollbar-none">
+        {sections.map((section, index) => (
+          <motion.div
+            key={section}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
           >
-            {isDarkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-          </Button>
-        </motion.div>
-        
-        {!isMobile && (
-          <>
-            <div className="w-px h-6 bg-border mx-2" />
-            
-            <div className="flex gap-2">
-              {isAuthenticated() ? (
-                <>
-                  <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                    <Button 
-                      size="sm"
-                      onClick={() => navigate("/dashboard")}
-                    >
-                      Dashboard
-                    </Button>
-                  </motion.div>
-                  <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={signOut}
-                    >
-                      Sign Out
-                    </Button>
-                  </motion.div>
-                </>
-              ) : (
-                <>
-                  <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => navigate("/signin")}
-                    >
-                      Sign In
-                    </Button>
-                  </motion.div>
-                  <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                    <Button 
-                      size="sm"
-                      onClick={() => navigate("/signup")}
-                    >
-                      Sign Up
-                    </Button>
-                  </motion.div>
-                </>
-              )}
-            </div>
-          </>
-        )}
+            <Button
+              variant={currentSection === index ? "default" : "ghost"}
+              size={isMobile ? "sm" : "sm"}
+              onClick={() => onNavigate(index)}
+              className={`whitespace-nowrap ${isMobile ? 'px-2' : ''} ${currentSection === index ? "font-medium" : ""}`}
+            >
+              {section}
+            </Button>
+          </motion.div>
+        ))}
+      </div>
+      
+      <div className="w-px h-6 bg-border mx-2" />
+      
+      <motion.div
+        whileHover={{ scale: 1.1, rotate: 15 }}
+        whileTap={{ scale: 0.9 }}
+      >
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          onClick={toggleDarkMode}
+          title={isDarkMode ? "Switch to light mode" : "Switch to dark mode"}
+        >
+          {isDarkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+        </Button>
       </motion.div>
-    </div>
+      
+      {!isMobile && (
+        <>
+          <div className="w-px h-6 bg-border mx-2" />
+          
+          <div className="flex gap-2">
+            {isAuthenticated() ? (
+              <>
+                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                  <Button 
+                    size="sm"
+                    onClick={() => navigate("/dashboard")}
+                  >
+                    Dashboard
+                  </Button>
+                </motion.div>
+                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={signOut}
+                  >
+                    Sign Out
+                  </Button>
+                </motion.div>
+              </>
+            ) : (
+              <>
+                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => navigate("/signin")}
+                  >
+                    Sign In
+                  </Button>
+                </motion.div>
+                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                  <Button 
+                    size="sm"
+                    onClick={() => navigate("/signup")}
+                  >
+                    Sign Up
+                  </Button>
+                </motion.div>
+              </>
+            )}
+          </div>
+        </>
+      )}
+    </motion.div>
   );
 };
 

@@ -49,13 +49,9 @@ const HeroSection: React.FC<HeroSectionProps> = ({ data }) => {
       className="relative h-screen flex items-center justify-center overflow-hidden px-4"
       onMouseMove={handleMouseMove}
     >
-      {/* Background Image */}
-      <motion.div
-        className="absolute inset-0 z-0"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 1 }}
-      >
+      {/* Background - will be replaced with WebM video when provided */}
+      <div className="absolute inset-0 z-0">
+        {/* This section will contain the WebM video background */}
         <div 
           className="absolute inset-0 bg-cover bg-center opacity-60"
           style={{ 
@@ -64,7 +60,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ data }) => {
           }}
         />
         <div className="absolute inset-0 bg-black bg-opacity-50" />
-      </motion.div>
+      </div>
       
       {/* Tech grid overlay */}
       <div className="absolute inset-0 z-0 bg-[url('/lovable-uploads/4dc712f6-a086-4f5f-bd6b-3231b62037bb.png')] bg-cover bg-center opacity-10"></div>

@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronUp, ChevronDown } from 'lucide-react';
 
 import HeroSection from '@/components/home/HeroSection';
 import FeaturesSection from '@/components/home/FeaturesSection';
@@ -53,9 +53,9 @@ const HomePage = () => {
   // Handle keyboard navigation
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'ArrowRight') {
+      if (e.key === 'ArrowDown') {
         nextSlide();
-      } else if (e.key === 'ArrowLeft') {
+      } else if (e.key === 'ArrowUp') {
         prevSlide();
       }
     };
@@ -75,15 +75,15 @@ const HomePage = () => {
   
   const slideVariants = {
     enter: (direction: number) => ({
-      x: direction > 0 ? '100%' : '-100%',
+      y: direction > 0 ? '100%' : '-100%',
       opacity: 0
     }),
     center: {
-      x: 0,
+      y: 0,
       opacity: 1
     },
     exit: (direction: number) => ({
-      x: direction > 0 ? '-100%' : '100%',
+      y: direction > 0 ? '-100%' : '100%',
       opacity: 0
     })
   };
@@ -100,9 +100,6 @@ const HomePage = () => {
     <div className="min-h-screen bg-background antialiased overflow-hidden">
       <AnimatedBackground objectCount={isMobile ? 5 : 10}>
         <div className="relative h-screen w-full">
-          {/* Slide Navigation */}
-          <HomeNavigation currentSection={currentSlide} onNavigate={handleNavigate} />
-          
           {/* Slide container */}
           <div className="h-screen w-full overflow-hidden">
             <AnimatePresence custom={direction} mode="wait">
@@ -125,20 +122,23 @@ const HomePage = () => {
             </AnimatePresence>
           </div>
           
-          {/* Slide navigation arrows */}
-          <div className="absolute top-1/2 left-4 transform -translate-y-1/2 z-50">
+          {/* Slide Navigation - moved below the slides*/}
+          <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-50">
+            <HomeNavigation currentSection={currentSlide} onNavigate={handleNavigate} />
+          </div>
+          
+          {/* Slide navigation arrows - Changed to up/down arrows */}
+          <div className="absolute bottom-1/2 right-4 transform translate-y-1/2 z-50">
             <Button
               variant="ghost"
               size="icon"
-              className={`rounded-full bg-background/40 backdrop-blur-sm ${currentSlide === 0 ? 'opacity-30 cursor-not-allowed' : 'opacity-100'}`}
+              className={`rounded-full bg-background/40 backdrop-blur-sm mb-2 ${currentSlide === 0 ? 'opacity-30 cursor-not-allowed' : 'opacity-100'}`}
               onClick={prevSlide}
               disabled={currentSlide === 0}
             >
-              <ChevronLeft className="h-6 w-6" />
+              <ChevronUp className="h-6 w-6" />
             </Button>
-          </div>
-          
-          <div className="absolute top-1/2 right-4 transform -translate-y-1/2 z-50">
+            
             <Button
               variant="ghost"
               size="icon"
@@ -146,17 +146,17 @@ const HomePage = () => {
               onClick={nextSlide}
               disabled={currentSlide === totalSlides - 1}
             >
-              <ChevronRight className="h-6 w-6" />
+              <ChevronDown className="h-6 w-6" />
             </Button>
           </div>
           
           {/* Slide indicators */}
-          <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-50 flex space-x-2">
+          <div className="absolute right-6 top-1/2 transform -translate-y-1/2 z-50 flex flex-col space-y-2">
             {Array.from({ length: totalSlides }).map((_, index) => (
               <button
                 key={index}
                 onClick={() => handleNavigate(index)}
-                className={`h-2 rounded-full transition-all ${currentSlide === index ? 'w-8 bg-primary' : 'w-2 bg-muted-foreground/40'}`}
+                className={`w-2 transition-all ${currentSlide === index ? 'h-8 bg-primary' : 'h-2 bg-muted-foreground/40'} rounded-full`}
                 aria-label={`Go to slide ${index + 1}`}
               />
             ))}

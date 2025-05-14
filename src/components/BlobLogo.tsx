@@ -71,9 +71,9 @@ const BlobLogo: React.FC<BlobLogoProps> = ({
         damping: 10
       }}
     >
-      {/* New Orange M Logo */}
+      {/* Updated logo */}
       <img 
-        src="/lovable-uploads/bcc0ccf7-c2c6-48ef-af7c-832d8c5bdaa7.png"
+        src="/lovable-uploads/864f1f70-b38e-4070-a628-335abe797482.png"
         alt="MMortal Logo"
         className="w-3/4 h-3/4 object-contain"
       />
