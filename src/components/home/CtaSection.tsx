@@ -3,6 +3,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
+import { Separator } from '@/components/ui/separator';
 
 interface MetricItem {
   label: string;
@@ -20,6 +21,14 @@ interface CtaSectionProps {
 
 const CtaSection: React.FC<CtaSectionProps> = ({ data }) => {
   const navigate = useNavigate();
+  
+  // Legal page links
+  const legalLinks = [
+    { title: "Terms of Use", path: "/legal/terms" },
+    { title: "Privacy Policy", path: "/legal/privacy" },
+    { title: "Community Guidelines", path: "/legal/community-guidelines" },
+    { title: "Copyright Policy", path: "/legal/copyright" }
+  ];
   
   return (
     <div className="min-h-screen relative flex flex-col justify-center items-center py-20 px-4">
@@ -66,6 +75,28 @@ const CtaSection: React.FC<CtaSectionProps> = ({ data }) => {
               ))}
             </div>
           )}
+          
+          {/* Legal Links Section */}
+          <div className="mt-16">
+            <Separator className="mb-8" />
+            <div className="flex flex-wrap justify-center gap-4 md:gap-8">
+              {legalLinks.map((link, index) => (
+                <motion.div
+                  key={index}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <Button 
+                    variant="link" 
+                    className="text-muted-foreground hover:text-primary"
+                    onClick={() => navigate(link.path)}
+                  >
+                    {link.title}
+                  </Button>
+                </motion.div>
+              ))}
+            </div>
+          </div>
         </motion.div>
       </div>
     </div>

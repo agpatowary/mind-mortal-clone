@@ -25,9 +25,6 @@ const BlobLogo: React.FC<BlobLogoProps> = ({
     'xl': "w-20 h-20"
   };
   
-  // Orange M logo path
-  const logoPath = "M29.4 12.17L24.76 25h-1.54L19.24 15.11 15.26 25h-1.54L9.13 12.17h1.79l3.61 10.12 3.9-10.12h1.52l3.9 10.15 3.67-10.15h1.88z";
-  
   // Logo variants
   const colorVariants = {
     'default': {
@@ -74,15 +71,12 @@ const BlobLogo: React.FC<BlobLogoProps> = ({
         damping: 10
       }}
     >
-      <svg 
-        viewBox="0 0 40 40" 
-        className={`w-full h-full ${currentVariant.textColor}`}
-      >
-        <path 
-          d={logoPath}
-          fill={currentVariant.logoColor}
-        />
-      </svg>
+      {/* New Orange M Logo */}
+      <img 
+        src="/lovable-uploads/bcc0ccf7-c2c6-48ef-af7c-832d8c5bdaa7.png"
+        alt="MMortal Logo"
+        className="w-3/4 h-3/4 object-contain"
+      />
       
       {interactive && isHovered && (
         <motion.div

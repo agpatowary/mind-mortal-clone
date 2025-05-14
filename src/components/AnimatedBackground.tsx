@@ -1,9 +1,9 @@
-
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 
 interface AnimatedBackgroundProps {
   children: React.ReactNode;
+  objectCount?: number;
   density?: number;
   speed?: number;
   color?: string;
@@ -14,6 +14,7 @@ interface AnimatedBackgroundProps {
 
 const AnimatedBackground: React.FC<AnimatedBackgroundProps> = ({
   children,
+  objectCount = 40, // Added this prop
   density = 40,
   speed = 25,
   color = 'primary',
@@ -53,8 +54,8 @@ const AnimatedBackground: React.FC<AnimatedBackgroundProps> = ({
       height: window.innerHeight,
     });
 
-    // Create particles based on density
-    const newParticles = Array.from({ length: density }, (_, i) => {
+    // Create particles based on objectCount (updated from density)
+    const newParticles = Array.from({ length: objectCount }, (_, i) => {
       let size = 0;
       
       // Set particle size based on the particleSize prop
@@ -105,7 +106,7 @@ const AnimatedBackground: React.FC<AnimatedBackgroundProps> = ({
 
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
-  }, [density, speed, particleSize]);
+  }, [objectCount, speed, particleSize]);
 
   // Mouse move event handler
   useEffect(() => {

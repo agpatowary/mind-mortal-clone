@@ -1,6 +1,6 @@
 
-import React, { useState, useEffect } from 'react';
-import { motion, useMotionValue, useTransform, AnimatePresence } from 'framer-motion';
+import React from 'react';
+import { motion, useMotionValue, useTransform } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import BlobLogo from '../BlobLogo';
 import { useNavigate } from 'react-router-dom';
@@ -16,9 +16,6 @@ interface HeroSectionProps {
 
 const HeroSection: React.FC<HeroSectionProps> = ({ data }) => {
   const navigate = useNavigate();
-  const [currentSlogan, setCurrentSlogan] = useState(0);
-  const [isTyping, setIsTyping] = useState(true);
-  const [displayText, setDisplayText] = useState('');
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
   
@@ -35,35 +32,8 @@ const HeroSection: React.FC<HeroSectionProps> = ({ data }) => {
     mouseY.set(y);
   };
   
-  useEffect(() => {
-    const slogan = data.slogans[currentSlogan];
-    let typingTimeout: number;
-    
-    if (isTyping) {
-      if (displayText.length < slogan.length) {
-        typingTimeout = window.setTimeout(() => {
-          setDisplayText(slogan.substring(0, displayText.length + 1));
-        }, 100);
-      } else {
-        typingTimeout = window.setTimeout(() => {
-          setIsTyping(false);
-        }, 2000);
-      }
-    } else {
-      if (displayText.length > 0) {
-        typingTimeout = window.setTimeout(() => {
-          setDisplayText(displayText.substring(0, displayText.length - 1));
-        }, 50);
-      } else {
-        typingTimeout = window.setTimeout(() => {
-          setCurrentSlogan((currentSlogan + 1) % data.slogans.length);
-          setIsTyping(true);
-        }, 500);
-      }
-    }
-    
-    return () => clearTimeout(typingTimeout);
-  }, [currentSlogan, displayText, isTyping, data.slogans]);
+  // Static motto - use the first slogan from the array
+  const staticMotto = data.slogans[0];
   
   // Tech-themed floating elements
   const floatingElements = [
@@ -76,29 +46,25 @@ const HeroSection: React.FC<HeroSectionProps> = ({ data }) => {
   
   return (
     <div 
-      className="relative min-h-screen flex items-center justify-center overflow-hidden px-4"
+      className="relative h-screen flex items-center justify-center overflow-hidden px-4"
       onMouseMove={handleMouseMove}
     >
-      {/* Background Image that changes with slogan */}
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={`bg-${currentSlogan}`}
-          className="absolute inset-0 z-0"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 1 }}
-        >
-          <div 
-            className="absolute inset-0 bg-cover bg-center opacity-60"
-            style={{ 
-              backgroundImage: `url(${data.backgroundImages[currentSlogan]})`,
-              filter: 'brightness(0.6)'
-            }}
-          />
-          <div className="absolute inset-0 bg-black bg-opacity-50" />
-        </motion.div>
-      </AnimatePresence>
+      {/* Background Image */}
+      <motion.div
+        className="absolute inset-0 z-0"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 1 }}
+      >
+        <div 
+          className="absolute inset-0 bg-cover bg-center opacity-60"
+          style={{ 
+            backgroundImage: `url(${data.backgroundImages[0]})`,
+            filter: 'brightness(0.6)'
+          }}
+        />
+        <div className="absolute inset-0 bg-black bg-opacity-50" />
+      </motion.div>
       
       {/* Tech grid overlay */}
       <div className="absolute inset-0 z-0 bg-[url('/lovable-uploads/4dc712f6-a086-4f5f-bd6b-3231b62037bb.png')] bg-cover bg-center opacity-10"></div>
@@ -184,19 +150,12 @@ const HeroSection: React.FC<HeroSectionProps> = ({ data }) => {
           
           <div className="h-16 md:h-20 flex items-center justify-center">
             <motion.h2 
-              className="text-2xl md:text-4xl font-semibold text-[#F97316] min-h-[4rem] flex items-center shadow-glow"
+              className="text-2xl md:text-4xl font-semibold text-[#F97316] flex items-center shadow-glow"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.4, duration: 0.8 }}
             >
-              {displayText}
-              <motion.span 
-                className="ml-1"
-                animate={{ opacity: [1, 0, 1] }}
-                transition={{ repeat: Infinity, duration: 1 }}
-              >
-                |
-              </motion.span>
+              {staticMotto}
             </motion.h2>
           </div>
           
@@ -243,10 +202,8 @@ const HeroSection: React.FC<HeroSectionProps> = ({ data }) => {
                 variant="outline" 
                 className="w-full sm:w-auto border-[#F97316]/50 text-[#F97316] hover:bg-[#F97316]/10 hover:text-[#F97316] rounded-full"
                 onClick={() => {
-                  const featuresSection = document.getElementById('features-section');
-                  if (featuresSection) {
-                    featuresSection.scrollIntoView({ behavior: 'smooth' });
-                  }
+                  // Navigate to features slide (index 1)
+                  document.dispatchEvent(new CustomEvent('navigateToSlide', { detail: { index: 1 } }));
                 }}
               >
                 Explore Features

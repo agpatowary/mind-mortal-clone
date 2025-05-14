@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Sun, Moon } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import Logo from './Logo';
@@ -35,13 +35,26 @@ const HomeNavigation: React.FC<HomeNavigationProps> = ({
     document.documentElement.classList.toggle('dark', newMode);
   };
   
-  const sections = ['Home', 'Features', 'Stories', 'Join Us'];
+  const sections = ['Home', 'Features', 'Experts', 'Case Studies', 'Join Us'];
+  
+  // Listen for custom navigation events
+  useEffect(() => {
+    const handleCustomNavigation = (e: CustomEvent) => {
+      const { index } = (e as CustomEvent<{ index: number }>).detail;
+      onNavigate(index);
+    };
+    
+    document.addEventListener('navigateToSlide', handleCustomNavigation as EventListener);
+    return () => {
+      document.removeEventListener('navigateToSlide', handleCustomNavigation as EventListener);
+    };
+  }, [onNavigate]);
   
   return (
-    <div className="fixed bottom-6 left-0 right-0 z-50 flex justify-center">
+    <div className="fixed top-6 left-0 right-0 z-50 flex justify-center">
       <motion.div 
         className="flex items-center gap-2 bg-background/80 backdrop-blur-md rounded-full px-4 py-2 shadow-lg border border-border"
-        initial={{ y: 100, opacity: 0 }}
+        initial={{ y: -100, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ type: "spring", stiffness: 100, damping: 20 }}
       >

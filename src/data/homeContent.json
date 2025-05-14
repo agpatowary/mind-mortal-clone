@@ -3,11 +3,7 @@
   "hero": {
     "title": "MMortal",
     "slogans": [
-      "Your Story. Your Legacy. Forever.",
-      "Preserve your wisdom.",
-      "Share your knowledge.",
-      "Connect through time.",
-      "Create a lasting impact."
+      "Your Story. Your Legacy. Forever."
     ],
     "description": "Preserve your wisdom. Share your ideas. Connect with the future.",
     "backgroundImages": [
@@ -22,21 +18,27 @@
     "items": [
       {
         "title": "Legacy Vault",
-        "description": "Capture and preserve what truly matters.",
+        "description": "Preserve your legacy for future generations.",
         "icon": "archive",
         "link": "/features/legacy-vault"
       },
       {
         "title": "Mentorship",
-        "description": "Offer insight. Share your experience.",
+        "description": "Guidance from experience to ignite your growth.",
         "icon": "users",
         "link": "/features/mentorship"
       },
       {
         "title": "Timeless Messages",
-        "description": "Send a message into the future.",
+        "description": "Leave a message that lasts forever.",
         "icon": "clock",
         "link": "/features/timeless-messages"
+      },
+      {
+        "title": "Idea Vault",
+        "description": "Refine, share, and fund your ideas.",
+        "icon": "archive",
+        "link": "/features/idea-vault"
       }
     ]
   },
@@ -56,20 +58,6 @@
     {
       "title": "Jamir's Wisdom Lost",
       "description": "Jamir, a 78-year-old carpenter in Bangladesh, had no formal education but built homes for three generations. When asked what he was most proud of, he said: 'Knowing how to fix what others thought was broken.' He never wrote anything down. After he passed, his grandkids only knew he 'worked with wood.' His philosophy, techniques, and way of looking at life—all lost."
-    }
-  ],
-  "testimonials": [
-    {
-      "quote": "My ideas sat in notebooks for years. Now, they're in a vault. One just got feedback from a mentor I admire.",
-      "author": "Young Innovator"
-    },
-    {
-      "quote": "My mother's voice lives on. On my birthday, I received a message she recorded before she passed. MMortal gave me more than memory—it gave me presence.",
-      "author": "Grieving Daughter"
-    },
-    {
-      "quote": "After 40 years in the field, I thought my knowledge would die with me. Now it teaches others. That's peace.",
-      "author": "Retired Professional"
     }
   ],
   "stories": {
