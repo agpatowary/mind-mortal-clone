@@ -143,12 +143,12 @@ const HomePage = () => {
           transition={{ duration: 0.6, ease: "easeInOut" }}
           className="h-screen"
         >
-          {currentSection === 0 && <HeroSection />}
-          {currentSection === 1 && <FeaturesSection />}
-          {currentSection === 2 && <CaseStudiesSection />}
-          {currentSection === 3 && <StoriesSection />}
+          {currentSection === 0 && <HeroSection data={homeContent.hero} />}
+          {currentSection === 1 && <FeaturesSection data={homeContent.features} />}
+          {currentSection === 2 && <CaseStudiesSection data={homeContent.caseStudies.items} />}
+          {currentSection === 3 && <StoriesSection data={homeContent.caseStudies.items} />}
           {currentSection === 4 && <FeaturedMentorsSection />}
-          {currentSection === 5 && <CtaSection />}
+          {currentSection === 5 && <CtaSection data={homeContent.cta} />}
         </motion.div>
       </AnimatePresence>
       
