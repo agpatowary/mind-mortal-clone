@@ -72,7 +72,8 @@ const HomePage = () => {
       handleScrollDebounced(direction);
     };
     
-    const wheelOptions = { passive: false };
+    // Fix: Use EventListenerOptions interface
+    const wheelOptions: EventListenerOptions = { passive: false };
     document.addEventListener('wheel', handleWheel, wheelOptions);
     
     return () => {

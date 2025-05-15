@@ -13,6 +13,14 @@ interface StoriesSectionProps {
 }
 
 const StoriesSection: React.FC<StoriesSectionProps> = ({ data }) => {
+  // Ensure data is an array
+  const caseStudies = Array.isArray(data) ? data : 
+    data && typeof data === 'object' && data.items ? 
+      data.items.map(item => ({
+        title: item.title || '',
+        description: item.content || item.description || ''
+      })) : [];
+
   return (
     <div className="min-h-screen flex flex-col justify-center items-center py-16 md:py-20 px-4 bg-muted/30">
       <motion.div
@@ -31,7 +39,7 @@ const StoriesSection: React.FC<StoriesSectionProps> = ({ data }) => {
       </motion.div>
 
       <div className="max-w-5xl mx-auto w-full">
-        {data.map((caseStudy, index) => (
+        {caseStudies.map((caseStudy, index) => (
           <motion.div
             key={index}
             initial={{ opacity: 0, y: 50 }}
