@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { 
   MessageSquare, 
@@ -18,12 +17,18 @@ import { useAuth } from '@/hooks/useAuth';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface PostInteractionsProps {
-  postId: string;
-  postType: string;
+  postId?: string;
+  postType?: string;
   initialLikesCount?: number;
   initialCommentsCount?: number;
   userLiked?: boolean;
   onUpdate?: () => void;
+  // Adding properties used in IdeaVaultPage
+  likes?: number;
+  comments?: number;
+  isLiked?: boolean;
+  onLike?: () => Promise<void>;
+  onComment?: () => void;
 }
 
 interface Comment {
@@ -41,27 +46,33 @@ const PostInteractions: React.FC<PostInteractionsProps> = ({
   initialLikesCount = 0,
   initialCommentsCount = 0,
   userLiked = false,
-  onUpdate
+  onUpdate,
+  // Support for alternative props
+  likes = 0,
+  comments = 0,
+  isLiked = false,
+  onLike,
+  onComment
 }) => {
   const { toast } = useToast();
   const { user } = useAuth();
-  const [likesCount, setLikesCount] = useState(initialLikesCount);
-  const [commentsCount, setCommentsCount] = useState(initialCommentsCount);
-  const [isLiked, setIsLiked] = useState(userLiked);
+  const [likesCount, setLikesCount] = useState(likes || initialLikesCount);
+  const [commentsCount, setCommentsCount] = useState(comments || initialCommentsCount);
+  const [isLikedState, setIsLikedState] = useState(isLiked || userLiked);
   const [showComments, setShowComments] = useState(false);
-  const [comments, setComments] = useState<Comment[]>([]);
+  const [commentsList, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    if (showComments) {
+    if (showComments && postId && postType) {
       fetchComments();
     }
-  }, [showComments]);
+  }, [showComments, postId, postType]);
 
   const fetchComments = async () => {
-    if (!postId) return;
+    if (!postId || !postType) return;
     
     setIsLoading(true);
     try {
@@ -125,6 +136,12 @@ const PostInteractions: React.FC<PostInteractionsProps> = ({
   };
 
   const handleToggleLike = async () => {
+    // Use the passed onLike handler if available
+    if (onLike) {
+      await onLike();
+      return;
+    }
+    
     if (!user) {
       toast({
         title: "Authentication required",
@@ -134,8 +151,13 @@ const PostInteractions: React.FC<PostInteractionsProps> = ({
       return;
     }
 
+    if (!postId || !postType) {
+      console.error('Missing postId or postType for like operation');
+      return;
+    }
+
     try {
-      if (isLiked) {
+      if (isLikedState) {
         // Unlike the post
         const { error } = await supabase
           .from('post_likes')
@@ -147,7 +169,7 @@ const PostInteractions: React.FC<PostInteractionsProps> = ({
         if (error) throw error;
         
         setLikesCount(prev => Math.max(0, prev - 1));
-        setIsLiked(false);
+        setIsLikedState(false);
       } else {
         // Like the post
         const { error } = await supabase
@@ -161,7 +183,7 @@ const PostInteractions: React.FC<PostInteractionsProps> = ({
         if (error) throw error;
         
         setLikesCount(prev => prev + 1);
-        setIsLiked(true);
+        setIsLikedState(true);
       }
       
       // Call onUpdate callback if provided
@@ -176,6 +198,15 @@ const PostInteractions: React.FC<PostInteractionsProps> = ({
         variant: "destructive"
       });
     }
+  };
+
+  const handleCommentClick = () => {
+    if (onComment) {
+      onComment();
+      return;
+    }
+    
+    setShowComments(!showComments);
   };
 
   const handleSubmitComment = async () => {
@@ -276,7 +307,7 @@ const PostInteractions: React.FC<PostInteractionsProps> = ({
             className="flex items-center gap-2"
             onClick={handleToggleLike}
           >
-            <Heart className={`h-5 w-5 ${isLiked ? 'fill-red-500 text-red-500' : ''}`} />
+            <Heart className={`h-5 w-5 ${isLikedState ? 'fill-red-500 text-red-500' : ''}`} />
             <span>{likesCount}</span>
           </Button>
           
@@ -284,7 +315,7 @@ const PostInteractions: React.FC<PostInteractionsProps> = ({
             variant="ghost" 
             size="sm" 
             className="flex items-center gap-2"
-            onClick={() => setShowComments(!showComments)}
+            onClick={handleCommentClick}
           >
             <MessageSquare className="h-5 w-5" />
             <span>{commentsCount}</span>
@@ -345,10 +376,10 @@ const PostInteractions: React.FC<PostInteractionsProps> = ({
                       <p className="text-sm text-muted-foreground mt-2">Loading comments...</p>
                     </div>
                   ) : (
-                    comments.length > 0 ? (
+                    commentsList.length > 0 ? (
                       <ScrollArea className="max-h-[300px] pr-2">
                         <div className="space-y-4">
-                          {comments.map((comment) => (
+                          {commentsList.map((comment) => (
                             <div key={comment.id} className="flex items-start space-x-3">
                               <Avatar className="h-8 w-8">
                                 <AvatarImage src={comment.user_avatar || undefined} />

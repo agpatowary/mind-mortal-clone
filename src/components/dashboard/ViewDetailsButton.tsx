@@ -1,67 +1,60 @@
 
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, ExternalLink } from 'lucide-react';
-import { motion } from 'framer-motion';
-import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
+import { ArrowRight } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
-interface ViewDetailsButtonProps {
+export interface ViewDetailsButtonProps {
   route: string;
   text?: string;
-  variant?: 'default' | 'outline' | 'ghost' | 'secondary';
   tooltip?: string;
-  icon?: 'arrow' | 'external';
+  // Adding properties used in IdeaVaultPage
+  type?: string;
+  id?: string;
+  title?: string;
 }
 
-const ViewDetailsButton: React.FC<ViewDetailsButtonProps> = ({ 
-  route, 
+const ViewDetailsButton: React.FC<ViewDetailsButtonProps> = ({
+  route,
   text = "View Details",
-  variant = "outline",
   tooltip,
-  icon = "arrow"
+  type,
+  id,
+  title
 }) => {
   const navigate = useNavigate();
   
   const handleClick = () => {
-    navigate(route);
+    // If type, id and title are provided, use them to build the route
+    const finalRoute = type && id 
+      ? `/dashboard/${type}/view/${id}`
+      : route;
+      
+    navigate(finalRoute);
   };
-  
-  const IconComponent = icon === 'arrow' ? ArrowRight : ExternalLink;
-  
+
   return (
-    <HoverCard>
-      <HoverCardTrigger asChild>
-        <motion.div
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          className="inline-block"
-        >
-          <Button 
-            variant={variant}
-            className="flex items-center gap-1 group relative overflow-hidden"
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            variant="outline"
+            size="sm"
+            className="flex items-center gap-1"
             onClick={handleClick}
           >
-            <span className="relative z-10">{text}</span>
-            <IconComponent className="h-4 w-4 ml-1 group-hover:translate-x-1 transition-transform relative z-10" />
-            
-            {/* Animated background effect */}
-            <motion.div 
-              className="absolute inset-0 bg-primary/10 dark:bg-primary/20"
-              initial={{ x: '-100%' }}
-              whileHover={{ x: '0%' }}
-              transition={{ duration: 0.3, ease: "easeInOut" }}
-            />
+            {text}
+            <ArrowRight className="h-3.5 w-3.5" />
           </Button>
-        </motion.div>
-      </HoverCardTrigger>
-      
-      {tooltip && (
-        <HoverCardContent className="w-64 text-sm" side="top">
-          {tooltip}
-        </HoverCardContent>
-      )}
-    </HoverCard>
+        </TooltipTrigger>
+        {tooltip && (
+          <TooltipContent>
+            <p>{tooltip}</p>
+          </TooltipContent>
+        )}
+      </Tooltip>
+    </TooltipProvider>
   );
 };
 

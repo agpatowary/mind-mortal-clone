@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -192,16 +191,13 @@ const IdeaVaultPage = () => {
               <div className="px-6 pb-4 mt-auto">
                 <div className="flex justify-between items-center">
                   <PostInteractions
-                    likes={likesCountMap[idea.id] || 0}
-                    comments={0}
-                    isLiked={likesMap[idea.id] || false}
-                    onLike={() => handleLikeToggle(idea.id)}
-                    onComment={() => {/* Implement comment functionality */}}
+                    postId={idea.id}
+                    postType="idea"
+                    initialLikesCount={likesCountMap[idea.id] || 0}
+                    userLiked={likesMap[idea.id] || false}
                   />
                   <ViewDetailsButton
                     route={`/dashboard/idea-vault/view/${idea.id}`}
-                    text="View Details"
-                    tooltip={`View details for ${idea.title}`}
                   />
                 </div>
               </div>

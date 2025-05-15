@@ -10,12 +10,14 @@ interface RichTextEditorProps {
   content: string;
   onChange: (content: string) => void;
   placeholder?: string;
+  className?: string;
 }
 
 const RichTextEditor: React.FC<RichTextEditorProps> = ({ 
   content, 
   onChange,
-  placeholder = 'Start writing...'
+  placeholder = 'Start writing...',
+  className = ''
 }) => {
   const [value, setValue] = useState(content);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -50,7 +52,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
   };
 
   return (
-    <div className="border border-border rounded-md overflow-hidden bg-background">
+    <div className={`border border-border rounded-md overflow-hidden bg-background ${className}`}>
       <div className="flex items-center p-2 border-b border-border bg-muted/30">
         <div className="flex-1">
           {/* ReactQuill will show its own toolbar */}

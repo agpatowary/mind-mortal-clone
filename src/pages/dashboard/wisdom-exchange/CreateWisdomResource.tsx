@@ -2,9 +2,11 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import WisdomExchangeForm from '@/components/content/WisdomExchangeForm';
 import { Users } from 'lucide-react';
 import { motion } from 'framer-motion';
+
+// Import the actual content creation component
+import ContentCreationContainer from '@/components/content/ContentCreationContainer';
 
 const CreateWisdomResource = () => {
   const navigate = useNavigate();
@@ -27,8 +29,12 @@ const CreateWisdomResource = () => {
           </CardDescription>
         </CardHeader>
         <CardContent className="pt-6">
-          <WisdomExchangeForm 
-            onCancel={() => navigate('/dashboard/wisdom-exchange')} 
+          <ContentCreationContainer 
+            initialTab="wisdom-exchange"
+            routeInfo={{
+              cancelRoute: '/dashboard/wisdom-exchange',
+              successRoute: '/dashboard/wisdom-exchange'
+            }}
           />
         </CardContent>
       </Card>

@@ -2,9 +2,11 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import LegacyVaultForm from '@/components/content/LegacyVaultForm';
 import { Archive } from 'lucide-react';
 import { motion } from 'framer-motion';
+
+// Import the actual content creation component
+import ContentCreationContainer from '@/components/content/ContentCreationContainer';
 
 const CreateLegacyPost = () => {
   const navigate = useNavigate();
@@ -27,8 +29,12 @@ const CreateLegacyPost = () => {
           </CardDescription>
         </CardHeader>
         <CardContent className="pt-6">
-          <LegacyVaultForm 
-            onCancel={() => navigate('/dashboard/legacy-vault')} 
+          <ContentCreationContainer 
+            initialTab="legacy-vault"
+            routeInfo={{
+              cancelRoute: '/dashboard/legacy-vault',
+              successRoute: '/dashboard/legacy-vault'
+            }}
           />
         </CardContent>
       </Card>

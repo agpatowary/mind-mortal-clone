@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -131,7 +130,7 @@ const IdeaForm = () => {
                 <div className="min-h-[200px]">
                   <RichTextEditor 
                     content={field.value} 
-                    onUpdate={(content) => field.onChange(content)}
+                    onChange={field.onChange}
                     className="min-h-[200px]"
                   />
                 </div>

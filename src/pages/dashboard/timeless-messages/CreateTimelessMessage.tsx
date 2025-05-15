@@ -2,9 +2,11 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import TimelessMessagesForm from '@/components/content/TimelessMessagesForm';
 import { Clock } from 'lucide-react';
 import { motion } from 'framer-motion';
+
+// Import the actual content creation component
+import ContentCreationContainer from '@/components/content/ContentCreationContainer';
 
 const CreateTimelessMessage = () => {
   const navigate = useNavigate();
@@ -27,8 +29,12 @@ const CreateTimelessMessage = () => {
           </CardDescription>
         </CardHeader>
         <CardContent className="pt-6">
-          <TimelessMessagesForm 
-            onCancel={() => navigate('/dashboard/timeless-messages')} 
+          <ContentCreationContainer 
+            initialTab="timeless-messages"
+            routeInfo={{
+              cancelRoute: '/dashboard/timeless-messages',
+              successRoute: '/dashboard/timeless-messages'
+            }}
           />
         </CardContent>
       </Card>
