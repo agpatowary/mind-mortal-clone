@@ -15,6 +15,16 @@ import FeaturedMentorsSection from '@/components/home/FeaturedMentorsSection';
 
 // Import JSON data
 import homeContent from '@/data/homeContent.json';
+import { Feature } from '@/types';
+
+// Add default CTA text to features items if missing
+const enhancedFeatures = {
+  title: homeContent.features.title,
+  items: homeContent.features.items.map((item: any) => ({
+    ...item,
+    cta: item.cta || "Learn More"
+  })) as Feature[]
+};
 
 const HomePage = () => {
   const navigate = useNavigate();
@@ -119,7 +129,7 @@ const HomePage = () => {
   // Slide components array
   const slides = [
     <HeroSection key="hero" data={homeContent.hero} />,
-    <FeaturesSection key="features" data={homeContent.features} />,
+    <FeaturesSection key="features" data={enhancedFeatures} />,
     <FeaturedMentorsSection key="mentors" />,
     <StoriesSection key="stories" data={homeContent.caseStudies as any} />,
     <CtaSection key="cta" data={homeContent.cta} />

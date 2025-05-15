@@ -7,9 +7,15 @@ import { motion } from 'framer-motion';
 
 // Import the actual content creation component
 import ContentCreationContainer from '@/components/content/ContentCreationContainer';
+import { RouteInfo } from '@/types';
 
 const CreateLegacyPost = () => {
   const navigate = useNavigate();
+  
+  // Create a properly typed routeInfo object
+  const routeInfo: RouteInfo = {
+    returnPath: '/dashboard/legacy-vault'
+  };
   
   return (
     <motion.div
@@ -31,9 +37,7 @@ const CreateLegacyPost = () => {
         <CardContent className="pt-6">
           <ContentCreationContainer 
             initialTab="legacy-vault"
-            routeInfo={{
-              returnPath: '/dashboard/legacy-vault'
-            }}
+            routeInfo={routeInfo}
           />
         </CardContent>
       </Card>

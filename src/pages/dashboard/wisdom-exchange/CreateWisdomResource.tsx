@@ -7,9 +7,15 @@ import { motion } from 'framer-motion';
 
 // Import the actual content creation component
 import ContentCreationContainer from '@/components/content/ContentCreationContainer';
+import { RouteInfo } from '@/types';
 
 const CreateWisdomResource = () => {
   const navigate = useNavigate();
+  
+  // Create a properly typed routeInfo object
+  const routeInfo: RouteInfo = {
+    returnPath: '/dashboard/wisdom-exchange'
+  };
   
   return (
     <motion.div
@@ -31,9 +37,7 @@ const CreateWisdomResource = () => {
         <CardContent className="pt-6">
           <ContentCreationContainer 
             initialTab="wisdom-exchange"
-            routeInfo={{
-              returnPath: '/dashboard/wisdom-exchange'
-            }}
+            routeInfo={routeInfo}
           />
         </CardContent>
       </Card>

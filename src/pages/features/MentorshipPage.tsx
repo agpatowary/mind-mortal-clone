@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Users, Lightbulb, Award, Clock, ArrowRight } from 'lucide-react';
+import { Users, GanttChart, Rocket, ArrowRight, Brain } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import AnimatedBackground from '@/components/AnimatedBackground';
@@ -34,7 +34,7 @@ const MentorshipPage = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.2 }}
             >
-              Guidance from experience to ignite your growth. Connect with mentors who can guide you through your journey, offering valuable insight and support to help bring your ideas to life.
+              Guidance from experience to ignite your growth. Get support from experts who can guide you through your journey, offering valuable insight and support to help bring your ideas to life.
             </motion.p>
           </div>
           
@@ -42,45 +42,45 @@ const MentorshipPage = () => {
             <Card className="hover:shadow-lg transition-all duration-300">
               <CardHeader>
                 <div className="mb-2">
-                  <Award className="h-8 w-8 text-primary" />
+                  <Brain className="h-8 w-8 text-primary" />
                 </div>
-                <CardTitle>Matched Expertise</CardTitle>
+                <CardTitle>Expert Guidance</CardTitle>
                 <CardDescription>
-                  Connect with mentors who have expertise in your specific area of interest
+                  Learn from industry veterans
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <p>Our intelligent matching algorithm pairs you with mentors who have the exact skills and experience you need, ensuring relevant guidance.</p>
+                <p>Connect with mentors who have decades of experience in their fields, ready to share their knowledge and help you avoid common pitfalls.</p>
               </CardContent>
             </Card>
 
             <Card className="hover:shadow-lg transition-all duration-300">
               <CardHeader>
                 <div className="mb-2">
-                  <Lightbulb className="h-8 w-8 text-primary" />
+                  <GanttChart className="h-8 w-8 text-primary" />
                 </div>
-                <CardTitle>Knowledge Transfer</CardTitle>
+                <CardTitle>Structured Growth</CardTitle>
                 <CardDescription>
-                  Learn from decades of experience in minutes
+                  Follow proven development paths
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <p>Gain insights that would take years to develop on your own, accelerating your growth and avoiding common pitfalls.</p>
+                <p>Work with your mentor to create customized growth plans that help you achieve your goals through actionable steps and regular feedback.</p>
               </CardContent>
             </Card>
 
             <Card className="hover:shadow-lg transition-all duration-300">
               <CardHeader>
                 <div className="mb-2">
-                  <Clock className="h-8 w-8 text-primary" />
+                  <Rocket className="h-8 w-8 text-primary" />
                 </div>
-                <CardTitle>Flexible Schedule</CardTitle>
+                <CardTitle>Accelerated Progress</CardTitle>
                 <CardDescription>
-                  Book sessions that fit into your life
+                  Move faster with directed assistance
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <p>Our mentors offer flexible scheduling options, making it easy to find time for guidance no matter your timezone or schedule.</p>
+                <p>Skip years of trial and error by learning directly from those who've already walked the path, helping you achieve your goals in record time.</p>
               </CardContent>
             </Card>
           </div>
@@ -96,7 +96,7 @@ const MentorshipPage = () => {
               className="bg-primary hover:bg-primary/90"
               onClick={() => navigate("/signup")}
             >
-              Find Your Mentor <ArrowRight className="ml-2 h-4 w-4" />
+              Find a Mentor <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
             
             <p className="mt-4 text-muted-foreground">

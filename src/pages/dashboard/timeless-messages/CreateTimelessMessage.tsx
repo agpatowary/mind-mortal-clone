@@ -7,9 +7,15 @@ import { motion } from 'framer-motion';
 
 // Import the actual content creation component
 import ContentCreationContainer from '@/components/content/ContentCreationContainer';
+import { RouteInfo } from '@/types';
 
 const CreateTimelessMessage = () => {
   const navigate = useNavigate();
+  
+  // Create a properly typed routeInfo object
+  const routeInfo: RouteInfo = {
+    returnPath: '/dashboard/timeless-messages'
+  };
   
   return (
     <motion.div
@@ -31,9 +37,7 @@ const CreateTimelessMessage = () => {
         <CardContent className="pt-6">
           <ContentCreationContainer 
             initialTab="timeless-messages"
-            routeInfo={{
-              returnPath: '/dashboard/timeless-messages'
-            }}
+            routeInfo={routeInfo}
           />
         </CardContent>
       </Card>
