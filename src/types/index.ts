@@ -11,3 +11,48 @@ export interface RouteInfo {
   returnPath?: string;
   pathname?: string;
 }
+
+export interface MediaItem {
+  type: 'image' | 'video' | 'audio' | 'document';
+  url: string;
+  name: string;
+  size?: number;
+  thumbnailUrl?: string;
+}
+
+export interface TimelineItem {
+  id: string;
+  date: string;
+  title: string;
+  type: string;
+  content?: string;
+}
+
+export interface IdeaBoostOptions {
+  isPublic: boolean;
+  isFeatured: boolean;
+  isShared: boolean;
+}
+
+export interface RecurringMessageSettings {
+  isRecurring: boolean;
+  frequency?: 'daily' | 'weekly' | 'monthly' | 'yearly' | 'custom';
+  customDays?: number[];
+  endDate?: string | null;
+}
+
+export interface MentorshipBadge {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+}
+
+export interface GroupCircle {
+  id: string;
+  name: string;
+  description: string;
+  members: number;
+  topics: string[];
+  isPublic: boolean;
+}

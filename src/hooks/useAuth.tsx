@@ -1,13 +1,15 @@
+
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from '@/hooks/use-toast';
-import type { User } from '@supabase/supabase-js';
+import { useToast } from '@/hooks/use-toast';
+import type { User, Session } from '@supabase/supabase-js';
 
 type UserRole = 'admin' | 'mentor' | 'disciple' | 'guest';
 
 interface AuthContextType {
   user: User | null;
+  session: Session | null;
   profile: any | null;
   roles: UserRole[];
   isLoading: boolean;
@@ -25,24 +27,48 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<any | null>(null);
   const [roles, setRoles] = useState<UserRole[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   // Initialize auth state from supabase session
   useEffect(() => {
+    // Set up auth state change listener FIRST
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, newSession) => {
+        // Only make synchronous state updates in the callback
+        setSession(newSession);
+        setUser(newSession?.user ?? null);
+        
+        // If session exists, fetch profile and roles after a slight delay to avoid race conditions
+        if (newSession?.user) {
+          setTimeout(() => {
+            fetchUserProfile(newSession.user.id);
+            fetchUserRoles(newSession.user.id);
+          }, 0);
+        } else {
+          setProfile(null);
+          setRoles(['guest']);
+        }
+      }
+    );
+
+    // THEN check for existing session
     const initializeAuth = async () => {
       try {
-        // Check for an existing session
         const { data: { session } } = await supabase.auth.getSession();
         
         if (session?.user) {
+          setSession(session);
           setUser(session.user);
           await fetchUserProfile(session.user.id);
           await fetchUserRoles(session.user.id);
         } else {
           setUser(null);
+          setSession(null);
           setProfile(null);
           setRoles(['guest']);
         }
@@ -60,22 +86,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     initializeAuth();
 
-    // Set up auth state change listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        if (session?.user) {
-          setUser(session.user);
-          await fetchUserProfile(session.user.id);
-          await fetchUserRoles(session.user.id);
-        } else {
-          setUser(null);
-          setProfile(null);
-          setRoles(['guest']);
-        }
-        setIsLoading(false);
-      }
-    );
-
+    // Cleanup subscription on unmount
     return () => {
       subscription.unsubscribe();
     };
@@ -197,20 +208,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const signOut = async () => {
     try {
       setIsLoading(true);
-      const { error } = await supabase.auth.signOut();
-      if (error) throw error;
       
+      // Immediately clear state first to prevent UI issues
       setUser(null);
+      setSession(null);
       setProfile(null);
       setRoles(['guest']);
+      
+      // Then perform the actual sign out
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
       
       toast({
         title: "Signed out",
         description: "You have been signed out successfully.",
       });
       
-      navigate('/');
+      // Navigate after state is cleared and signout is complete
+      navigate('/', { replace: true });
     } catch (error: any) {
+      console.error('Sign out error:', error);
       toast({
         title: "Sign out failed",
         description: error.message,
@@ -229,6 +246,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const value = {
     user,
+    session,
     profile,
     roles,
     isLoading,

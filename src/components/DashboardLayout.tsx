@@ -1,6 +1,6 @@
 
-import React from 'react';
-import { Outlet } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Loader2, LogOut } from 'lucide-react';
 import DashboardSidebar from './DashboardSidebar';
@@ -12,20 +12,25 @@ import DashboardAnimatedBackground from './dashboard/DashboardAnimatedBackground
 const DashboardLayout: React.FC = () => {
   const { signOut, isLoading } = useAuth();
   const { toast } = useToast();
+  const [isSigningOut, setIsSigningOut] = useState(false);
+  const navigate = useNavigate();
 
   const handleSignOut = async () => {
+    if (isSigningOut) return; // Prevent multiple clicks
+    
     try {
+      setIsSigningOut(true);
       await signOut();
-      toast({
-        title: "Signed out successfully",
-        description: "You have been signed out of your account."
-      });
+      // No need to show toast or navigate here as it's handled in the auth hook
     } catch (error) {
+      console.error('Sign out error in layout:', error);
       toast({
         title: "Error signing out",
         description: "There was a problem signing you out.",
         variant: "destructive"
       });
+    } finally {
+      setIsSigningOut(false);
     }
   };
 
@@ -55,7 +60,6 @@ const DashboardLayout: React.FC = () => {
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ delay: 0.2 }}
               >
-                {/* Use the motion component to wrap the Button instead of adding motion props to Button */}
                 <motion.div 
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
@@ -63,10 +67,15 @@ const DashboardLayout: React.FC = () => {
                   <Button 
                     variant="ghost" 
                     onClick={handleSignOut}
+                    disabled={isSigningOut}
                     className="flex items-center gap-2 hover:bg-secondary/80 transition-colors"
                   >
-                    <LogOut size={16} />
-                    <span>Sign Out</span>
+                    {isSigningOut ? (
+                      <Loader2 size={16} className="animate-spin" />
+                    ) : (
+                      <LogOut size={16} />
+                    )}
+                    <span>{isSigningOut ? "Signing Out..." : "Sign Out"}</span>
                   </Button>
                 </motion.div>
               </motion.div>
