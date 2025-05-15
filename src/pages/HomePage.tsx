@@ -100,6 +100,14 @@ const HomePage = () => {
       setTimeout(() => setIsNavigating(false), 1000);
     }
   };
+  
+  const handleNavigate = (index: number) => {
+    if (!isNavigating) {
+      setIsNavigating(true);
+      setCurrentSection(index);
+      setTimeout(() => setIsNavigating(false), 1000);
+    }
+  };
 
   return (
     <div 
@@ -107,7 +115,10 @@ const HomePage = () => {
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
-      <HomeNavigation />
+      <HomeNavigation 
+        currentSection={currentSection} 
+        onNavigate={handleNavigate} 
+      />
       
       {/* Navigation dots */}
       <div className="fixed right-8 top-1/2 transform -translate-y-1/2 z-50 flex flex-col space-y-4">
@@ -132,12 +143,12 @@ const HomePage = () => {
           transition={{ duration: 0.6, ease: "easeInOut" }}
           className="h-screen"
         >
-          {currentSection === 0 && <HeroSection content={homeContent.hero} />}
-          {currentSection === 1 && <FeaturesSection content={homeContent.features} />}
-          {currentSection === 2 && <CaseStudiesSection content={homeContent.caseStudies} />}
-          {currentSection === 3 && <StoriesSection content={homeContent.testimonials} />}
-          {currentSection === 4 && <FeaturedMentorsSection content={homeContent.mentors} />}
-          {currentSection === 5 && <CtaSection content={homeContent.cta} />}
+          {currentSection === 0 && <HeroSection />}
+          {currentSection === 1 && <FeaturesSection />}
+          {currentSection === 2 && <CaseStudiesSection />}
+          {currentSection === 3 && <StoriesSection />}
+          {currentSection === 4 && <FeaturedMentorsSection />}
+          {currentSection === 5 && <CtaSection />}
         </motion.div>
       </AnimatePresence>
       

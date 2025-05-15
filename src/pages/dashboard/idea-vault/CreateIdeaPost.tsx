@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
@@ -70,7 +69,15 @@ const CreateIdeaPost = () => {
     }
   };
 
-  const handleMediaUpload = (newMedia: MediaItem) => {
+  // Fix the media upload handler to convert string URL to MediaItem
+  const handleMediaUpload = (url: string) => {
+    // Create a MediaItem from the URL
+    const newMedia: MediaItem = {
+      url,
+      name: url.split('/').pop() || 'uploaded-file',
+      size: 0,
+      type: 'unknown'
+    };
     setMediaItems([...mediaItems, newMedia]);
   };
 
