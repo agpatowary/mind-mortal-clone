@@ -9,15 +9,99 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      circle_memberships: {
+        Row: {
+          circle_id: string
+          id: string
+          joined_at: string | null
+          role: string | null
+          user_id: string
+        }
+        Insert: {
+          circle_id: string
+          id?: string
+          joined_at?: string | null
+          role?: string | null
+          user_id: string
+        }
+        Update: {
+          circle_id?: string
+          id?: string
+          joined_at?: string | null
+          role?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "circle_memberships_circle_id_fkey"
+            columns: ["circle_id"]
+            isOneToOne: false
+            referencedRelation: "group_circles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "circle_memberships_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      group_circles: {
+        Row: {
+          created_at: string | null
+          created_by: string
+          description: string | null
+          id: string
+          is_public: boolean | null
+          name: string
+          topics: string[] | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by: string
+          description?: string | null
+          id?: string
+          is_public?: boolean | null
+          name: string
+          topics?: string[] | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string
+          description?: string | null
+          id?: string
+          is_public?: boolean | null
+          name?: string
+          topics?: string[] | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_circles_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       legacy_posts: {
         Row: {
           categories: string[] | null
           content: string
           created_at: string | null
           id: string
+          is_public: boolean | null
+          is_time_capsule: boolean | null
           location: Json | null
+          media_type: string | null
           media_urls: string[] | null
           release_date: string | null
+          release_status: string | null
           subcategory: string | null
           title: string
           updated_at: string | null
@@ -29,9 +113,13 @@ export type Database = {
           content: string
           created_at?: string | null
           id?: string
+          is_public?: boolean | null
+          is_time_capsule?: boolean | null
           location?: Json | null
+          media_type?: string | null
           media_urls?: string[] | null
           release_date?: string | null
+          release_status?: string | null
           subcategory?: string | null
           title: string
           updated_at?: string | null
@@ -43,9 +131,13 @@ export type Database = {
           content?: string
           created_at?: string | null
           id?: string
+          is_public?: boolean | null
+          is_time_capsule?: boolean | null
           location?: Json | null
+          media_type?: string | null
           media_urls?: string[] | null
           release_date?: string | null
+          release_status?: string | null
           subcategory?: string | null
           title?: string
           updated_at?: string | null
@@ -305,6 +397,30 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      mentorship_badges: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          icon: string | null
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          icon?: string | null
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          icon?: string | null
+          id?: string
+          name?: string
+        }
+        Relationships: []
       }
       notifications: {
         Row: {
@@ -638,8 +754,13 @@ export type Database = {
           delivery_event: string | null
           delivery_type: string
           id: string
+          is_recurring: boolean | null
+          media_type: string | null
           recipient_emails: Json | null
           recipients: Json | null
+          recurrence_custom_days: number[] | null
+          recurrence_end_date: string | null
+          recurrence_frequency: string | null
           status: string
           title: string
           updated_at: string | null
@@ -652,8 +773,13 @@ export type Database = {
           delivery_event?: string | null
           delivery_type?: string
           id?: string
+          is_recurring?: boolean | null
+          media_type?: string | null
           recipient_emails?: Json | null
           recipients?: Json | null
+          recurrence_custom_days?: number[] | null
+          recurrence_end_date?: string | null
+          recurrence_frequency?: string | null
           status?: string
           title: string
           updated_at?: string | null
@@ -666,8 +792,13 @@ export type Database = {
           delivery_event?: string | null
           delivery_type?: string
           id?: string
+          is_recurring?: boolean | null
+          media_type?: string | null
           recipient_emails?: Json | null
           recipients?: Json | null
+          recurrence_custom_days?: number[] | null
+          recurrence_end_date?: string | null
+          recurrence_frequency?: string | null
           status?: string
           title?: string
           updated_at?: string | null
@@ -676,6 +807,52 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "timeless_messages_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_badges: {
+        Row: {
+          awarded_at: string | null
+          awarded_by: string | null
+          badge_id: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          awarded_at?: string | null
+          awarded_by?: string | null
+          badge_id: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          awarded_at?: string | null
+          awarded_by?: string | null
+          badge_id?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_badges_awarded_by_fkey"
+            columns: ["awarded_by"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_badges_badge_id_fkey"
+            columns: ["badge_id"]
+            isOneToOne: false
+            referencedRelation: "mentorship_badges"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_badges_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "admin_users"
@@ -718,11 +895,15 @@ export type Database = {
       wisdom_resources: {
         Row: {
           approved: boolean | null
+          boost_count: number | null
+          boost_until: string | null
           created_at: string | null
           created_by: string
           description: string | null
           file_path: string | null
           id: string
+          is_featured: boolean | null
+          is_public: boolean | null
           published_status: string | null
           resource_type: string
           resource_url: string | null
@@ -733,11 +914,15 @@ export type Database = {
         }
         Insert: {
           approved?: boolean | null
+          boost_count?: number | null
+          boost_until?: string | null
           created_at?: string | null
           created_by: string
           description?: string | null
           file_path?: string | null
           id?: string
+          is_featured?: boolean | null
+          is_public?: boolean | null
           published_status?: string | null
           resource_type: string
           resource_url?: string | null
@@ -748,11 +933,15 @@ export type Database = {
         }
         Update: {
           approved?: boolean | null
+          boost_count?: number | null
+          boost_until?: string | null
           created_at?: string | null
           created_by?: string
           description?: string | null
           file_path?: string | null
           id?: string
+          is_featured?: boolean | null
+          is_public?: boolean | null
           published_status?: string | null
           resource_type?: string
           resource_url?: string | null

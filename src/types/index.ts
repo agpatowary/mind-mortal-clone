@@ -56,3 +56,44 @@ export interface GroupCircle {
   topics: string[];
   isPublic: boolean;
 }
+
+// New interfaces for feature enhancements
+
+export interface TimeCapsuleSettings {
+  isTimeCapsule: boolean;
+  releaseDate?: string | null;
+  releaseStatus: 'scheduled' | 'released' | 'unpublished';
+}
+
+export interface MediaSettings {
+  mediaType?: 'text' | 'image' | 'video' | 'audio' | 'document' | null;
+  mediaUrls?: string[];
+}
+
+export interface VisibilitySettings {
+  isPublic: boolean;
+}
+
+export interface IdeaBoostSettings {
+  isFeatured: boolean;
+  boostCount: number;
+  boostUntil?: string | null;
+}
+
+export interface MentorProfile {
+  id: string;
+  expertise: string[];
+  industries: string[];
+  experienceYears: number;
+  monthlyAvailability: number;
+  wisdomRating: number;
+  calendarUrl?: string | null;
+}
+
+export interface MenteeProfile {
+  id: string;
+  interests: string[];
+  currentProjects: string[];
+  seekingHelpWith: string | null;
+  goals: string[];
+}

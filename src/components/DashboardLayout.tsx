@@ -21,7 +21,7 @@ const DashboardLayout: React.FC = () => {
     try {
       setIsSigningOut(true);
       await signOut();
-      // No need to show toast or navigate here as it's handled in the auth hook
+      // No navigation needed here as it's handled in the auth hook
     } catch (error) {
       console.error('Sign out error in layout:', error);
       toast({

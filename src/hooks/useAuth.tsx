@@ -31,30 +31,40 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [profile, setProfile] = useState<any | null>(null);
   const [roles, setRoles] = useState<UserRole[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [authSubscription, setAuthSubscription] = useState<any>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
 
   // Initialize auth state from supabase session
   useEffect(() => {
-    // Set up auth state change listener FIRST
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+    // Set up auth state change listener
+    const { data } = supabase.auth.onAuthStateChange(
       (event, newSession) => {
-        // Only make synchronous state updates in the callback
+        console.log('Auth state change:', event, newSession ? 'session exists' : 'no session');
+        
+        if (event === 'SIGNED_OUT') {
+          // Clear all user data immediately on sign out
+          setSession(null);
+          setUser(null);
+          setProfile(null);
+          setRoles(['guest']);
+          return;
+        }
+        
+        // Handle other session changes
         setSession(newSession);
         setUser(newSession?.user ?? null);
         
-        // If session exists, fetch profile and roles after a slight delay to avoid race conditions
+        // If session exists, fetch profile and roles
         if (newSession?.user) {
-          setTimeout(() => {
-            fetchUserProfile(newSession.user.id);
-            fetchUserRoles(newSession.user.id);
-          }, 0);
-        } else {
-          setProfile(null);
-          setRoles(['guest']);
+          fetchUserProfile(newSession.user.id);
+          fetchUserRoles(newSession.user.id);
         }
       }
     );
+
+    // Store subscription to clean up later
+    setAuthSubscription(data);
 
     // THEN check for existing session
     const initializeAuth = async () => {
@@ -88,7 +98,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     // Cleanup subscription on unmount
     return () => {
-      subscription.unsubscribe();
+      if (authSubscription) {
+        authSubscription.unsubscribe();
+      }
     };
   }, []);
 
@@ -209,7 +221,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       setIsLoading(true);
       
-      // Immediately clear state first to prevent UI issues
+      // Unsubscribe from auth changes first
+      if (authSubscription) {
+        authSubscription.unsubscribe();
+      }
+      
+      // Clear state immediately before the API call to prevent UI issues
       setUser(null);
       setSession(null);
       setProfile(null);
@@ -219,6 +236,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
       
+      // Show success message after successful signout
       toast({
         title: "Signed out",
         description: "You have been signed out successfully.",
