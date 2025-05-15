@@ -10,8 +10,6 @@ import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
-import RichTextEditor from '@/components/editor/RichTextEditor';
-import ContentCreationContainer from '@/components/content/ContentCreationContainer';
 import { Badge } from '@/components/ui/badge';
 import { XCircle, PlusCircle, Lightbulb, Eye, EyeOff } from 'lucide-react';
 
@@ -29,6 +27,7 @@ const CreateIdeaPost = () => {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [currentTag, setCurrentTag] = useState('');
+  const [editorContent, setEditorContent] = useState('');
   const [formState, setFormState] = useState<IdeaFormState>({
     title: '',
     description: '',
@@ -43,6 +42,7 @@ const CreateIdeaPost = () => {
   };
 
   const handleEditorChange = (content: string) => {
+    setEditorContent(content);
     setFormState(prev => ({ ...prev, content }));
   };
 
@@ -110,7 +110,7 @@ const CreateIdeaPost = () => {
           file_path: null,
           published_status: 'published',
           is_public: formState.isPublic,
-          content: formState.content
+          content: formState.content || editorContent
         })
         .select();
         
@@ -135,11 +135,15 @@ const CreateIdeaPost = () => {
   };
 
   return (
-    <ContentCreationContainer
-      title="Create a New Idea"
-      description="Document your innovative ideas and share them with the world."
-      icon={<Lightbulb className="h-6 w-6" />}
-    >
+    <div className="container mx-auto pb-8">
+      <div className="flex items-center gap-2 mb-4">
+        <Lightbulb className="h-6 w-6 text-primary" />
+        <h1 className="text-2xl font-bold">Create a New Idea</h1>
+      </div>
+      <p className="text-muted-foreground mb-6">
+        Document your innovative ideas and share them with the world.
+      </p>
+
       <form onSubmit={handleSubmit}>
         <Card>
           <CardHeader>
@@ -173,10 +177,13 @@ const CreateIdeaPost = () => {
             
             <div className="space-y-2">
               <Label>Detailed Explanation</Label>
-              <RichTextEditor
-                value={formState.content}
-                onChange={handleEditorChange}
+              <Textarea
+                id="content"
+                name="content"
                 placeholder="Describe your idea in detail. What problem does it solve? How does it work?"
+                value={formState.content}
+                onChange={handleChange}
+                className="min-h-[300px]"
               />
             </div>
             
@@ -260,7 +267,7 @@ const CreateIdeaPost = () => {
           </CardFooter>
         </Card>
       </form>
-    </ContentCreationContainer>
+    </div>
   );
 };
 

@@ -7,19 +7,22 @@ import { ImageIcon } from 'lucide-react';
 import ImageUploader from './ImageUploader';
 
 interface RichTextEditorProps {
-  content: string;
+  value?: string;
+  content?: string;
   onChange: (content: string) => void;
   placeholder?: string;
   className?: string;
 }
 
 const RichTextEditor: React.FC<RichTextEditorProps> = ({ 
-  content, 
+  value = '',
+  content = '',
   onChange,
   placeholder = 'Start writing...',
   className = ''
 }) => {
-  const [value, setValue] = useState(content);
+  const initialContent = value || content;
+  const [editorValue, setEditorValue] = useState(initialContent);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const quillRef = useRef<ReactQuill>(null);
   
@@ -43,7 +46,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
   ];
 
   const handleChange = (newContent: string) => {
-    setValue(newContent);
+    setEditorValue(newContent);
     onChange(newContent);
   };
 
@@ -70,7 +73,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
       <ReactQuill
         ref={quillRef}
         theme="snow"
-        value={value}
+        value={editorValue}
         onChange={handleChange}
         modules={modules}
         formats={formats}

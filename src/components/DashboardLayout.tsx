@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Loader2, LogOut } from 'lucide-react';
@@ -10,10 +10,17 @@ import { motion, AnimatePresence } from 'framer-motion';
 import DashboardAnimatedBackground from './dashboard/DashboardAnimatedBackground';
 
 const DashboardLayout: React.FC = () => {
-  const { signOut, isLoading } = useAuth();
+  const { signOut, isLoading, user } = useAuth();
   const { toast } = useToast();
   const [isSigningOut, setIsSigningOut] = useState(false);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    // If there's no user and we're not loading, redirect to sign-in
+    if (!isLoading && !user) {
+      navigate('/signin');
+    }
+  }, [user, isLoading, navigate]);
 
   const handleSignOut = async () => {
     if (isSigningOut) return; // Prevent multiple clicks
@@ -21,7 +28,12 @@ const DashboardLayout: React.FC = () => {
     try {
       setIsSigningOut(true);
       await signOut();
-      // No navigation needed here as it's handled in the auth hook
+      // Explicitly navigate to home page after sign out
+      navigate('/');
+      toast({
+        title: "Signed out successfully",
+        description: "You have been signed out of your account.",
+      });
     } catch (error) {
       console.error('Sign out error in layout:', error);
       toast({

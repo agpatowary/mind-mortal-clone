@@ -97,3 +97,17 @@ export interface MenteeProfile {
   seekingHelpWith: string | null;
   goals: string[];
 }
+
+export interface IdeaPost {
+  id: string;
+  title: string;
+  description: string;
+  content?: string;
+  tags: string[];
+  isPublic: boolean;
+  isFeatured: boolean;
+  boostCount: number;
+  createdAt: string;
+  updatedAt: string;
+  createdBy: string;
+}

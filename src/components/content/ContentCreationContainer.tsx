@@ -1,15 +1,27 @@
-
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, ReactNode } from 'react';
 import LegacyVaultForm from './LegacyVaultForm';
 import WisdomExchangeForm from './WisdomExchangeForm';
 import TimelessMessagesForm from './TimelessMessagesForm';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { RouteInfo } from '@/types';
 
-const ContentCreationContainer: React.FC<{ 
+interface ContentCreationContainerProps {
   initialTab?: string;
   routeInfo?: RouteInfo;
-}> = ({ initialTab, routeInfo }) => {
+  children?: ReactNode;
+  title?: string;
+  description?: string;
+  icon?: ReactNode;
+}
+
+const ContentCreationContainer: React.FC<ContentCreationContainerProps> = ({ 
+  initialTab, 
+  routeInfo,
+  children,
+  title,
+  description,
+  icon
+}) => {
   const [activeTab, setActiveTab] = useState<string>(initialTab || "legacy-vault");
   
   // Set initial tab based on props or URL path if available
@@ -23,10 +35,29 @@ const ContentCreationContainer: React.FC<{
         setActiveTab('mentorship');
       } else if (routeInfo.pathname.includes('timeless-messages')) {
         setActiveTab('timeless-messages');
+      } else if (routeInfo.pathname.includes('idea-vault')) {
+        setActiveTab('idea-vault');
       }
     }
   }, [initialTab, routeInfo]);
 
+  // If children is provided, render it directly without the tabs
+  if (children) {
+    return (
+      <div className="container mx-auto py-6">
+        {title && description && (
+          <div className="mb-6">
+            {icon && <div className="mb-2">{icon}</div>}
+            <h2 className="text-2xl font-bold">{title}</h2>
+            <p className="text-muted-foreground">{description}</p>
+          </div>
+        )}
+        {children}
+      </div>
+    );
+  }
+
+  // Otherwise, render the tabs
   return (
     <div className="container mx-auto py-6">
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">

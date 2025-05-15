@@ -202,10 +202,21 @@ const IdeaVaultPage = () => {
       const boostUntil = new Date();
       boostUntil.setDate(boostUntil.getDate() + 7);
       
+      // Update the boost count manually instead of using RPC
+      const { data: currentData, error: fetchError } = await supabase
+        .from('wisdom_resources')
+        .select('boost_count')
+        .eq('id', ideaId)
+        .single();
+        
+      if (fetchError) throw fetchError;
+      
+      const newBoostCount = (currentData?.boost_count || 0) + 1;
+      
       const { error } = await supabase
         .from('wisdom_resources')
         .update({ 
-          boost_count: supabase.rpc('increment', { x: 1 }),
+          boost_count: newBoostCount,
           boost_until: boostUntil.toISOString(),
           is_featured: true
         })
@@ -218,7 +229,7 @@ const IdeaVaultPage = () => {
         idea.id === ideaId 
           ? { 
               ...idea, 
-              boost_count: (idea.boost_count || 0) + 1,
+              boost_count: newBoostCount,
               boost_until: boostUntil.toISOString(),
               is_featured: true
             } 
@@ -357,7 +368,7 @@ const IdeaVaultPage = () => {
                 <PostInteractions
                   postId={idea.id}
                   postType="idea"
-                  initialLikesCount={likesCountMap[idea.id] || 0}
+                  likesCount={likesCountMap[idea.id] || 0}
                   userLiked={likesMap[idea.id] || false}
                   onLikeToggle={() => handleLikeToggle(idea.id)}
                 />

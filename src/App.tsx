@@ -61,6 +61,7 @@ const queryClient = new QueryClient({
 
 // Lazily load the IdeaVaultPage component
 const IdeaVaultPage = lazy(() => import('@/pages/dashboard/IdeaVaultPage'));
+const CreateIdeaPost = lazy(() => import('@/pages/dashboard/idea-vault/CreateIdeaPost'));
 
 function App() {
   return (
@@ -119,6 +120,7 @@ function App() {
                         <Route path="idea-vault">
                           <Route index element={<IdeaVaultPage />} />
                           <Route path="create" element={<CreateIdeaPost />} />
+                          <Route path="view/:id" element={<div>Idea Details View - Coming Soon</div>} />
                         </Route>
                         
                         {/* Timeless Messages */}
