@@ -32,7 +32,6 @@ const CreateWisdomResource = () => {
           <ContentCreationContainer 
             initialTab="wisdom-exchange"
             routeInfo={{
-              cancelRoute: '/dashboard/wisdom-exchange',
               successRoute: '/dashboard/wisdom-exchange'
             }}
           />

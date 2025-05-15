@@ -32,7 +32,6 @@ const CreateLegacyPost = () => {
           <ContentCreationContainer 
             initialTab="legacy-vault"
             routeInfo={{
-              cancelRoute: '/dashboard/legacy-vault',
               successRoute: '/dashboard/legacy-vault'
             }}
           />

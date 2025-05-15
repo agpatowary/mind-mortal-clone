@@ -32,7 +32,6 @@ const CreateTimelessMessage = () => {
           <ContentCreationContainer 
             initialTab="timeless-messages"
             routeInfo={{
-              cancelRoute: '/dashboard/timeless-messages',
               successRoute: '/dashboard/timeless-messages'
             }}
           />
