@@ -1,11 +1,20 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuth } from '@/hooks/useAuth';
 import { motion } from 'framer-motion';
-import { Archive, Clock, MessageSquare, Users } from 'lucide-react';
+import { Archive, Clock, MessageSquare, Users, PlusCircle, Lightbulb } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import SubscriptionStatus from '@/components/subscription/SubscriptionStatus';
+import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const FeatureCard = ({ icon, title, description, to }: { icon: React.ReactNode, title: string, description: string, to: string }) => (
   <motion.div
@@ -30,6 +39,7 @@ const FeatureCard = ({ icon, title, description, to }: { icon: React.ReactNode, 
 
 const DashboardHome = () => {
   const { user, profile } = useAuth();
+  const [showCreateMenu, setShowCreateMenu] = useState(false);
   
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -64,6 +74,45 @@ const DashboardHome = () => {
             What would you like to do today?
           </p>
         </motion.div>
+        
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+        >
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button className="gap-2">
+                <PlusCircle className="h-4 w-4" />
+                Create
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuLabel>What would you like to create?</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem asChild>
+                <Link to="/dashboard/legacy-vault/create">
+                  <Archive className="h-4 w-4 mr-2" /> Legacy Post
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link to="/dashboard/timeless-messages/create">
+                  <Clock className="h-4 w-4 mr-2" /> Timeless Message
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link to="/dashboard/wisdom-exchange/create">
+                  <Users className="h-4 w-4 mr-2" /> Wisdom Exchange
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link to="/dashboard/idea-vault/create">
+                  <Lightbulb className="h-4 w-4 mr-2" /> Idea
+                </Link>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </motion.div>
       </div>
       
       <motion.div
@@ -83,6 +132,15 @@ const DashboardHome = () => {
           
           <motion.div variants={itemVariants}>
             <FeatureCard
+              icon={<Lightbulb className="h-6 w-6 text-primary" />}
+              title="Idea Vault"
+              description="Document and develop your innovative ideas."
+              to="/dashboard/idea-vault"
+            />
+          </motion.div>
+          
+          <motion.div variants={itemVariants}>
+            <FeatureCard
               icon={<Users className="h-6 w-6 text-primary" />}
               title="Mentorship"
               description="Share your knowledge or connect with mentors."
@@ -96,15 +154,6 @@ const DashboardHome = () => {
               title="Timeless Messages"
               description="Create messages to be delivered in the future."
               to="/dashboard/timeless-messages"
-            />
-          </motion.div>
-          
-          <motion.div variants={itemVariants}>
-            <FeatureCard
-              icon={<MessageSquare className="h-6 w-6 text-primary" />}
-              title="Create Content"
-              description="Add new content to your MMORTAL account."
-              to="/dashboard/create"
             />
           </motion.div>
         </div>

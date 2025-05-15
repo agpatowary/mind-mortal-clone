@@ -3,97 +3,93 @@
   "hero": {
     "title": "MMortal",
     "slogans": [
-      "Your Story. Your Legacy. Forever."
+      "Your Story. Your Legacy. Forever.",
+      "Preserve Knowledge. Share Wisdom. Live On.",
+      "Connect Today. Impact Tomorrow. Live Forever."
     ],
     "description": "Preserve your wisdom. Share your ideas. Connect with the future.",
     "backgroundImages": [
-      "/lovable-uploads/photo-1488590528505-98d2b5aba04b.jpeg",
-      "/lovable-uploads/photo-1531297484001-80022131f5a1.jpeg",
-      "/lovable-uploads/photo-1487058792275-0ad4aaf24ca7.jpeg",
-      "/lovable-uploads/photo-1460925895917-afdab827c52f.jpeg"
+      "/lovable-uploads/c7971a89-c468-49b1-ab5a-14b1d463c990.png"
     ]
   },
   "features": {
-    "title": "Our Features",
+    "title": "Features",
     "items": [
       {
         "title": "Legacy Vault",
-        "description": "Preserve your legacy for future generations.",
+        "description": "Store memories, lessons, and stories to be passed down to future generations.",
         "icon": "archive",
         "link": "/features/legacy-vault"
       },
       {
-        "title": "Mentorship",
-        "description": "Guidance from experience to ignite your growth.",
+        "title": "Idea Vault",
+        "description": "Document, collaborate, and potentially receive funding for your innovative ideas.",
+        "icon": "lightbulb",
+        "link": "/features/idea-vault"
+      },
+      {
+        "title": "Knowledge Exchange",
+        "description": "Share your wisdom or learn from others through mentorship connections.",
         "icon": "users",
-        "link": "/features/mentorship"
+        "link": "/features/wisdom-exchange"
       },
       {
         "title": "Timeless Messages",
-        "description": "Leave a message that lasts forever.",
+        "description": "Schedule messages for future delivery to loved ones or the world.",
         "icon": "clock",
         "link": "/features/timeless-messages"
-      },
-      {
-        "title": "Idea Vault",
-        "description": "Refine, share, and fund your ideas.",
-        "icon": "archive",
-        "link": "/features/idea-vault"
       }
     ]
   },
-  "caseStudies": [
-    {
-      "title": "Viktor Frankl's Search for Meaning",
-      "description": "Psychologist Viktor Frankl, in Man's Search for Meaning, found that purpose—not pleasure—is what sustains humans through suffering and fulfillment. MMortal gives users a concrete way to assign meaning to their life experiences by preserving them for future generations."
-    },
-    {
-      "title": "Nelson Mandela's Legacy of Forgiveness",
-      "description": "Mandela didn't just fight apartheid—he documented his journey through prison, pain, and peace. His letters, preserved during incarceration, became timeless guidance for generations. If Mandela had MMortal, his story wouldn't just be found in books—it would live within an interactive vault, ready for all. Lesson: It's not the title you hold, but the story you leave behind."
-    },
-    {
-      "title": "Anne Frank's Hidden Genius",
-      "description": "A teenage girl, hiding from genocide, wrote a diary that the world would later call genius. But at the time, it was simply a young girl trying to make sense of the world. MMortal exists to ensure no 'Anne' goes unheard again."
-    },
-    {
-      "title": "Jamir's Wisdom Lost",
-      "description": "Jamir, a 78-year-old carpenter in Bangladesh, had no formal education but built homes for three generations. When asked what he was most proud of, he said: 'Knowing how to fix what others thought was broken.' He never wrote anything down. After he passed, his grandkids only knew he 'worked with wood.' His philosophy, techniques, and way of looking at life—all lost."
-    }
-  ],
-  "stories": {
-    "title": "User Stories",
+  "caseStudies": {
+    "title": "Stories That Inspired Us",
     "items": [
       {
-        "quote": "I can now share my life's wisdom with my grandchildren, even when I'm no longer here.",
-        "author": "James, 72"
+        "title": "The Legacy of Viktor Frankl",
+        "content": "Psychologist Viktor Frankl, in Man's Search for Meaning, found that purpose—not pleasure—is what sustains humans through suffering and fulfillment. MMortal gives users a concrete way to assign meaning to their life experiences by preserving them for future generations.",
+        "image": "/lovable-uploads/placeholder.svg"
       },
       {
-        "quote": "The mentorship program connected me with an industry veteran who helped me navigate my career path.",
-        "author": "Sarah, 28"
+        "title": "Nelson Mandela's Letters",
+        "content": "Mandela didn't just fight apartheid—he documented his journey through prison, pain, and peace. His letters, preserved during incarceration, became timeless guidance for generations. If Mandela had MMortal, his story wouldn't just be found in books—it would live within an interactive vault, ready for all.",
+        "image": "/lovable-uploads/placeholder.svg"
       },
       {
-        "quote": "My father left timeless messages for my important life events. It's like he's still with me.",
-        "author": "Michael, 34"
+        "title": "Anne Frank's Hidden Genius",
+        "content": "A teenage girl, hiding from genocide, wrote a diary that the world would later call genius. But at the time, it was simply a young girl trying to make sense of the world. MMortal exists to ensure no 'Anne' goes unheard again.",
+        "image": "/lovable-uploads/placeholder.svg"
+      },
+      {
+        "title": "The Lost Wisdom of Jamir",
+        "content": "Jamir, a 78-year-old carpenter in Bangladesh, had no formal education but built homes for three generations. When asked what he was most proud of, he said: 'Knowing how to fix what others thought was broken.' He never wrote anything down. After he passed, his grandkids only knew he 'worked with wood.' His philosophy, techniques, and way of looking at life—all lost.",
+        "image": "/lovable-uploads/placeholder.svg"
       }
     ]
   },
   "cta": {
-    "title": "Start Your Legacy Today",
+    "title": "Join Us and Build Your Legacy",
     "description": "We're building the first global legacy network—where your ideas, stories, and guidance create a ripple through time. You could be one of our first pioneers.",
-    "buttonText": "Initiate Your Legacy",
-    "metrics": [
+    "tagline": "Let's build the future of memory, together",
+    "goals": [
       {
-        "label": "Legacy Pioneers",
-        "value": "10,000+"
+        "icon": "users",
+        "title": "Legacy Pioneers",
+        "target": "10,000",
+        "current": "0"
       },
       {
-        "label": "Stories Preserved",
-        "value": "50,000+"
+        "icon": "book",
+        "title": "Stories Preserved",
+        "target": "50,000",
+        "current": "0"
       },
       {
-        "label": "Wisdom Bridges",
-        "value": "5,000+"
+        "icon": "handshake",
+        "title": "Wisdom Bridges",
+        "target": "5,000",
+        "current": "0"
       }
-    ]
+    ],
+    "buttonText": "Initiate Your Legacy"
   }
 }

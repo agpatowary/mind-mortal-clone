@@ -1,9 +1,10 @@
 
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
 import { motion, useMotionValue, useTransform } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import BlobLogo from '../BlobLogo';
 import { useNavigate } from 'react-router-dom';
+import mediaConfig from '@/data/mediaConfig.json';
 
 interface HeroSectionProps {
   data: {
@@ -18,10 +19,23 @@ const HeroSection: React.FC<HeroSectionProps> = ({ data }) => {
   const navigate = useNavigate();
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
+  const videoRef = useRef<HTMLVideoElement>(null);
   
   // Transform mouse position to rotation values
   const rotateX = useTransform(mouseY, [0, window.innerHeight], [5, -5]);
   const rotateY = useTransform(mouseX, [0, window.innerWidth], [-5, 5]);
+  
+  // Load background video
+  useEffect(() => {
+    if (videoRef.current) {
+      videoRef.current.src = mediaConfig.hero.backgroundVideo;
+      videoRef.current.load();
+      videoRef.current.play().catch(error => {
+        console.log("Video autoplay failed:", error);
+        // Fallback to image if video fails to play
+      });
+    }
+  }, []);
   
   // Handle mouse move
   const handleMouseMove = (e: React.MouseEvent) => {
@@ -49,13 +63,24 @@ const HeroSection: React.FC<HeroSectionProps> = ({ data }) => {
       className="relative h-screen flex items-center justify-center overflow-hidden px-4"
       onMouseMove={handleMouseMove}
     >
-      {/* Background - will be replaced with WebM video when provided */}
+      {/* Background video */}
       <div className="absolute inset-0 z-0">
-        {/* This section will contain the WebM video background */}
+        <video 
+          ref={videoRef}
+          className="absolute inset-0 object-cover w-full h-full opacity-60"
+          loop
+          muted
+          playsInline
+        >
+          <source type="video/webm" />
+          Your browser does not support the video tag.
+        </video>
+        
+        {/* Fallback image if video fails to load */}
         <div 
           className="absolute inset-0 bg-cover bg-center opacity-60"
           style={{ 
-            backgroundImage: `url(${data.backgroundImages[0]})`,
+            backgroundImage: `url(${mediaConfig.hero.fallbackImage})`,
             filter: 'brightness(0.6)'
           }}
         />

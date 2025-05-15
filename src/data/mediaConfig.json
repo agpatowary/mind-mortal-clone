@@ -1,0 +1,17 @@
+
+{
+  "hero": {
+    "backgroundVideo": "/lovable-uploads/hero-background.webm",
+    "fallbackImage": "/lovable-uploads/4dc712f6-a086-4f5f-bd6b-3231b62037bb.png"
+  },
+  "features": {
+    "backgroundAnimation": "/lovable-uploads/features-background.webm",
+    "fallbackImage": "/lovable-uploads/bcc0ccf7-c2c6-48ef-af7c-832d8c5bdaa7.png"
+  },
+  "loading": {
+    "animation": "/lovable-uploads/loading-animation.webm"
+  },
+  "timelessMessages": {
+    "submissionAnimation": "/lovable-uploads/message-submission.webm"
+  }
+}

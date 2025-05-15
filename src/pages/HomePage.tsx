@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
@@ -22,6 +22,8 @@ const HomePage = () => {
   // State for current slide
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const [isScrolling, setIsScrolling] = useState(false);
+  const scrollTimeoutRef = useRef<number | null>(null);
   
   // Total number of slides
   const totalSlides = 5;
@@ -36,9 +38,57 @@ const HomePage = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
   
+  // Prevent scroll events from triggering multiple slide changes
+  const handleScrollDebounced = (direction: number) => {
+    if (isScrolling) return;
+    
+    setIsScrolling(true);
+    
+    if (direction > 0) {
+      nextSlide();
+    } else {
+      prevSlide();
+    }
+    
+    // Clear any existing timeout
+    if (scrollTimeoutRef.current) {
+      window.clearTimeout(scrollTimeoutRef.current);
+    }
+    
+    // Set a new timeout
+    scrollTimeoutRef.current = window.setTimeout(() => {
+      setIsScrolling(false);
+      scrollTimeoutRef.current = null;
+    }, 800); // Wait for slide animation to complete
+  };
+  
+  // Handle wheel events for mouse scrolling
+  useEffect(() => {
+    const handleWheel = (e: WheelEvent) => {
+      e.preventDefault();
+      
+      // Determine scroll direction
+      const direction = Math.sign(e.deltaY);
+      handleScrollDebounced(direction);
+    };
+    
+    const wheelOptions = { passive: false };
+    document.addEventListener('wheel', handleWheel, wheelOptions);
+    
+    return () => {
+      document.removeEventListener('wheel', handleWheel, wheelOptions);
+      
+      // Clear any pending timeouts when component unmounts
+      if (scrollTimeoutRef.current) {
+        window.clearTimeout(scrollTimeoutRef.current);
+      }
+    };
+  }, [isScrolling]);
+  
   // Navigate to next slide
   const nextSlide = () => {
     if (currentSlide < totalSlides - 1) {
+      setDirection(1);
       setCurrentSlide(currentSlide + 1);
     }
   };
@@ -46,6 +96,7 @@ const HomePage = () => {
   // Navigate to previous slide
   const prevSlide = () => {
     if (currentSlide > 0) {
+      setDirection(-1);
       setCurrentSlide(currentSlide - 1);
     }
   };
@@ -95,6 +146,19 @@ const HomePage = () => {
     setDirection(index > currentSlide ? 1 : -1);
     setCurrentSlide(index);
   };
+  
+  // Listen for custom navigation events
+  useEffect(() => {
+    const handleCustomNavigation = (e: CustomEvent) => {
+      const { index } = (e as CustomEvent<{ index: number }>).detail;
+      handleNavigate(index);
+    };
+    
+    document.addEventListener('navigateToSlide', handleCustomNavigation as EventListener);
+    return () => {
+      document.removeEventListener('navigateToSlide', handleCustomNavigation as EventListener);
+    };
+  }, [currentSlide]);
   
   return (
     <div className="min-h-screen bg-background antialiased overflow-hidden">

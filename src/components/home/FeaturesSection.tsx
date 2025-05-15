@@ -1,16 +1,10 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Archive, Users, Clock } from 'lucide-react';
+import { Archive, Users, Clock, Lightbulb } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useNavigate } from 'react-router-dom';
-
-interface Feature {
-  title: string;
-  description: string;
-  icon: string;
-  link: string;
-}
+import { Feature } from '@/types';
 
 interface FeaturesSectionProps {
   data: {
@@ -27,6 +21,8 @@ const FeatureIcon = ({ icon }: { icon: string }) => {
       return <Users className="h-8 w-8 md:h-10 md:w-10 text-primary" />;
     case 'clock':
       return <Clock className="h-8 w-8 md:h-10 md:w-10 text-primary" />;
+    case 'lightbulb':
+      return <Lightbulb className="h-8 w-8 md:h-10 md:w-10 text-primary" />;
     default:
       return <Archive className="h-8 w-8 md:h-10 md:w-10 text-primary" />;
   }
@@ -44,12 +40,19 @@ const FeaturesSection: React.FC<FeaturesSectionProps> = ({ data }) => {
       updatedFeature.title = 'Mentorship';
       updatedFeature.description = 'Guidance from experience to ignite your growth.';
       updatedFeature.link = '/features/mentorship';
+      updatedFeature.cta = 'Find a Mentor';
     } else if (feature.title === 'Legacy Vault') {
       updatedFeature.description = 'Preserve your legacy for future generations.';
       updatedFeature.link = '/features/legacy-vault';
+      updatedFeature.cta = 'Create Your Legacy';
     } else if (feature.title === 'Timeless Messages') {
       updatedFeature.description = 'Leave a message that lasts forever.';
       updatedFeature.link = '/features/timeless-messages';
+      updatedFeature.cta = 'Create a Timeless Message';
+    } else if (feature.title === 'Idea Vault') {
+      updatedFeature.description = 'Refine, share, and fund your ideas.';
+      updatedFeature.link = '/features/idea-vault';
+      updatedFeature.cta = 'Start Your Idea';
     }
     
     return updatedFeature;
@@ -94,7 +97,7 @@ const FeaturesSection: React.FC<FeaturesSectionProps> = ({ data }) => {
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true, amount: 0.2 }}
-        className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-8 max-w-6xl mx-auto w-full"
+        className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 max-w-6xl mx-auto w-full"
       >
         {updatedFeatures.map((feature, index) => (
           <motion.div key={feature.title} variants={itemVariants}>
@@ -117,7 +120,7 @@ const FeaturesSection: React.FC<FeaturesSectionProps> = ({ data }) => {
                   initial={{ opacity: 0.7 }}
                   whileHover={{ opacity: 1, scale: 1.05 }}
                 >
-                  Learn More →
+                  {feature.cta || "Learn More"} →
                 </motion.div>
               </CardContent>
             </Card>
