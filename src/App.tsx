@@ -1,4 +1,3 @@
-
 import React, { Suspense, lazy } from 'react';
 import { Routes, Route, BrowserRouter } from 'react-router-dom';
 import { ThemeProvider } from 'next-themes';
@@ -29,7 +28,6 @@ import ProfilePage from '@/pages/dashboard/ProfilePage';
 import CreateLegacyPost from '@/pages/dashboard/legacy-vault/CreateLegacyPost';
 import CreateTimelessMessage from '@/pages/dashboard/timeless-messages/CreateTimelessMessage';
 import CreateWisdomResource from '@/pages/dashboard/wisdom-exchange/CreateWisdomResource';
-import CreateIdeaPost from '@/pages/dashboard/idea-vault/CreateIdeaPost';
 
 // Feature Pages
 import LegacyVaultFeaturePage from '@/pages/features/LegacyVaultPage';
