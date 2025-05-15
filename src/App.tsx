@@ -127,8 +127,8 @@ function App() {
                           <Route path="create" element={<CreateTimelessMessage />} />
                         </Route>
                         
-                        {/* Wisdom Exchange */}
-                        <Route path="wisdom-exchange">
+                        {/* Wisdom Exchange / Mentorship */}
+                        <Route path="mentorship">
                           <Route index element={<WisdomExchangePage />} />
                           <Route path="create" element={<CreateWisdomResource />} />
                         </Route>
