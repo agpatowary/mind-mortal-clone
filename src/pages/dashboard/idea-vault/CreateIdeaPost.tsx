@@ -2,7 +2,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import ContentCreationContainer from '@/components/content/ContentCreationContainer';
 import { Lightbulb } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useToast } from '@/hooks/use-toast';
@@ -129,11 +128,13 @@ const IdeaForm = () => {
             <FormItem>
               <FormLabel>Detailed Content</FormLabel>
               <FormControl>
-                <RichTextEditor 
-                  value={field.value} 
-                  onChange={field.onChange}
-                  placeholder="Describe your idea in detail..."
-                />
+                <div className="min-h-[200px]">
+                  <RichTextEditor 
+                    content={field.value} 
+                    onUpdate={(content) => field.onChange(content)}
+                    className="min-h-[200px]"
+                  />
+                </div>
               </FormControl>
               <FormMessage />
             </FormItem>

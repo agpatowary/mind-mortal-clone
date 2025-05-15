@@ -1,4 +1,5 @@
 
-import { useToast, toast } from "@/hooks/use-toast";
+import { useToast as useToastOriginal, toast as toastOriginal } from "@radix-ui/react-toast";
 
-export { useToast, toast };
+export const useToast = useToastOriginal;
+export const toast = toastOriginal;

@@ -63,7 +63,8 @@ const IdeaVaultPage = () => {
         .from('post_likes')
         .select('post_id')
         .eq('post_type', 'idea')
-        .in('post_id', ideaIds);
+        .in('post_id', ideaIds)
+        .eq('user_id', user.id);
         
       if (error) throw error;
       
@@ -82,22 +83,24 @@ const IdeaVaultPage = () => {
     if (ideaIds.length === 0) return;
     
     try {
-      const { data, error } = await supabase
-        .from('post_likes')
-        .select('post_id, count')
-        .eq('post_type', 'idea')
-        .in('post_id', ideaIds)
-        .group('post_id');
+      // For each post_id, count the number of likes
+      const countPromises = ideaIds.map(async (id) => {
+        const { count, error } = await supabase
+          .from('post_likes')
+          .select('*', { count: 'exact' })
+          .eq('post_type', 'idea')
+          .eq('post_id', id);
+          
+        if (error) throw error;
         
-      if (error) throw error;
-      
-      const newLikesCountMap: Record<string, number> = {};
-      ideaIds.forEach(id => {
-        newLikesCountMap[id] = 0;
+        return { id, count: count || 0 };
       });
       
-      (data || []).forEach(item => {
-        newLikesCountMap[item.post_id] = parseInt(item.count);
+      const counts = await Promise.all(countPromises);
+      
+      const newLikesCountMap: Record<string, number> = {};
+      counts.forEach(item => {
+        newLikesCountMap[item.id] = item.count;
       });
       
       setLikesCountMap(newLikesCountMap);
@@ -189,16 +192,16 @@ const IdeaVaultPage = () => {
               <div className="px-6 pb-4 mt-auto">
                 <div className="flex justify-between items-center">
                   <PostInteractions
-                    likesCount={likesCountMap[idea.id] || 0}
-                    commentsCount={0}
+                    likes={likesCountMap[idea.id] || 0}
+                    comments={0}
                     isLiked={likesMap[idea.id] || false}
-                    onLikeToggle={() => handleLikeToggle(idea.id)}
-                    onCommentClick={() => {/* Implement comment functionality */}}
+                    onLike={() => handleLikeToggle(idea.id)}
+                    onComment={() => {/* Implement comment functionality */}}
                   />
                   <ViewDetailsButton
-                    type="idea"
-                    id={idea.id}
-                    title={idea.title}
+                    route={`/dashboard/idea-vault/view/${idea.id}`}
+                    text="View Details"
+                    tooltip={`View details for ${idea.title}`}
                   />
                 </div>
               </div>

@@ -2,18 +2,27 @@
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from './use-toast';
+import { useAuth } from './useAuth';
 
 type PostType = 'legacy_post' | 'timeless_message' | 'wisdom_resource' | 'idea';
 
 export const usePostLikes = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const { toast } = useToast();
+  const { user } = useAuth();
 
   /**
    * Toggles the like status of a post
    */
   const toggleLike = async (postId: string, postType: PostType, isCurrentlyLiked: boolean): Promise<boolean> => {
-    if (isProcessing) return isCurrentlyLiked;
+    if (isProcessing || !user) {
+      toast({
+        title: "Authentication Required",
+        description: "Please sign in to like posts.",
+        variant: "destructive"
+      });
+      return isCurrentlyLiked;
+    }
     
     setIsProcessing(true);
     
@@ -24,7 +33,8 @@ export const usePostLikes = () => {
           .from('post_likes')
           .delete()
           .eq('post_id', postId)
-          .eq('post_type', postType);
+          .eq('post_type', postType)
+          .eq('user_id', user.id);
           
         if (error) {
           console.error('Error unliking post:', error);
@@ -44,6 +54,7 @@ export const usePostLikes = () => {
           .select('id')
           .eq('post_id', postId)
           .eq('post_type', postType)
+          .eq('user_id', user.id)
           .maybeSingle();
           
         if (existingLike) {
@@ -56,7 +67,8 @@ export const usePostLikes = () => {
           .from('post_likes')
           .insert({
             post_id: postId,
-            post_type: postType
+            post_type: postType,
+            user_id: user.id
           });
           
         if (error) {

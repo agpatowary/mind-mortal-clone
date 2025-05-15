@@ -64,7 +64,7 @@ function App() {
     <ThemeProvider attribute="class" defaultTheme="dark">
       <QueryClientProvider client={queryClient}>
         <BrowserRouter>
-          <Suspense fallback={<LoadingScreen />}>
+          <Suspense fallback={<LoadingScreen isLoading={true} />}>
             <div className="min-h-screen bg-background font-sans antialiased">
               <AuthProvider>
                 <div className="flex flex-col min-h-screen">
