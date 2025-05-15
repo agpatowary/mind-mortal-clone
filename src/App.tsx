@@ -1,129 +1,150 @@
+import React, { Suspense, lazy } from 'react';
+import { Routes, Route, BrowserRouter } from 'react-router-dom';
+import { ThemeProvider } from 'next-themes';
+import { Toaster } from '@/components/ui/toaster';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { AuthProvider } from "./hooks/useAuth";
-import AuthGuard from "./components/auth/AuthGuard";
-import HomePage from "./pages/HomePage";
-import SignIn from "./pages/SignIn";
-import SignUp from "./pages/SignUp";
-import UnauthorizedPage from "./pages/UnauthorizedPage";
-import NotFound from "./pages/NotFound";
-import WisdomExchangePage from "./pages/features/WisdomExchangePage";
-import LegacyVaultPage from "./pages/features/LegacyVaultPage";
-import TimelessMessagesPage from "./pages/features/TimelessMessagesPage";
-import { useState, useEffect } from "react";
-import LoadingScreen from "./components/LoadingScreen";
+// Auth components and pages
+import { AuthProvider } from '@/hooks/useAuth';
+import AuthGuard from '@/components/auth/AuthGuard';
+import SignIn from '@/pages/SignIn';
+import SignUp from '@/pages/SignUp';
+import LoadingScreen from '@/components/LoadingScreen';
 
-// Dashboard imports
-import DashboardLayout from "./components/DashboardLayout";
-import DashboardHome from "./pages/dashboard/DashboardHome";
-import CreateContentPage from "./pages/dashboard/CreateContentPage";
-import LegacyVaultDashboard from "./pages/dashboard/LegacyVaultPage";
-import WisdomExchangeDashboard from "./pages/dashboard/WisdomExchangePage";
-import TimelessMessagesDashboard from "./pages/dashboard/TimelessMessagesPage";
-import ProfilePage from "./pages/dashboard/ProfilePage";
+// Homepage
+import HomePage from '@/pages/HomePage';
+
+// Dashboard
+import DashboardLayout from '@/components/DashboardLayout';
+import DashboardHome from '@/pages/dashboard/DashboardHome';
+
+// Dashboard Feature Pages
+import LegacyVaultPage from '@/pages/dashboard/LegacyVaultPage';
+import TimelessMessagesPage from '@/pages/dashboard/TimelessMessagesPage';
+import WisdomExchangePage from '@/pages/dashboard/WisdomExchangePage';
+import ProfilePage from '@/pages/dashboard/ProfilePage';
+
+// Create Content Pages
+import CreateLegacyPost from '@/pages/dashboard/legacy-vault/CreateLegacyPost';
+import CreateTimelessMessage from '@/pages/dashboard/timeless-messages/CreateTimelessMessage';
+import CreateWisdomResource from '@/pages/dashboard/wisdom-exchange/CreateWisdomResource';
+import CreateIdeaPost from '@/pages/dashboard/idea-vault/CreateIdeaPost';
+
+// Feature Pages
+import LegacyVaultFeaturePage from '@/pages/features/LegacyVaultPage';
+import TimelessMessagesFeaturePage from '@/pages/features/TimelessMessagesPage';
+import WisdomExchangeFeaturePage from '@/pages/features/WisdomExchangePage';
 
 // Legal Pages
-import TermsOfUsePage from "./pages/legal/TermsOfUsePage";
-import PrivacyPolicyPage from "./pages/legal/PrivacyPolicyPage";
-import CommunityGuidelinesPage from "./pages/legal/CommunityGuidelinesPage";
-import CopyrightPolicyPage from "./pages/legal/CopyrightPolicyPage";
+import PrivacyPolicyPage from '@/pages/legal/PrivacyPolicyPage';
+import TermsOfUsePage from '@/pages/legal/TermsOfUsePage';
+import CommunityGuidelinesPage from '@/pages/legal/CommunityGuidelinesPage';
+import CopyrightPolicyPage from '@/pages/legal/CopyrightPolicyPage';
 
-// Pricing Page
-import PricingPage from "./pages/pricing";
+// Other
+import NotFound from '@/pages/NotFound';
+import UnauthorizedPage from '@/pages/UnauthorizedPage';
+import PricingPage from '@/pages/pricing';
 
-// Import framer-motion for animations
-import { MotionConfig } from "framer-motion";
+// Create a client for React Query
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false,
+      staleTime: 5 * 60 * 1000, // 5 minutes
+    },
+  },
+});
 
-const queryClient = new QueryClient();
+// Lazily load the IdeaVaultPage component
+const IdeaVaultPage = lazy(() => import('@/pages/dashboard/IdeaVaultPage'));
 
-const App = () => {
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    // Simulate loading for a minimum time (better UX)
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 2000);
-
-    return () => clearTimeout(timer);
-  }, []);
-
+function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <MotionConfig reducedMotion="user">
-          <LoadingScreen isLoading={isLoading} />
-          {!isLoading && (
-            <>
-              <Toaster />
-              <Sonner />
-              <BrowserRouter>
-                <AuthProvider>
-                  <div className="flex flex-col min-h-screen">
-                    <div className="flex-grow">
-                      {/* Routes section */}
-                      <Routes>
-                        <Route path="/" element={<HomePage />} />
+    <ThemeProvider attribute="class" defaultTheme="dark">
+      <QueryClientProvider client={queryClient}>
+        <BrowserRouter>
+          <Suspense fallback={<LoadingScreen />}>
+            <div className="min-h-screen bg-background font-sans antialiased">
+              <AuthProvider>
+                <div className="flex flex-col min-h-screen">
+                  <div className="flex-grow">
+                    {/* Routes section */}
+                    <Routes>
+                      <Route path="/" element={<HomePage />} />
+                      
+                      {/* Public Feature Pages */}
+                      <Route path="/features">
+                        <Route path="legacy-vault" element={<LegacyVaultFeaturePage />} />
+                        <Route path="timeless-messages" element={<TimelessMessagesFeaturePage />} />
+                        <Route path="wisdom-exchange" element={<WisdomExchangeFeaturePage />} />
+                      </Route>
+                      
+                      {/* Auth-related */}
+                      <Route path="/signin" element={<SignIn />} />
+                      <Route path="/signup" element={<SignUp />} />
+                      <Route path="/unauthorized" element={<UnauthorizedPage />} />
+                      
+                      {/* Legal */}
+                      <Route path="/legal">
+                        <Route path="privacy-policy" element={<PrivacyPolicyPage />} />
+                        <Route path="terms-of-use" element={<TermsOfUsePage />} />
+                        <Route path="community-guidelines" element={<CommunityGuidelinesPage />} />
+                        <Route path="copyright-policy" element={<CopyrightPolicyPage />} />
+                      </Route>
+                      
+                      {/* Pricing */}
+                      <Route path="/pricing" element={<PricingPage />} />
+                      
+                      {/* Dashboard (Protected) */}
+                      <Route path="/dashboard" element={
+                        <AuthGuard>
+                          <DashboardLayout />
+                        </AuthGuard>
+                      }>
+                        <Route index element={<DashboardHome />} />
                         
-                        {/* Feature pages - add mentorship route */}
-                        <Route path="/features/wisdom-exchange" element={<WisdomExchangePage />} />
-                        <Route path="/features/mentorship" element={<WisdomExchangePage />} />
-                        <Route path="/features/legacy-vault" element={<LegacyVaultPage />} />
-                        <Route path="/features/timeless-messages" element={<TimelessMessagesPage />} />
-                        
-                        <Route path="/signin" element={
-                          <AuthGuard requireAuth={false}>
-                            <SignIn />
-                          </AuthGuard>
-                        } />
-                        <Route path="/signup" element={
-                          <AuthGuard requireAuth={false}>
-                            <SignUp />
-                          </AuthGuard>
-                        } />
-                        
-                        {/* Dashboard Routes */}
-                        <Route path="/dashboard" element={
-                          <AuthGuard requireAuth={true}>
-                            <DashboardLayout />
-                          </AuthGuard>
-                        }>
-                          <Route index element={<DashboardHome />} />
-                          <Route path="create" element={<CreateContentPage />} />
-                          <Route path="legacy-vault" element={<LegacyVaultDashboard />} />
-                          <Route path="wisdom-exchange" element={<WisdomExchangeDashboard />} />
-                          <Route path="mentorship" element={<WisdomExchangeDashboard />} />
-                          <Route path="timeless-messages" element={<TimelessMessagesDashboard />} />
-                          <Route path="profile" element={<ProfilePage />} />
+                        {/* Legacy Vault */}
+                        <Route path="legacy-vault">
+                          <Route index element={<LegacyVaultPage />} />
+                          <Route path="create" element={<CreateLegacyPost />} />
                         </Route>
                         
-                        {/* Legal Pages */}
-                        <Route path="/legal/terms" element={<TermsOfUsePage />} />
-                        <Route path="/legal/privacy" element={<PrivacyPolicyPage />} />
-                        <Route path="/legal/community" element={<CommunityGuidelinesPage />} />
-                        <Route path="/legal/copyright" element={<CopyrightPolicyPage />} />
+                        {/* Idea Vault */}
+                        <Route path="idea-vault">
+                          <Route index element={<IdeaVaultPage />} />
+                          <Route path="create" element={<CreateIdeaPost />} />
+                        </Route>
                         
-                        {/* Pricing Page */}
-                        <Route path="/pricing" element={<PricingPage />} />
+                        {/* Timeless Messages */}
+                        <Route path="timeless-messages">
+                          <Route index element={<TimelessMessagesPage />} />
+                          <Route path="create" element={<CreateTimelessMessage />} />
+                        </Route>
                         
-                        <Route path="/unauthorized" element={<UnauthorizedPage />} />
-                        {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-                        <Route path="*" element={<NotFound />} />
-                      </Routes>
-                    </div>
+                        {/* Wisdom Exchange */}
+                        <Route path="wisdom-exchange">
+                          <Route index element={<WisdomExchangePage />} />
+                          <Route path="create" element={<CreateWisdomResource />} />
+                        </Route>
+                        
+                        {/* User Profile */}
+                        <Route path="profile" element={<ProfilePage />} />
+                      </Route>
+                      
+                      {/* 404 Page */}
+                      <Route path="*" element={<NotFound />} />
+                    </Routes>
                   </div>
-                </AuthProvider>
-              </BrowserRouter>
-            </>
-          )}
-        </MotionConfig>
-      </TooltipProvider>
-    </QueryClientProvider>
+                </div>
+              </AuthProvider>
+            </div>
+          </Suspense>
+        </BrowserRouter>
+        <Toaster />
+      </QueryClientProvider>
+    </ThemeProvider>
   );
-};
+}
 
 export default App;

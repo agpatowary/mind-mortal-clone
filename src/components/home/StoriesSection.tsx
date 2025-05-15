@@ -9,13 +9,13 @@ interface CaseStudy {
 }
 
 interface StoriesSectionProps {
-  data: CaseStudy[];
+  data: CaseStudy[] | { items: Array<{ title: string; content?: string; description?: string }> };
 }
 
 const StoriesSection: React.FC<StoriesSectionProps> = ({ data }) => {
   // Ensure data is an array
   const caseStudies = Array.isArray(data) ? data : 
-    data && typeof data === 'object' && data.items ? 
+    data && typeof data === 'object' && 'items' in data && Array.isArray(data.items) ? 
       data.items.map(item => ({
         title: item.title || '',
         description: item.content || item.description || ''

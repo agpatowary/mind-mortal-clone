@@ -72,8 +72,8 @@ const HomePage = () => {
       handleScrollDebounced(direction);
     };
     
-    // Fix: Use EventListenerOptions interface
-    const wheelOptions: EventListenerOptions = { passive: false };
+    // Create an options object that's compatible with TypeScript
+    const wheelOptions = { passive: false } as AddEventListenerOptions;
     document.addEventListener('wheel', handleWheel, wheelOptions);
     
     return () => {
@@ -121,7 +121,7 @@ const HomePage = () => {
     <HeroSection key="hero" data={homeContent.hero} />,
     <FeaturesSection key="features" data={homeContent.features} />,
     <FeaturedMentorsSection key="mentors" />,
-    <StoriesSection key="stories" data={homeContent.caseStudies} />,
+    <StoriesSection key="stories" data={homeContent.caseStudies as any} />,
     <CtaSection key="cta" data={homeContent.cta} />
   ];
   

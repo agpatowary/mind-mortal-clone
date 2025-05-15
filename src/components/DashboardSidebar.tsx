@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Button } from '@/components/ui/button';
-import { Archive, Home, MessageSquare, Plus, User, Users } from 'lucide-react';
+import { Archive, Home, MessageSquare, User, Users, Lightbulb } from 'lucide-react';
 import Logo from './Logo';
 
 type MenuItem = {
@@ -21,14 +21,14 @@ const menuItems: MenuItem[] = [
     icon: Home
   },
   {
-    name: 'Create',
-    path: '/dashboard/create',
-    icon: Plus
-  },
-  {
     name: 'Legacy Vault',
     path: '/dashboard/legacy-vault',
     icon: Archive
+  },
+  {
+    name: 'Idea Vault',
+    path: '/dashboard/idea-vault',
+    icon: Lightbulb
   },
   {
     name: 'Wisdom Exchange',
