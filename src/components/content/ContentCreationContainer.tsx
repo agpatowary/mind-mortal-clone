@@ -4,11 +4,7 @@ import LegacyVaultForm from './LegacyVaultForm';
 import WisdomExchangeForm from './WisdomExchangeForm';
 import TimelessMessagesForm from './TimelessMessagesForm';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-
-// Define a type for route information
-type RouteInfo = {
-  pathname: string;
-};
+import { RouteInfo } from '@/types';
 
 const ContentCreationContainer: React.FC<{ 
   initialTab?: string;

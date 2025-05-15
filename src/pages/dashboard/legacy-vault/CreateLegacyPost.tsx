@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Archive } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -11,10 +11,12 @@ import { RouteInfo } from '@/types';
 
 const CreateLegacyPost = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   
   // Create a properly typed routeInfo object
   const routeInfo: RouteInfo = {
-    returnPath: '/dashboard/legacy-vault'
+    returnPath: '/dashboard/legacy-vault',
+    pathname: location.pathname
   };
   
   return (

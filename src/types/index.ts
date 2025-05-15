@@ -9,4 +9,5 @@ export interface Feature {
 
 export interface RouteInfo {
   returnPath?: string;
+  pathname?: string;
 }
