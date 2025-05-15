@@ -1,3 +1,4 @@
+
 import React, { Suspense, lazy } from 'react';
 import { Routes, Route, BrowserRouter } from 'react-router-dom';
 import { ThemeProvider } from 'next-themes';
@@ -34,6 +35,8 @@ import CreateIdeaPost from '@/pages/dashboard/idea-vault/CreateIdeaPost';
 import LegacyVaultFeaturePage from '@/pages/features/LegacyVaultPage';
 import TimelessMessagesFeaturePage from '@/pages/features/TimelessMessagesPage';
 import WisdomExchangeFeaturePage from '@/pages/features/WisdomExchangePage';
+import MentorshipFeaturePage from '@/pages/features/MentorshipPage';
+import IdeaVaultFeaturePage from '@/pages/features/IdeaVaultPage';
 
 // Legal Pages
 import PrivacyPolicyPage from '@/pages/legal/PrivacyPolicyPage';
@@ -78,6 +81,8 @@ function App() {
                         <Route path="legacy-vault" element={<LegacyVaultFeaturePage />} />
                         <Route path="timeless-messages" element={<TimelessMessagesFeaturePage />} />
                         <Route path="wisdom-exchange" element={<WisdomExchangeFeaturePage />} />
+                        <Route path="mentorship" element={<MentorshipFeaturePage />} />
+                        <Route path="idea-vault" element={<IdeaVaultFeaturePage />} />
                       </Route>
                       
                       {/* Auth-related */}

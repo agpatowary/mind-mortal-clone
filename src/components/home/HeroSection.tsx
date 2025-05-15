@@ -1,4 +1,3 @@
-
 import React, { useRef, useEffect } from 'react';
 import { motion, useMotionValue, useTransform } from 'framer-motion';
 import { Button } from '@/components/ui/button';
@@ -35,6 +34,22 @@ const HeroSection: React.FC<HeroSectionProps> = ({ data }) => {
         // Fallback to image if video fails to play
       });
     }
+  }, []);
+
+  // Fix scroll functionality
+  useEffect(() => {
+    const handleScroll = (event: WheelEvent) => {
+      // If scrolling down, navigate to features section
+      if (event.deltaY > 0) {
+        document.dispatchEvent(new CustomEvent('navigateToSlide', { detail: { index: 1 } }));
+      }
+    };
+
+    window.addEventListener('wheel', handleScroll, { passive: true });
+    
+    return () => {
+      window.removeEventListener('wheel', handleScroll);
+    };
   }, []);
   
   // Handle mouse move

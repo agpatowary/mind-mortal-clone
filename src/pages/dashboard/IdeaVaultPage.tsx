@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -34,14 +35,23 @@ const IdeaVaultPage = () => {
         .eq('resource_type', 'idea')
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching ideas:', error);
+        throw error;
+      }
 
+      console.log('Fetched ideas:', data);
       setIdeas(data || []);
       
       // Fetch likes for each idea
-      const ideaIds = (data || []).map(idea => idea.id);
-      fetchLikesStatus(ideaIds);
-      fetchLikesCounts(ideaIds);
+      if (data && data.length > 0) {
+        const ideaIds = data.map(idea => idea.id);
+        await fetchLikesStatus(ideaIds);
+        await fetchLikesCounts(ideaIds);
+      } else {
+        // No ideas found, just finish loading
+        setIsLoading(false);
+      }
     } catch (error) {
       console.error('Error fetching ideas:', error);
       toast({
@@ -49,13 +59,14 @@ const IdeaVaultPage = () => {
         description: "Failed to load ideas. Please try again.",
         variant: "destructive"
       });
-    } finally {
       setIsLoading(false);
     }
   };
 
   const fetchLikesStatus = async (ideaIds: string[]) => {
-    if (!user || ideaIds.length === 0) return;
+    if (!user || ideaIds.length === 0) {
+      return;
+    }
     
     try {
       const { data, error } = await supabase
@@ -75,6 +86,8 @@ const IdeaVaultPage = () => {
       setLikesMap(newLikesMap);
     } catch (error) {
       console.error('Error fetching likes status:', error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
