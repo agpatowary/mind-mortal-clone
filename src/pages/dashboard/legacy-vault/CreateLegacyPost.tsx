@@ -32,7 +32,7 @@ const CreateLegacyPost = () => {
           <ContentCreationContainer 
             initialTab="legacy-vault"
             routeInfo={{
-              successRoute: '/dashboard/legacy-vault'
+              returnPath: '/dashboard/legacy-vault'
             }}
           />
         </CardContent>

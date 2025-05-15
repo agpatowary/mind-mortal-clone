@@ -32,7 +32,7 @@ const CreateWisdomResource = () => {
           <ContentCreationContainer 
             initialTab="wisdom-exchange"
             routeInfo={{
-              successRoute: '/dashboard/wisdom-exchange'
+              returnPath: '/dashboard/wisdom-exchange'
             }}
           />
         </CardContent>

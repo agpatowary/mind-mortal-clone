@@ -32,7 +32,7 @@ const CreateTimelessMessage = () => {
           <ContentCreationContainer 
             initialTab="timeless-messages"
             routeInfo={{
-              successRoute: '/dashboard/timeless-messages'
+              returnPath: '/dashboard/timeless-messages'
             }}
           />
         </CardContent>
