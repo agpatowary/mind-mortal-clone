@@ -1,266 +1,272 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { Editor } from "@tinymce/tinymce-react";
-import { useToast } from "@/components/ui/use-toast";
-import { Button } from "@/components/ui/button";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
-import { Plus, X } from "lucide-react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
-import FileUpload from "@/components/FileUpload";
 
-const formSchema = z.object({
-  title: z.string().min(3, {
-    message: "Title must be at least 3 characters.",
-  }),
-  description: z.string().min(10, {
-    message: "Description must be at least 10 characters.",
-  }),
-  content: z.string().min(20, {
-    message: "Content must be at least 20 characters.",
-  }),
-  category: z.string().min(1, {
-    message: "Please select a category.",
-  }),
-});
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
+import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
+import { Badge } from '@/components/ui/badge';
+import { XCircle, PlusCircle, Lightbulb, Eye, EyeOff } from 'lucide-react';
 
-interface MediaItem {
-  type: "image" | "video" | "audio" | "document";
-  url: string;
+interface IdeaFormState {
+  title: string;
+  description: string;
+  content: string;
+  tags: string[];
+  isPublic: boolean;
 }
 
-const CreateIdeaPost: React.FC = () => {
+const CreateIdeaPost = () => {
+  const { user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [content, setContent] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("");
-  const [tags, setTags] = useState<string[]>([]);
-  const [currentTag, setCurrentTag] = useState("");
-  const [mediaItems, setMediaItems] = useState<MediaItem[]>([]);
-
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      title: "",
-      description: "",
-      content: "",
-      category: "",
-    },
+  const [currentTag, setCurrentTag] = useState('');
+  const [editorContent, setEditorContent] = useState('');
+  const [formState, setFormState] = useState<IdeaFormState>({
+    title: '',
+    description: '',
+    content: '',
+    tags: [],
+    isPublic: true,
   });
 
-  const handleEditorChange = (content: string | undefined) => {
-    setContent(content || "");
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormState(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleTagAdd = () => {
-    if (currentTag.trim() !== "" && !tags.includes(currentTag.trim())) {
-      setTags([...tags, currentTag.trim()]);
-      setCurrentTag("");
+  const handleEditorChange = (content: string) => {
+    setEditorContent(content);
+    setFormState(prev => ({ ...prev, content }));
+  };
+
+  const handleAddTag = () => {
+    if (currentTag && !formState.tags.includes(currentTag)) {
+      setFormState(prev => ({
+        ...prev,
+        tags: [...prev.tags, currentTag]
+      }));
+      setCurrentTag('');
     }
   };
 
-  const handleTagRemove = (tagToRemove: string) => {
-    setTags(tags.filter((tag) => tag !== tagToRemove));
+  const handleTagKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleAddTag();
+    }
   };
 
-  const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    setIsSubmitting(true);
-    try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+  const handleRemoveTag = (tag: string) => {
+    setFormState(prev => ({
+      ...prev,
+      tags: prev.tags.filter(t => t !== tag)
+    }));
+  };
 
+  const handleToggleVisibility = () => {
+    setFormState(prev => ({ ...prev, isPublic: !prev.isPublic }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!user) {
       toast({
-        title: "Idea submitted!",
-        description: "You'll be redirected in a moment.",
+        title: "Authentication Required",
+        description: "You must be signed in to create ideas.",
+        variant: "destructive"
       });
-
-      setTimeout(() => {
-        navigate("/dashboard/idea-vault");
-      }, 1500);
-    } catch (error) {
+      return;
+    }
+    
+    if (!formState.title || !formState.description) {
       toast({
-        variant: "destructive",
-        title: "Uh oh! Something went wrong.",
-        description: "There was a problem submitting your idea.",
+        title: "Missing Information",
+        description: "Please provide a title and description for your idea.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    setIsSubmitting(true);
+    
+    try {
+      const { data, error } = await supabase
+        .from('wisdom_resources')
+        .insert({
+          title: formState.title,
+          description: formState.description,
+          resource_type: 'idea',
+          created_by: user.id,
+          tags: formState.tags,
+          resource_url: null,
+          file_path: null,
+          published_status: 'published',
+          is_public: formState.isPublic,
+          content: formState.content || editorContent
+        })
+        .select();
+        
+      if (error) throw error;
+      
+      toast({
+        title: "Idea Created",
+        description: "Your idea has been created successfully!",
+      });
+      
+      navigate('/dashboard/idea-vault');
+    } catch (error: any) {
+      console.error('Error creating idea:', error);
+      toast({
+        title: "Creation Failed",
+        description: error.message || "Failed to create your idea. Please try again.",
+        variant: "destructive"
       });
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const handleMediaUpload = (newMedia: MediaItem) => {
-    setMediaItems(prev => [...prev, newMedia]);
-  };
-
   return (
-    <div className="container max-w-4xl mx-auto py-10">
-      <h1 className="text-3xl font-bold mb-6">Create New Idea</h1>
+    <div className="container mx-auto pb-8">
+      <div className="flex items-center gap-2 mb-4">
+        <Lightbulb className="h-6 w-6 text-primary" />
+        <h1 className="text-2xl font-bold">Create a New Idea</h1>
+      </div>
+      <p className="text-muted-foreground mb-6">
+        Document your innovative ideas and share them with the world.
+      </p>
 
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-          <FormField
-            control={form.control}
-            name="title"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Title</FormLabel>
-                <FormControl>
-                  <Input placeholder="Enter title" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="description"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Description</FormLabel>
-                <FormControl>
-                  <Textarea
-                    placeholder="Enter description"
-                    className="resize-none"
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="content"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Content</FormLabel>
-                <FormControl>
-                  <Editor
-                    apiKey="your-api-key"
-                    value={content}
-                    init={{
-                      height: 300,
-                      menubar: false,
-                      plugins: [
-                        'advlist autolink lists link image charmap print preview anchor',
-                        'searchreplace visualblocks code fullscreen',
-                        'insertdatetime media table paste code help wordcount'
-                      ],
-                      toolbar:
-                        'undo redo | formatselect | ' +
-                        'bold italic backcolor | alignleft aligncenter ' +
-                        'alignright alignjustify | bullist numlist outdent indent | ' +
-                        'removeformat | help'
-                    }}
-                    onEditorChange={handleEditorChange}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="category"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Category</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select a category" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    <SelectItem value="technology">Technology</SelectItem>
-                    <SelectItem value="science">Science</SelectItem>
-                    <SelectItem value="art">Art</SelectItem>
-                    <SelectItem value="philosophy">Philosophy</SelectItem>
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <div>
-            <FormLabel>Tags</FormLabel>
-            <div className="flex items-center space-x-2">
+      <form onSubmit={handleSubmit}>
+        <Card>
+          <CardHeader>
+            <CardTitle>Idea Details</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="title">Title</Label>
               <Input
-                type="text"
-                placeholder="Add a tag"
-                value={currentTag}
-                onChange={(e) => setCurrentTag(e.target.value)}
+                id="title"
+                name="title"
+                placeholder="Give your idea a clear, catchy title"
+                value={formState.title}
+                onChange={handleChange}
+                required
               />
-              <Button type="button" size="sm" onClick={handleTagAdd}>
-                <Plus className="w-4 h-4 mr-2" />
-                Add
-              </Button>
             </div>
-            <div className="flex flex-wrap mt-2">
-              {tags.map((tag) => (
-                <Badge key={tag} className="mr-2 mt-2" variant="secondary">
-                  {tag}
-                  <Button
-                    type="button"
-                    size="icon"
-                    variant="ghost"
-                    onClick={() => handleTagRemove(tag)}
-                    className="ml-2 -mr-1 h-4 w-4"
-                  >
-                    <X className="h-3 w-3" />
-                  </Button>
-                </Badge>
-              ))}
+            
+            <div className="space-y-2">
+              <Label htmlFor="description">Short Description</Label>
+              <Textarea
+                id="description"
+                name="description"
+                placeholder="Provide a brief summary of your idea (1-2 sentences)"
+                value={formState.description}
+                onChange={handleChange}
+                required
+                className="h-20"
+              />
             </div>
-          </div>
-
-          <div>
-            <FormLabel>Media</FormLabel>
-            <FileUpload onUpload={handleMediaUpload} />
-            <div className="flex mt-4 space-x-4">
-              {mediaItems.map((media, index) => (
-                <div key={index} className="border rounded-md p-2">
-                  {media.type === "image" && (
-                    <img src={media.url} alt="Media" className="max-w-[100px] max-h-[100px]" />
-                  )}
-                  {media.type === "video" && (
-                    <video src={media.url} controls className="max-w-[100px] max-h-[100px]"></video>
-                  )}
-                  {media.type === "audio" && (
-                    <audio src={media.url} controls></audio>
-                  )}
-                  {media.type === "document" && (
-                    <p>Document: {media.url}</p>
-                  )}
+            
+            <div className="space-y-2">
+              <Label>Detailed Explanation</Label>
+              <Textarea
+                id="content"
+                name="content"
+                placeholder="Describe your idea in detail. What problem does it solve? How does it work?"
+                value={formState.content}
+                onChange={handleChange}
+                className="min-h-[300px]"
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="tags">Tags</Label>
+              <div className="flex gap-2">
+                <Input
+                  id="tags"
+                  placeholder="Add tags (e.g., tech, business, education)"
+                  value={currentTag}
+                  onChange={(e) => setCurrentTag(e.target.value)}
+                  onKeyDown={handleTagKeyDown}
+                />
+                <Button 
+                  type="button" 
+                  onClick={handleAddTag}
+                  variant="outline"
+                >
+                  <PlusCircle className="h-4 w-4" />
+                </Button>
+              </div>
+              
+              {formState.tags.length > 0 && (
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {formState.tags.map(tag => (
+                    <Badge key={tag} className="flex items-center gap-1">
+                      {tag}
+                      <XCircle 
+                        className="h-3 w-3 cursor-pointer" 
+                        onClick={() => handleRemoveTag(tag)}
+                      />
+                    </Badge>
+                  ))}
                 </div>
-              ))}
+              )}
             </div>
-          </div>
-
-          <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? "Submitting..." : "Submit Idea"}
-          </Button>
-        </form>
-      </Form>
+            
+            <div className="flex items-center space-x-2">
+              <Switch
+                id="visibility"
+                checked={formState.isPublic}
+                onCheckedChange={handleToggleVisibility}
+              />
+              <div className="flex flex-col gap-1">
+                <Label htmlFor="visibility" className="flex items-center gap-2">
+                  {formState.isPublic ? (
+                    <>
+                      <Eye className="h-4 w-4" />
+                      Public
+                    </>
+                  ) : (
+                    <>
+                      <EyeOff className="h-4 w-4" />
+                      Private
+                    </>
+                  )}
+                </Label>
+                <p className="text-xs text-muted-foreground">
+                  {formState.isPublic 
+                    ? "Your idea will be visible to everyone" 
+                    : "Your idea will be visible only to you"}
+                </p>
+              </div>
+            </div>
+          </CardContent>
+          
+          <CardFooter className="flex justify-between">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => navigate('/dashboard/idea-vault')}
+            >
+              Cancel
+            </Button>
+            <Button 
+              type="submit" 
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? "Creating..." : "Create Idea"}
+            </Button>
+          </CardFooter>
+        </Card>
+      </form>
     </div>
   );
 };

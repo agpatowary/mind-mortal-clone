@@ -1,408 +1,724 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
+import { 
+  Card, 
+  CardContent, 
+  CardDescription, 
+  CardHeader, 
+  CardTitle, 
+  CardFooter 
+} from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useForm } from "react-hook-form";
-import { useToast } from "@/hooks/use-toast";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import { useAuth } from '@/hooks/useAuth';
-import { CheckCircle, Circle, User, UploadCloud } from 'lucide-react';
+import { CheckCircle, UserCircle, MapPin, Mail, Phone, Edit, Camera, CheckSquare, AlertTriangle } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
+import { Badge } from "@/components/ui/badge";
+import DashboardAnimatedBackground from '@/components/dashboard/DashboardAnimatedBackground';
 
-const ProfilePage = () => {
+interface ProfileFormData {
+  full_name: string;
+  username: string;
+  bio: string;
+  location: string;
+  phone: string;
+  avatar_url: string | null;
+}
+
+interface ProfileCompletionTask {
+  id: string;
+  title: string;
+  description: string;
+  completed: boolean;
+  points: number;
+  action: () => void;
+}
+
+const ProfilePage: React.FC = () => {
+  const { user, profile, refreshProfile } = useAuth();
   const { toast } = useToast();
-  const { user, profile } = useAuth();
-  const [completedItems, setCompletedItems] = useState<string[]>([]);
-  const [avatarFile, setAvatarFile] = useState<File | null>(null);
-  const [isUploading, setIsUploading] = useState(false);
-  const [activeTab, setActiveTab] = useState("profile");
-
-  const { register, handleSubmit, setValue, formState: { errors, isDirty } } = useForm({
-    defaultValues: {
-      full_name: profile?.full_name || '',
-      username: profile?.username || '',
-      bio: profile?.bio || '',
-      location: profile?.location || ''
-    }
+  
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formData, setFormData] = useState<ProfileFormData>({
+    full_name: '',
+    username: '',
+    bio: '',
+    location: '',
+    phone: '',
+    avatar_url: null
   });
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const [profileCompletionPercentage, setProfileCompletionPercentage] = useState(0);
+  const [completedTasks, setCompletedTasks] = useState<string[]>([]);
 
   useEffect(() => {
     if (profile) {
-      setValue('full_name', profile.full_name || '');
-      setValue('username', profile.username || '');
-      setValue('bio', profile.bio || '');
-      setValue('location', profile.location || '');
+      setFormData({
+        full_name: profile.full_name || '',
+        username: profile.username || '',
+        bio: profile.bio || '',
+        location: profile.location || '',
+        phone: profile.phone || '',
+        avatar_url: profile.avatar_url
+      });
+      setAvatarPreview(profile.avatar_url || null);
       
-      // Set completed profile items
-      setCompletedItems(profile.profile_completion || []);
+      // Fetch profile completion from the database
+      fetchProfileCompletion();
     }
-  }, [profile, setValue]);
+  }, [profile]);
 
-  const onSubmit = async (data: any) => {
+  const fetchProfileCompletion = async () => {
+    if (!user) return;
+    
     try {
-      if (!user) return;
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('profile_completion')
+        .eq('id', user.id)
+        .single();
+        
+      if (error) {
+        console.error('Error fetching profile completion:', error);
+        return;
+      }
       
-      // Since updateProfile is not available, let's just show a toast
-      toast({
-        title: "Profile Updated",
-        description: "Your profile information has been updated successfully.",
-      });
-    } catch (error: any) {
-      toast({
-        title: "Update Failed",
-        description: error.message || "There was a problem updating your profile.",
-        variant: "destructive",
-      });
+      if (data) {
+        // If profile_completion exists, use it
+        if (data.profile_completion) {
+          setCompletedTasks(data.profile_completion);
+          calculateProfileCompletion(data.profile_completion);
+        } else {
+          // Otherwise, calculate based on profile data
+          const completed: string[] = [];
+          if (profile?.full_name) completed.push('add_name');
+          if (profile?.bio) completed.push('add_bio');
+          if (profile?.avatar_url) completed.push('add_avatar');
+          if (profile?.location) completed.push('add_location');
+          
+          setCompletedTasks(completed);
+          calculateProfileCompletion(completed);
+        }
+      }
+    } catch (err) {
+      console.error('Error in profile completion fetch:', err);
     }
   };
 
-  const profileCompletionSteps = [
-    {
-      id: 'profile_photo',
-      label: 'Add profile photo',
-      completed: completedItems.includes('profile_photo'),
-    },
-    {
-      id: 'bio',
-      label: 'Write a bio',
-      completed: completedItems.includes('bio'),
-    },
-    {
-      id: 'location',
-      label: 'Add your location',
-      completed: completedItems.includes('location'),
-    },
-    {
-      id: 'interests',
-      label: 'Add your interests',
-      completed: completedItems.includes('interests'),
-    },
-    {
-      id: 'first_legacy_post',
-      label: 'Create your first legacy post',
-      completed: completedItems.includes('first_legacy_post'),
-    }
-  ];
+  const calculateProfileCompletion = (completed: string[]) => {
+    const totalTasks = getProfileCompletionTasks().length;
+    const completedCount = completed.length;
+    const percentage = Math.floor((completedCount / totalTasks) * 100);
+    setProfileCompletionPercentage(percentage);
+  };
 
-  const completionPercentage = Math.round(
-    (completedItems.length / profileCompletionSteps.length) * 100
-  );
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
 
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      setAvatarFile(e.target.files[0]);
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setAvatarFile(file);
+      
+      // Create preview
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setAvatarPreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
     }
   };
 
   const uploadAvatar = async () => {
-    if (!avatarFile || !user) return;
+    if (!avatarFile || !user) return null;
     
-    setIsUploading(true);
+    const fileExt = avatarFile.name.split('.').pop();
+    const fileName = `${user.id}-${Date.now()}.${fileExt}`;
+    
     try {
-      // Upload avatar functionality would go here
+      const { data, error } = await supabase.storage
+        .from('avatars')
+        .upload(fileName, avatarFile);
+        
+      if (error) {
+        console.error('Error uploading avatar:', error);
+        return null;
+      }
+      
+      // Get public URL
+      const { data: publicUrlData } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(fileName);
+        
+      return publicUrlData.publicUrl;
+    } catch (err) {
+      console.error('Error in avatar upload:', err);
+      return null;
+    }
+  };
+
+  const updateProfile = async () => {
+    if (!user) return;
+    
+    setIsSubmitting(true);
+    
+    try {
+      let avatarUrl = formData.avatar_url;
+      
+      // If new avatar was uploaded, process it
+      if (avatarFile) {
+        const uploadedUrl = await uploadAvatar();
+        if (uploadedUrl) {
+          avatarUrl = uploadedUrl;
+        }
+      }
+      
+      // Update profile in database
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          full_name: formData.full_name,
+          username: formData.username,
+          bio: formData.bio,
+          location: formData.location,
+          phone: formData.phone,
+          avatar_url: avatarUrl,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', user.id);
+        
+      if (error) {
+        toast({
+          title: "Error updating profile",
+          description: error.message,
+          variant: "destructive"
+        });
+        return;
+      }
+      
+      // Refresh the profile in the auth context
+      await refreshProfile();
       
       toast({
-        title: "Avatar Updated",
-        description: "Your profile picture has been updated successfully.",
+        title: "Profile updated",
+        description: "Your profile has been successfully updated."
       });
       
-      // Update completed items
-      if (!completedItems.includes('profile_photo')) {
-        const updatedItems = [...completedItems, 'profile_photo'];
-        setCompletedItems(updatedItems);
-        // Since updateProfile is not available, we'll just log
-        console.log('Would update profile with new completion items', updatedItems);
-      }
-    } catch (error: any) {
+      setIsEditMode(false);
+    } catch (err) {
+      console.error('Error updating profile:', err);
       toast({
-        title: "Upload Failed",
-        description: error.message || "There was a problem uploading your avatar.",
-        variant: "destructive",
+        title: "Error updating profile",
+        description: "An unexpected error occurred.",
+        variant: "destructive"
       });
     } finally {
-      setIsUploading(false);
-      setAvatarFile(null);
+      setIsSubmitting(false);
+    }
+  };
+
+  const completeTask = async (taskId: string) => {
+    if (!user) return;
+    
+    try {
+      // Don't add duplicates
+      if (completedTasks.includes(taskId)) return;
+      
+      const updatedTasks = [...completedTasks, taskId];
+      
+      // Update in the database
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          profile_completion: updatedTasks
+        })
+        .eq('id', user.id);
+        
+      if (error) {
+        console.error('Error updating profile completion:', error);
+        
+        // If profile_completion column doesn't exist, add it
+        if (error.code === 'PGRST116') {
+          // We need to add the column first
+          toast({
+            title: "Profile updated",
+            description: "Task marked as completed."
+          });
+          
+          // For now, just update the local state
+          setCompletedTasks(updatedTasks);
+          calculateProfileCompletion(updatedTasks);
+          return;
+        }
+        
+        toast({
+          title: "Error updating task",
+          description: error.message,
+          variant: "destructive"
+        });
+        return;
+      }
+      
+      setCompletedTasks(updatedTasks);
+      calculateProfileCompletion(updatedTasks);
+      
+      toast({
+        title: "Task completed",
+        description: "Profile task marked as completed."
+      });
+    } catch (err) {
+      console.error('Error completing task:', err);
+      toast({
+        title: "Error completing task",
+        description: "An unexpected error occurred.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const getProfileCompletionTasks = (): ProfileCompletionTask[] => {
+    return [
+      {
+        id: 'add_name',
+        title: 'Add your name',
+        description: 'Add your full name to your profile.',
+        completed: completedTasks.includes('add_name'),
+        points: 10,
+        action: () => setIsEditMode(true)
+      },
+      {
+        id: 'add_bio',
+        title: 'Add a bio',
+        description: 'Write a short bio about yourself.',
+        completed: completedTasks.includes('add_bio'),
+        points: 15,
+        action: () => setIsEditMode(true)
+      },
+      {
+        id: 'add_avatar',
+        title: 'Add a profile picture',
+        description: 'Upload a profile picture to personalize your account.',
+        completed: completedTasks.includes('add_avatar'),
+        points: 10,
+        action: () => setIsEditMode(true)
+      },
+      {
+        id: 'add_location',
+        title: 'Add your location',
+        description: 'Let people know where you are from.',
+        completed: completedTasks.includes('add_location'),
+        points: 5,
+        action: () => setIsEditMode(true)
+      },
+      {
+        id: 'create_legacy',
+        title: 'Create your first legacy post',
+        description: 'Start your legacy by creating your first post.',
+        completed: completedTasks.includes('create_legacy'),
+        points: 20,
+        action: () => window.location.href = '/dashboard/create'
+      }
+    ];
+  };
+
+  // Animation variants
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: {
+      y: 0,
+      opacity: 1,
+      transition: {
+        type: "spring",
+        stiffness: 100,
+        damping: 10
+      }
     }
   };
 
   return (
-    <div className="container mx-auto py-8">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-      >
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* Left Column - Profile Card */}
-          <div className="md:col-span-1">
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle>Profile</CardTitle>
-                <CardDescription>
-                  Manage your personal information
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="flex flex-col items-center">
-                  <div className="relative mb-4">
-                    <Avatar className="h-24 w-24">
-                      <AvatarImage src={profile?.avatar_url || ''} />
-                      <AvatarFallback className="text-2xl">
-                        <User className="h-12 w-12" />
-                      </AvatarFallback>
-                    </Avatar>
-                    <label 
-                      htmlFor="avatar-upload" 
-                      className="absolute -bottom-1 -right-1 bg-primary text-primary-foreground rounded-full p-1 cursor-pointer"
-                    >
-                      <User className="h-4 w-4" /> {/* Changed from Edit to User */}
-                    </label>
-                    <input 
-                      id="avatar-upload" 
-                      type="file" 
-                      className="hidden" 
-                      accept="image/*"
-                      onChange={handleAvatarChange}
-                    />
+    <DashboardAnimatedBackground objectCount={4}>
+      <div className="container mx-auto max-w-5xl">
+        <motion.div 
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+        >
+          <motion.div variants={itemVariants} className="mb-8">
+            <h1 className="text-3xl font-bold">Your Profile</h1>
+            <p className="text-muted-foreground mt-2">
+              Manage your personal information and profile settings
+            </p>
+          </motion.div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Profile Summary Card */}
+            <motion.div variants={itemVariants} className="md:col-span-1">
+              <Card className="overflow-hidden">
+                <div className="bg-gradient-to-r from-primary/30 to-secondary/30 h-24 relative"></div>
+                <div className="px-6 -mt-12 pb-6">
+                  <div className="relative w-24 h-24 mx-auto mb-4">
+                    {avatarPreview ? (
+                      <img 
+                        src={avatarPreview} 
+                        alt={formData.full_name || 'Profile'} 
+                        className="rounded-full border-4 border-background object-cover w-full h-full"
+                      />
+                    ) : (
+                      <div className="rounded-full border-4 border-background bg-muted w-full h-full flex items-center justify-center">
+                        <UserCircle className="h-12 w-12 text-muted-foreground" />
+                      </div>
+                    )}
                   </div>
                   
-                  {avatarFile && (
-                    <div className="mb-4 text-center">
-                      <p className="text-sm mb-2">Selected: {avatarFile.name}</p>
-                      <Button 
-                        size="sm" 
-                        onClick={uploadAvatar}
-                        disabled={isUploading}
-                      >
-                        {isUploading ? (
-                          <span className="flex items-center">
-                            <span className="animate-spin mr-2">⏳</span> Uploading...
-                          </span>
-                        ) : (
-                          <span className="flex items-center gap-2">
-                            <UploadCloud className="h-4 w-4" /> Upload
-                          </span>
-                        )}
-                      </Button>
-                    </div>
-                  )}
+                  <div className="text-center mb-6">
+                    <h2 className="text-xl font-bold">{formData.full_name || 'Anonymous User'}</h2>
+                    <p className="text-muted-foreground">{formData.username || user?.email}</p>
+                  </div>
                   
-                  <h2 className="text-xl font-bold mt-2">{profile?.full_name || 'Your Name'}</h2>
-                  <p className="text-muted-foreground">@{profile?.username || 'username'}</p>
-                  
-                  <div className="w-full mt-6">
-                    <div className="flex justify-between mb-2">
-                      <span className="text-sm font-medium">Profile Completion</span>
-                      <span className="text-sm font-medium">{completionPercentage}%</span>
-                    </div>
-                    <div className="w-full bg-muted rounded-full h-2.5 mb-4">
-                      <div 
-                        className="bg-primary h-2.5 rounded-full" 
-                        style={{ width: `${completionPercentage}%` }}
-                      ></div>
+                  <div className="space-y-3">
+                    {formData.bio && (
+                      <p className="text-sm">{formData.bio}</p>
+                    )}
+                    
+                    {formData.location && (
+                      <div className="flex items-center gap-2 text-sm">
+                        <MapPin className="h-4 w-4 text-muted-foreground" />
+                        <span>{formData.location}</span>
+                      </div>
+                    )}
+                    
+                    <div className="flex items-center gap-2 text-sm">
+                      <Mail className="h-4 w-4 text-muted-foreground" />
+                      <span>{user?.email}</span>
                     </div>
                     
-                    <div className="space-y-3">
-                      {profileCompletionSteps.map((step) => (
-                        <div key={step.id} className="flex items-center">
-                          {step.completed ? (
-                            <CheckCircle className="h-5 w-5 text-primary mr-2" />
-                          ) : (
-                            <Circle className="h-5 w-5 text-muted-foreground mr-2" />
-                          )}
-                          <span className={step.completed ? "text-primary" : "text-muted-foreground"}>
-                            {step.label}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
+                    {formData.phone && (
+                      <div className="flex items-center gap-2 text-sm">
+                        <Phone className="h-4 w-4 text-muted-foreground" />
+                        <span>{formData.phone}</span>
+                      </div>
+                    )}
+                  </div>
+                  
+                  <div className="mt-6">
+                    <Button 
+                      variant="outline" 
+                      className="w-full flex items-center gap-2"
+                      onClick={() => setIsEditMode(true)}
+                    >
+                      <Edit className="h-4 w-4" /> Edit Profile
+                    </Button>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
-          </div>
-          
-          {/* Right Column - Tabs Content */}
-          <div className="md:col-span-2">
-            <Card>
-              <CardHeader className="pb-2">
-                <Tabs defaultValue="profile" value={activeTab} onValueChange={setActiveTab}>
-                  <TabsList className="grid w-full grid-cols-3">
-                    <TabsTrigger value="profile">Profile Info</TabsTrigger>
-                    <TabsTrigger value="preferences">Preferences</TabsTrigger>
-                    <TabsTrigger value="privacy">Privacy</TabsTrigger>
-                  </TabsList>
-                </Tabs>
-              </CardHeader>
-              <CardContent>
-                <Tabs value={activeTab} onValueChange={setActiveTab}>
-                  <TabsContent value="profile" className="mt-0">
-                    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-                      <div>
-                        <label className="block text-sm font-medium mb-1" htmlFor="full_name">
-                          Full Name
-                        </label>
-                        <input
-                          id="full_name"
-                          type="text"
-                          className="w-full px-3 py-2 border rounded-md bg-background"
-                          {...register('full_name', { required: "Name is required" })}
-                        />
-                        {errors.full_name && (
-                          <p className="text-red-500 text-sm mt-1">{String(errors.full_name.message)}</p>
+              </Card>
+              
+              <Card className="mt-6">
+                <CardHeader>
+                  <CardTitle className="text-lg">Profile Completion</CardTitle>
+                  <CardDescription>{profileCompletionPercentage}% Complete</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="h-2 bg-secondary/30 rounded-full mb-4">
+                    <div 
+                      className="h-full bg-primary rounded-full" 
+                      style={{ width: `${profileCompletionPercentage}%` }}
+                    ></div>
+                  </div>
+                  
+                  <div className="space-y-3">
+                    {getProfileCompletionTasks().map(task => (
+                      <div key={task.id} className="flex items-start gap-3">
+                        <div className={`p-1 rounded-full ${task.completed ? 'text-green-500' : 'text-muted-foreground'}`}>
+                          {task.completed ? (
+                            <CheckCircle className="h-5 w-5" />
+                          ) : (
+                            <CheckSquare className="h-5 w-5" />
+                          )}
+                        </div>
+                        <div className="flex-1">
+                          <div className="flex items-center justify-between">
+                            <p className="font-medium text-sm">{task.title}</p>
+                            <Badge variant="outline">{task.points} pts</Badge>
+                          </div>
+                          <p className="text-xs text-muted-foreground">{task.description}</p>
+                        </div>
+                        {!task.completed && (
+                          <Button variant="ghost" size="sm" onClick={() => {
+                            task.action();
+                            completeTask(task.id);
+                          }}>
+                            Do it
+                          </Button>
                         )}
                       </div>
-                      
-                      <div>
-                        <label className="block text-sm font-medium mb-1" htmlFor="username">
-                          Username
-                        </label>
-                        <input
-                          id="username"
-                          type="text"
-                          className="w-full px-3 py-2 border rounded-md bg-background"
-                          {...register('username')}
-                        />
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+            
+            {/* Profile Details/Edit */}
+            <motion.div variants={itemVariants} className="md:col-span-2">
+              <Card>
+                <CardHeader>
+                  <CardTitle>{isEditMode ? 'Edit Profile' : 'Profile Details'}</CardTitle>
+                  <CardDescription>
+                    {isEditMode 
+                      ? 'Update your personal information' 
+                      : 'Your personal information and preferences'}
+                  </CardDescription>
+                </CardHeader>
+                
+                <CardContent>
+                  {isEditMode ? (
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="full_name">Full Name</Label>
+                          <Input 
+                            id="full_name"
+                            name="full_name"
+                            value={formData.full_name}
+                            onChange={handleInputChange}
+                            placeholder="Your full name"
+                          />
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <Label htmlFor="username">Username</Label>
+                          <Input 
+                            id="username"
+                            name="username"
+                            value={formData.username}
+                            onChange={handleInputChange}
+                            placeholder="Your username"
+                          />
+                        </div>
                       </div>
                       
-                      <div>
-                        <label className="block text-sm font-medium mb-1" htmlFor="bio">
-                          Bio
-                        </label>
-                        <textarea
+                      <div className="space-y-2">
+                        <Label htmlFor="bio">Bio</Label>
+                        <Textarea 
                           id="bio"
+                          name="bio"
+                          value={formData.bio}
+                          onChange={handleInputChange}
+                          placeholder="Tell us about yourself"
                           rows={4}
-                          className="w-full px-3 py-2 border rounded-md bg-background"
-                          {...register('bio')}
-                        ></textarea>
-                      </div>
-                      
-                      <div>
-                        <label className="block text-sm font-medium mb-1" htmlFor="location">
-                          Location
-                        </label>
-                        <input
-                          id="location"
-                          type="text"
-                          className="w-full px-3 py-2 border rounded-md bg-background"
-                          {...register('location')}
                         />
                       </div>
                       
-                      <div className="flex justify-end">
-                        <Button type="submit" disabled={!isDirty}>
-                          Save Changes
-                        </Button>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="location">Location</Label>
+                          <Input 
+                            id="location"
+                            name="location"
+                            value={formData.location}
+                            onChange={handleInputChange}
+                            placeholder="Your location"
+                          />
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <Label htmlFor="phone">Phone</Label>
+                          <Input 
+                            id="phone"
+                            name="phone"
+                            value={formData.phone}
+                            onChange={handleInputChange}
+                            placeholder="Your phone number"
+                          />
+                        </div>
                       </div>
-                    </form>
-                  </TabsContent>
-                  
-                  <TabsContent value="preferences" className="mt-0">
-                    <div className="py-4">
-                      <h3 className="text-lg font-medium mb-4">Notification Preferences</h3>
-                      <p className="text-muted-foreground mb-4">
-                        Configure how and when you receive notifications.
-                      </p>
                       
-                      <div className="space-y-4">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <h4 className="font-medium">Email Notifications</h4>
-                            <p className="text-sm text-muted-foreground">Receive updates via email</p>
+                      <div className="space-y-2">
+                        <Label htmlFor="avatar">Profile Picture</Label>
+                        <div className="flex items-center gap-4">
+                          <div className="w-16 h-16 rounded-full overflow-hidden bg-muted flex items-center justify-center">
+                            {avatarPreview ? (
+                              <img 
+                                src={avatarPreview} 
+                                alt="Preview" 
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              <UserCircle className="h-8 w-8 text-muted-foreground" />
+                            )}
                           </div>
-                          <div>
-                            <label className="relative inline-flex items-center cursor-pointer">
-                              <input type="checkbox" className="sr-only peer" defaultChecked />
-                              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
-                            </label>
-                          </div>
-                        </div>
-                        
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <h4 className="font-medium">Push Notifications</h4>
-                            <p className="text-sm text-muted-foreground">Receive alerts on your device</p>
-                          </div>
-                          <div>
-                            <label className="relative inline-flex items-center cursor-pointer">
-                              <input type="checkbox" className="sr-only peer" />
-                              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
-                            </label>
-                          </div>
-                        </div>
-                        
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <h4 className="font-medium">Legacy Updates</h4>
-                            <p className="text-sm text-muted-foreground">Notifications about your legacy content</p>
-                          </div>
-                          <div>
-                            <label className="relative inline-flex items-center cursor-pointer">
-                              <input type="checkbox" className="sr-only peer" defaultChecked />
-                              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
-                            </label>
+                          
+                          <div className="flex-1">
+                            <Label htmlFor="avatar-input" className="cursor-pointer">
+                              <div className="flex items-center gap-2 px-4 py-2 border rounded-md hover:bg-muted/50 transition-colors">
+                                <Camera className="h-4 w-4" />
+                                <span>Choose Image</span>
+                              </div>
+                              <input 
+                                id="avatar-input"
+                                type="file"
+                                accept="image/*"
+                                onChange={handleAvatarChange}
+                                className="hidden"
+                              />
+                            </Label>
                           </div>
                         </div>
                       </div>
                     </div>
-                  </TabsContent>
-                  
-                  <TabsContent value="privacy" className="mt-0">
-                    <div className="py-4">
-                      <h3 className="text-lg font-medium mb-4">Privacy Settings</h3>
-                      <p className="text-muted-foreground mb-4">
-                        Control how your information is displayed and shared.
-                      </p>
-                      
-                      <div className="space-y-4">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <h4 className="font-medium">Public Profile</h4>
-                            <p className="text-sm text-muted-foreground">Allow others to see your profile</p>
-                          </div>
-                          <div>
-                            <label className="relative inline-flex items-center cursor-pointer">
-                              <input type="checkbox" className="sr-only peer" defaultChecked />
-                              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
-                            </label>
-                          </div>
+                  ) : (
+                    <div className="space-y-6">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <h3 className="text-sm font-medium text-muted-foreground">Full Name</h3>
+                          <p>{formData.full_name || 'Not provided'}</p>
                         </div>
                         
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <h4 className="font-medium">Show Email Address</h4>
-                            <p className="text-sm text-muted-foreground">Display your email to other users</p>
-                          </div>
-                          <div>
-                            <label className="relative inline-flex items-center cursor-pointer">
-                              <input type="checkbox" className="sr-only peer" />
-                              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
-                            </label>
-                          </div>
-                        </div>
-                        
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <h4 className="font-medium">Activity Visibility</h4>
-                            <p className="text-sm text-muted-foreground">Show your activities to followers</p>
-                          </div>
-                          <div>
-                            <label className="relative inline-flex items-center cursor-pointer">
-                              <input type="checkbox" className="sr-only peer" defaultChecked />
-                              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
-                            </label>
-                          </div>
+                        <div>
+                          <h3 className="text-sm font-medium text-muted-foreground">Username</h3>
+                          <p>{formData.username || 'Not provided'}</p>
                         </div>
                       </div>
+                      
+                      <div>
+                        <h3 className="text-sm font-medium text-muted-foreground">Bio</h3>
+                        <p className="whitespace-pre-line">{formData.bio || 'Not provided'}</p>
+                      </div>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <h3 className="text-sm font-medium text-muted-foreground">Location</h3>
+                          <p>{formData.location || 'Not provided'}</p>
+                        </div>
+                        
+                        <div>
+                          <h3 className="text-sm font-medium text-muted-foreground">Phone</h3>
+                          <p>{formData.phone || 'Not provided'}</p>
+                        </div>
+                      </div>
+                      
+                      <div>
+                        <h3 className="text-sm font-medium text-muted-foreground">Email</h3>
+                        <p>{user?.email}</p>
+                      </div>
                     </div>
-                  </TabsContent>
-                </Tabs>
-              </CardContent>
-            </Card>
+                  )}
+                </CardContent>
+                
+                {isEditMode && (
+                  <CardFooter className="flex justify-end space-x-2">
+                    <Button 
+                      variant="outline" 
+                      onClick={() => {
+                        setIsEditMode(false);
+                        // Reset form data
+                        if (profile) {
+                          setFormData({
+                            full_name: profile.full_name || '',
+                            username: profile.username || '',
+                            bio: profile.bio || '',
+                            location: profile.location || '',
+                            phone: profile.phone || '',
+                            avatar_url: profile.avatar_url
+                          });
+                          setAvatarPreview(profile.avatar_url || null);
+                        }
+                        setAvatarFile(null);
+                      }}
+                    >
+                      Cancel
+                    </Button>
+                    <Button 
+                      onClick={updateProfile}
+                      disabled={isSubmitting}
+                    >
+                      {isSubmitting ? 'Saving...' : 'Save Changes'}
+                    </Button>
+                  </CardFooter>
+                )}
+              </Card>
+              
+              <Tabs defaultValue="account" className="mt-6">
+                <TabsList className="grid grid-cols-3">
+                  <TabsTrigger value="account">Account</TabsTrigger>
+                  <TabsTrigger value="security">Security</TabsTrigger>
+                  <TabsTrigger value="notifications">Notifications</TabsTrigger>
+                </TabsList>
+                
+                <TabsContent value="account" className="space-y-4">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Account Information</CardTitle>
+                      <CardDescription>Manage your account settings</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between p-3 border rounded-md">
+                          <div className="flex items-center gap-2">
+                            <Mail className="h-4 w-4 text-muted-foreground" />
+                            <span>Email Verification</span>
+                          </div>
+                          <Badge className="bg-green-500">{user?.email_confirmed_at ? 'Verified' : 'Pending'}</Badge>
+                        </div>
+                        
+                        <div className="flex items-center justify-between p-3 border rounded-md">
+                          <div className="flex items-center gap-2">
+                            <AlertTriangle className="h-4 w-4 text-muted-foreground" />
+                            <span>Account Status</span>
+                          </div>
+                          <Badge>Active</Badge>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+                
+                <TabsContent value="security">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Security Settings</CardTitle>
+                      <CardDescription>Manage your security preferences</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <p>Security settings will be available soon.</p>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+                
+                <TabsContent value="notifications">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Notification Preferences</CardTitle>
+                      <CardDescription>Manage how you receive notifications</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <p>Notification settings will be available soon.</p>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+              </Tabs>
+            </motion.div>
           </div>
-        </div>
-      </motion.div>
-    </div>
+        </motion.div>
+      </div>
+    </DashboardAnimatedBackground>
   );
 };
 

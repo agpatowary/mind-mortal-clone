@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -15,12 +14,10 @@ import BecomeAMentorForm from '@/components/mentor/BecomeAMentorForm';
 import DashboardAnimatedBackground from '@/components/dashboard/DashboardAnimatedBackground';
 import ViewDetailsButton from '@/components/dashboard/ViewDetailsButton';
 import { renderContent, truncateContent } from '@/utils/contentRenderers';
-import { useNavigate } from 'react-router-dom';
 
-const MentorshipPage = () => {
+const WisdomExchangePage = () => {
   const { user, profile, roles, isLoading } = useAuth();
   const { toast } = useToast();
-  const navigate = useNavigate();
   const [resources, setResources] = useState<any[]>([]);
   const [isLoadingResources, setIsLoadingResources] = useState(true);
   const [activeTab, setActiveTab] = useState("explore");
@@ -41,7 +38,7 @@ const MentorshipPage = () => {
 
     try {
       setIsLoadingResources(true);
-      console.log("Fetching mentorship resources for user:", user.id);
+      console.log("Fetching wisdom resources for user:", user.id);
       
       // First, get the wisdom resources
       const { data: resourcesData, error: resourcesError } = await supabase
@@ -62,7 +59,7 @@ const MentorshipPage = () => {
         .limit(10);
         
       if (resourcesError) {
-        console.error('Error fetching mentorship resources:', resourcesError);
+        console.error('Error fetching wisdom resources:', resourcesError);
         throw resourcesError;
       }
       
@@ -141,16 +138,12 @@ const MentorshipPage = () => {
       console.error('Error in fetchResources function:', error);
       toast({
         title: "Error fetching resources",
-        description: "There was a problem loading the mentorship resources.",
+        description: "There was a problem loading the wisdom resources.",
         variant: "destructive"
       });
     } finally {
       setIsLoadingResources(false);
     }
-  };
-
-  const handleShareWisdom = () => {
-    navigate('/dashboard/mentorship/create');
   };
 
   // Animation variants for staggered child animations
@@ -205,7 +198,7 @@ const MentorshipPage = () => {
             className="flex flex-col md:flex-row md:items-center justify-between gap-4"
           >
             <div>
-              <h1 className="text-3xl font-bold">Mentorship</h1>
+              <h1 className="text-3xl font-bold">Wisdom Exchange</h1>
               <p className="text-muted-foreground mt-1">
                 Discover and share knowledge with the community
               </p>
@@ -213,10 +206,7 @@ const MentorshipPage = () => {
             
             <div className="flex items-center gap-3">
               {isMentor() ? (
-                <Button 
-                  className="flex items-center gap-2"
-                  onClick={handleShareWisdom}
-                >
+                <Button className="flex items-center gap-2">
                   <Edit className="h-4 w-4" />
                   <span>Share Wisdom</span>
                 </Button>
@@ -331,7 +321,7 @@ const MentorshipPage = () => {
                               </div>
                               
                               <ViewDetailsButton 
-                                route={`/dashboard/mentorship/${resource.id}`}
+                                route={`/dashboard/wisdom/${resource.id}`}
                                 text="Read More"
                               />
                             </div>
@@ -352,18 +342,15 @@ const MentorshipPage = () => {
                 ) : (
                   <div className="flex flex-col items-center justify-center py-12 text-center">
                     <Book className="h-16 w-16 text-muted-foreground mb-4" />
-                    <h3 className="text-xl font-medium mb-2">No mentorship resources found</h3>
+                    <h3 className="text-xl font-medium mb-2">No wisdom resources found</h3>
                     <p className="text-muted-foreground max-w-md mb-6">
                       {isMentor() 
-                        ? "Share your knowledge by creating the first mentorship resource!"
-                        : "There are no mentorship resources available yet. Follow mentors to see their content here."}
+                        ? "Share your knowledge by creating the first wisdom resource!"
+                        : "There are no wisdom resources available yet. Follow mentors to see their content here."}
                     </p>
                     
                     {isMentor() ? (
-                      <Button 
-                        className="flex items-center gap-2"
-                        onClick={handleShareWisdom}
-                      >
+                      <Button className="flex items-center gap-2">
                         <Edit className="h-4 w-4" />
                         <span>Create Resource</span>
                       </Button>
@@ -379,7 +366,7 @@ const MentorshipPage = () => {
                   <Award className="h-16 w-16 text-muted-foreground mb-4" />
                   <h3 className="text-xl font-medium mb-2">Follow mentors to see their content</h3>
                   <p className="text-muted-foreground max-w-md mb-6">
-                    When you follow mentors, their mentorship resources will appear here.
+                    When you follow mentors, their wisdom resources will appear here.
                   </p>
                   
                   <Button className="flex items-center gap-2" onClick={() => setActiveTab("explore")}>
@@ -411,4 +398,4 @@ const MentorshipPage = () => {
   );
 };
 
-export default MentorshipPage;
+export default WisdomExchangePage;
