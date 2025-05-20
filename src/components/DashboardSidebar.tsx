@@ -31,8 +31,8 @@ const menuItems: MenuItem[] = [
     icon: Lightbulb
   },
   {
-    name: 'Wisdom Exchange',
-    path: '/dashboard/wisdom-exchange',
+    name: 'Mentorship',
+    path: '/dashboard/mentorship',
     icon: Users
   },
   {
