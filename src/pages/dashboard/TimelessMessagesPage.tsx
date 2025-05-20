@@ -1,9 +1,8 @@
-
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Clock, Mail, CalendarDays, User, MessageSquare, Plus } from 'lucide-react';
+import { Clock, Mail, CalendarDays, User, MessageSquare, Plus, Edit, Eye } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
@@ -44,7 +43,8 @@ const TimelessMessagesPage: React.FC = () => {
   };
 
   const handleCreateMessage = () => {
-    navigate('/dashboard/create', { state: { contentType: 'timeless-messages' } });
+    // Updated to navigate directly to the correct path
+    navigate('/dashboard/timeless-messages/create');
   };
 
   const containerVariants = {

@@ -21,18 +21,17 @@ import DashboardHome from '@/pages/dashboard/DashboardHome';
 // Dashboard Feature Pages
 import LegacyVaultPage from '@/pages/dashboard/LegacyVaultPage';
 import TimelessMessagesPage from '@/pages/dashboard/TimelessMessagesPage';
-import WisdomExchangePage from '@/pages/dashboard/WisdomExchangePage';
+import MentorshipPage from '@/pages/dashboard/WisdomExchangePage';
 import ProfilePage from '@/pages/dashboard/ProfilePage';
 
 // Create Content Pages
 import CreateLegacyPost from '@/pages/dashboard/legacy-vault/CreateLegacyPost';
 import CreateTimelessMessage from '@/pages/dashboard/timeless-messages/CreateTimelessMessage';
-import CreateWisdomResource from '@/pages/dashboard/wisdom-exchange/CreateWisdomResource';
+import CreateMentorshipResource from '@/pages/dashboard/wisdom-exchange/CreateWisdomResource';
 
 // Feature Pages
 import LegacyVaultFeaturePage from '@/pages/features/LegacyVaultPage';
 import TimelessMessagesFeaturePage from '@/pages/features/TimelessMessagesPage';
-import WisdomExchangeFeaturePage from '@/pages/features/WisdomExchangePage';
 import MentorshipFeaturePage from '@/pages/features/MentorshipPage';
 import IdeaVaultFeaturePage from '@/pages/features/IdeaVaultPage';
 
@@ -79,7 +78,6 @@ function App() {
                       <Route path="/features">
                         <Route path="legacy-vault" element={<LegacyVaultFeaturePage />} />
                         <Route path="timeless-messages" element={<TimelessMessagesFeaturePage />} />
-                        <Route path="wisdom-exchange" element={<WisdomExchangeFeaturePage />} />
                         <Route path="mentorship" element={<MentorshipFeaturePage />} />
                         <Route path="idea-vault" element={<IdeaVaultFeaturePage />} />
                       </Route>
@@ -127,10 +125,10 @@ function App() {
                           <Route path="create" element={<CreateTimelessMessage />} />
                         </Route>
                         
-                        {/* Wisdom Exchange */}
-                        <Route path="wisdom-exchange">
-                          <Route index element={<WisdomExchangePage />} />
-                          <Route path="create" element={<CreateWisdomResource />} />
+                        {/* Mentorship */}
+                        <Route path="mentorship">
+                          <Route index element={<MentorshipPage />} />
+                          <Route path="create" element={<CreateMentorshipResource />} />
                         </Route>
                         
                         {/* User Profile */}

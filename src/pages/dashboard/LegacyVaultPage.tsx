@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
@@ -45,7 +44,8 @@ const LegacyVaultPage: React.FC = () => {
   };
 
   const handleCreateLegacy = () => {
-    navigate('/dashboard/create', { state: { contentType: 'legacy-vault' } });
+    // Updated to navigate directly to the correct path
+    navigate('/dashboard/legacy-vault/create');
   };
 
   const containerVariants = {

@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Users, GanttChart, Rocket, ArrowRight, Brain } from 'lucide-react';
+import { Users, GanttChart, Rocket, ArrowRight, ArrowLeft, Brain } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import AnimatedBackground from '@/components/AnimatedBackground';
@@ -14,6 +14,16 @@ const MentorshipPage = () => {
     <div className="min-h-screen bg-background">
       <AnimatedBackground objectCount={7}>
         <div className="container mx-auto px-4 py-16 relative z-10">
+          {/* Back button */}
+          <Button
+            variant="ghost"
+            className="mb-8 flex items-center gap-2"
+            onClick={() => navigate(-1)}
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back
+          </Button>
+
           <div className="text-center mb-16">
             <div className="inline-flex items-center justify-center p-3 bg-primary/10 rounded-full mb-4">
               <Users className="h-10 w-10 text-primary" />

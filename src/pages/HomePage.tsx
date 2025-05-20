@@ -15,7 +15,7 @@ import FeaturedMentorsSection from '@/components/home/FeaturedMentorsSection';
 
 // Import JSON data
 import homeContent from '@/data/homeContent.json';
-import { Feature } from '@/types';
+import { Feature, CaseStudy } from '@/types';
 
 // Add default CTA text to features items if missing
 const enhancedFeatures = {
@@ -24,6 +24,14 @@ const enhancedFeatures = {
     ...item,
     cta: item.cta || "Learn More"
   })) as Feature[]
+};
+
+// Format case studies for type compatibility
+const formatCaseStudies = (caseStudies: any): CaseStudy[] => {
+  return caseStudies.items.map((study: any) => ({
+    ...study,
+    description: study.content || study.description || "",
+  }));
 };
 
 const HomePage = () => {
@@ -72,7 +80,7 @@ const HomePage = () => {
     }, 800); // Wait for slide animation to complete
   };
   
-  // Handle wheel events for mouse scrolling
+  // Handle wheel events for mouse scrolling - fixed implementation
   useEffect(() => {
     const handleWheel = (e: WheelEvent) => {
       e.preventDefault();
@@ -82,19 +90,19 @@ const HomePage = () => {
       handleScrollDebounced(direction);
     };
     
-    // Create an options object that's compatible with TypeScript
-    const wheelOptions = { passive: false } as AddEventListenerOptions;
-    document.addEventListener('wheel', handleWheel, wheelOptions);
+    // Add event listener with passive: false to allow preventDefault
+    const wheelOptions = { passive: false };
+    window.addEventListener('wheel', handleWheel, wheelOptions);
     
     return () => {
-      document.removeEventListener('wheel', handleWheel, wheelOptions);
+      window.removeEventListener('wheel', handleWheel, wheelOptions);
       
       // Clear any pending timeouts when component unmounts
       if (scrollTimeoutRef.current) {
         window.clearTimeout(scrollTimeoutRef.current);
       }
     };
-  }, [isScrolling]);
+  }, [isScrolling]); // Only depend on isScrolling state
   
   // Navigate to next slide
   const nextSlide = () => {
@@ -131,7 +139,7 @@ const HomePage = () => {
     <HeroSection key="hero" data={homeContent.hero} />,
     <FeaturesSection key="features" data={enhancedFeatures} />,
     <FeaturedMentorsSection key="mentors" />,
-    <StoriesSection key="stories" data={homeContent.caseStudies as any} />,
+    <StoriesSection key="stories" data={formatCaseStudies(homeContent.caseStudies)} />,
     <CtaSection key="cta" data={homeContent.cta} />
   ];
   

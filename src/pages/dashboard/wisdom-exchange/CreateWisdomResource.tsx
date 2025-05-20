@@ -15,7 +15,7 @@ const CreateWisdomResource = () => {
   
   // Create a properly typed routeInfo object
   const routeInfo: RouteInfo = {
-    returnPath: '/dashboard/wisdom-exchange',
+    returnPath: '/dashboard/mentorship',
     pathname: location.pathname
   };
   
@@ -30,7 +30,7 @@ const CreateWisdomResource = () => {
         <CardHeader className="border-b">
           <div className="flex items-center gap-2 mb-2">
             <Users className="h-6 w-6 text-primary" />
-            <CardTitle>Create Wisdom Resource</CardTitle>
+            <CardTitle>Create Mentorship Resource</CardTitle>
           </div>
           <CardDescription>
             Share your knowledge and connect with others seeking guidance.
@@ -38,7 +38,7 @@ const CreateWisdomResource = () => {
         </CardHeader>
         <CardContent className="pt-6">
           <ContentCreationContainer 
-            initialTab="wisdom-exchange"
+            initialTab="mentorship"
             routeInfo={routeInfo}
           />
         </CardContent>
