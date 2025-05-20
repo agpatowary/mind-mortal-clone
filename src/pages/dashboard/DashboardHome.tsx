@@ -144,7 +144,7 @@ const DashboardHome = () => {
               icon={<Users className="h-6 w-6 text-primary" />}
               title="Mentorship"
               description="Share your knowledge or connect with mentors."
-              to="/dashboard/wisdom-exchange"
+              to="/dashboard/mentorship"
             />
           </motion.div>
           
