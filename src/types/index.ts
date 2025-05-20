@@ -1,4 +1,3 @@
-
 export interface Feature {
   title: string;
   description: string;
@@ -96,6 +95,13 @@ export interface MenteeProfile {
   currentProjects: string[];
   seekingHelpWith: string | null;
   goals: string[];
+}
+
+export interface CaseStudy {
+  title: string;
+  description: string;
+  content?: string;
+  image?: string;
 }
 
 export interface IdeaPost {

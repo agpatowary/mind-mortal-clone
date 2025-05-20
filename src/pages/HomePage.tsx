@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -91,11 +90,10 @@ const HomePage = () => {
     };
     
     // Add event listener with passive: false to allow preventDefault
-    const wheelOptions = { passive: false };
-    window.addEventListener('wheel', handleWheel, wheelOptions);
+    window.addEventListener('wheel', handleWheel, { passive: false } as EventListenerOptions);
     
     return () => {
-      window.removeEventListener('wheel', handleWheel, wheelOptions);
+      window.removeEventListener('wheel', handleWheel, { passive: false } as EventListenerOptions);
       
       // Clear any pending timeouts when component unmounts
       if (scrollTimeoutRef.current) {
