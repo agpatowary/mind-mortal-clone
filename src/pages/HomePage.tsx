@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -41,6 +42,7 @@ const HomePage = () => {
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [isScrolling, setIsScrolling] = useState(false);
   const scrollTimeoutRef = useRef<number | null>(null);
+  const touchStartY = useRef<number | null>(null);
   
   // Total number of slides
   const totalSlides = 5;
@@ -101,6 +103,40 @@ const HomePage = () => {
       }
     };
   }, [isScrolling]); // Only depend on isScrolling state
+  
+  // Handle touch events for mobile scrolling
+  useEffect(() => {
+    const handleTouchStart = (e: TouchEvent) => {
+      touchStartY.current = e.touches[0].clientY;
+    };
+    
+    const handleTouchMove = (e: TouchEvent) => {
+      if (touchStartY.current === null) return;
+      
+      const touchY = e.touches[0].clientY;
+      const diff = touchStartY.current - touchY;
+      
+      // Only trigger if the user has moved their finger significantly
+      if (Math.abs(diff) > 50) {
+        handleScrollDebounced(diff > 0 ? 1 : -1);
+        touchStartY.current = null; // Reset to prevent multiple triggers
+      }
+    };
+    
+    const handleTouchEnd = () => {
+      touchStartY.current = null;
+    };
+    
+    window.addEventListener('touchstart', handleTouchStart);
+    window.addEventListener('touchmove', handleTouchMove);
+    window.addEventListener('touchend', handleTouchEnd);
+    
+    return () => {
+      window.removeEventListener('touchstart', handleTouchStart);
+      window.removeEventListener('touchmove', handleTouchMove);
+      window.removeEventListener('touchend', handleTouchEnd);
+    };
+  }, [isScrolling]);
   
   // Navigate to next slide
   const nextSlide = () => {
@@ -203,7 +239,7 @@ const HomePage = () => {
             </AnimatePresence>
           </div>
           
-          {/* Slide Navigation - moved below the slides*/}
+          {/* Slide Navigation - moved below the slides */}
           <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-50">
             <HomeNavigation currentSection={currentSlide} onNavigate={handleNavigate} />
           </div>

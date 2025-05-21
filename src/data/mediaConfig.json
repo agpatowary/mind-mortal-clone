@@ -13,5 +13,23 @@
   },
   "timelessMessages": {
     "submissionAnimation": "/lovable-uploads/message-submission.webm"
+  },
+  "animations": {
+    "messageSubmitted": {
+      "path": "/lovable-uploads/message-submission.webm",
+      "fallbackImage": "/lovable-uploads/bcc0ccf7-c2c6-48ef-af7c-832d8c5bdaa7.png"
+    },
+    "ideaCreated": {
+      "path": "/lovable-uploads/idea-created.webm",
+      "fallbackImage": "/lovable-uploads/bcc0ccf7-c2c6-48ef-af7c-832d8c5bdaa7.png"
+    },
+    "legacyContributed": {
+      "path": "/lovable-uploads/legacy-contributed.webm",
+      "fallbackImage": "/lovable-uploads/bcc0ccf7-c2c6-48ef-af7c-832d8c5bdaa7.png"
+    },
+    "mentorshipSetup": {
+      "path": "/lovable-uploads/mentorship-setup.webm",
+      "fallbackImage": "/lovable-uploads/bcc0ccf7-c2c6-48ef-af7c-832d8c5bdaa7.png"
+    }
   }
 }

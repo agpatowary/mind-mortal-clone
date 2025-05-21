@@ -39,7 +39,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     // Set up auth state change listener
     const { data } = supabase.auth.onAuthStateChange(
-      (event, newSession) => {
+      async (event, newSession) => {
         console.log('Auth state change:', event, newSession ? 'session exists' : 'no session');
         
         if (event === 'SIGNED_OUT') {
@@ -57,8 +57,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         
         // If session exists, fetch profile and roles
         if (newSession?.user) {
-          fetchUserProfile(newSession.user.id);
-          fetchUserRoles(newSession.user.id);
+          await fetchUserProfile(newSession.user.id);
+          await fetchUserRoles(newSession.user.id);
         }
       }
     );
@@ -221,29 +221,29 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       setIsLoading(true);
       
-      // Unsubscribe from auth changes first
-      if (authSubscription) {
-        authSubscription.unsubscribe();
-      }
+      // First, perform the actual sign out
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
       
-      // Clear state immediately before the API call to prevent UI issues
+      // Clear state after the API call
       setUser(null);
       setSession(null);
       setProfile(null);
       setRoles(['guest']);
       
-      // Then perform the actual sign out
-      const { error } = await supabase.auth.signOut();
-      if (error) throw error;
+      // Unsubscribe from auth changes
+      if (authSubscription) {
+        authSubscription.unsubscribe();
+      }
       
-      // Show success message after successful signout
+      // Show success message
       toast({
         title: "Signed out",
         description: "You have been signed out successfully.",
       });
       
-      // Navigate after state is cleared and signout is complete
-      navigate('/', { replace: true });
+      // Hard redirect to home page after state is cleared and signout is complete
+      window.location.href = '/';
     } catch (error: any) {
       console.error('Sign out error:', error);
       toast({

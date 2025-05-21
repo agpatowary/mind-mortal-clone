@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Lightbulb, GanttChart, Users, Rocket, ArrowRight, ArrowLeft } from 'lucide-react';
@@ -24,6 +23,7 @@ const IdeaVaultPage = () => {
             Back
           </Button>
 
+          {/* Rest of the component remains the same */}
           <div className="text-center mb-16">
             <div className="inline-flex items-center justify-center p-3 bg-primary/10 rounded-full mb-4">
               <Lightbulb className="h-10 w-10 text-primary" />

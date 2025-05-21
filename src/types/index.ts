@@ -1,3 +1,4 @@
+
 export interface Feature {
   title: string;
   description: string;
@@ -116,4 +117,38 @@ export interface IdeaPost {
   createdAt: string;
   updatedAt: string;
   createdBy: string;
+}
+
+// Interface for animation data
+export interface AnimationConfig {
+  path: string;
+  fallbackImage?: string;
+}
+
+// Interface for admin dashboard types
+export interface UserSummary {
+  id: string;
+  fullName: string;
+  email: string;
+  role: string[];
+  status: 'active' | 'suspended' | 'pending';
+  joinDate: string;
+  planType?: string;
+}
+
+export interface AdminSubscriptionPlan {
+  id: string;
+  name: string;
+  price: number;
+  interval: 'monthly' | 'yearly' | 'lifetime';
+  features: string[];
+  isActive: boolean;
+}
+
+export interface UserActivityLog {
+  id: string;
+  userId: string;
+  action: string;
+  timestamp: string;
+  details?: Record<string, any>;
 }

@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Button } from '@/components/ui/button';
-import { Archive, Home, MessageSquare, User, Users, Lightbulb } from 'lucide-react';
+import { Archive, Home, MessageSquare, Users, Lightbulb } from 'lucide-react';
 import Logo from './Logo';
 
 type MenuItem = {
@@ -39,12 +39,8 @@ const menuItems: MenuItem[] = [
     name: 'Timeless Messages',
     path: '/dashboard/timeless-messages',
     icon: MessageSquare
-  },
-  {
-    name: 'Profile',
-    path: '/dashboard/profile',
-    icon: User
   }
+  // Removed Profile link - now in the dropdown
 ];
 
 const sidebarAnimation = {
