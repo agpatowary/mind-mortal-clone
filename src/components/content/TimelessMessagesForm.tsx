@@ -1,312 +1,356 @@
+
 import React, { useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Calendar } from "@/components/ui/calendar"
-import { CalendarIcon } from "lucide-react";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { cn } from "@/lib/utils";
-import { format } from "date-fns";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion"
-import { Checkbox } from "@/components/ui/checkbox"
-import { useToast } from "@/hooks/use-toast";
-import { MediaItem, RecurringMessageSettings } from '@/types';
-import FileUploader from '../FileUpload';
-import { AnimationPlayer } from "../ui/animation-player";
-import mediaConfig from '@/data/mediaConfig.json';
-import { Dialog, DialogContent } from "../ui/dialog";
+import { format, addDays } from 'date-fns';
+import { useNavigate } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Textarea } from '@/components/ui/textarea';
+import { Switch } from '@/components/ui/switch';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { RichTextEditor } from '@/components/editor/RichTextEditor';
+import { useToast } from '@/hooks/use-toast';
+import { FileUpload } from '@/components/editor/FileUpload';
+import { RecurringMessageSettings } from '../timeless-messages/RecurringMessageSettings';
+import { RecurringMessageSettings as RecurringSettingsType } from '@/types';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { CalendarIcon } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface TimelessMessagesFormProps {
-  onComplete?: (message: any) => void;
+  onSubmit?: (data: any) => void;
+  isEdit?: boolean;
+  initialData?: any;
 }
 
-const TimelessMessagesForm = ({
-  onComplete
-}: TimelessMessagesFormProps) => {
-  const [title, setTitle] = useState("");
-  const [content, setContent] = useState("");
-  const [recipient, setRecipient] = useState("");
-  const [deliveryDate, setDeliveryDate] = useState<Date | undefined>(undefined);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [mediaType, setMediaType] = useState<string | null>(null);
-  const [mediaUrls, setMediaUrls] = useState<string[]>([]);
-  const [recurringSettings, setRecurringSettings] = useState<RecurringMessageSettings>({
-    isRecurring: false
-  });
+const TimelessMessagesForm: React.FC<TimelessMessagesFormProps> = ({
+  onSubmit,
+  isEdit = false,
+  initialData,
+}) => {
+  const navigate = useNavigate();
   const { toast } = useToast();
-  const [showSuccessAnimation, setShowSuccessAnimation] = useState(false);
-  
-  const handleMediaUpload = (newMedia: MediaItem) => {
-    setMediaUrls(prevUrls => [...prevUrls, newMedia.url]);
-  };
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [messageType, setMessageType] = useState('text');
+  const [title, setTitle] = useState(initialData?.title || '');
+  const [recipient, setRecipient] = useState(initialData?.recipient || '');
+  const [message, setMessage] = useState(initialData?.message || '');
+  const [richMessage, setRichMessage] = useState(initialData?.richMessage || '');
+  const [mediaUrl, setMediaUrl] = useState(initialData?.mediaUrl || '');
+  const [isTimeCapsule, setIsTimeCapsule] = useState(initialData?.isTimeCapsule || false);
+  const [deliveryDate, setDeliveryDate] = useState<Date>(
+    initialData?.deliveryDate ? new Date(initialData.deliveryDate) : addDays(new Date(), 1)
+  );
+  const [isRecurring, setIsRecurring] = useState(initialData?.isRecurring || false);
+  const [recurringSettings, setRecurringSettings] = useState<RecurringSettingsType>(
+    initialData?.recurringSettings || {
+      isRecurring: false,
+      frequency: 'yearly',
+      customDays: [],
+      endDate: null,
+    }
+  );
 
-  const handleRemoveMedia = (urlToRemove: string) => {
-    setMediaUrls(prevUrls => prevUrls.filter(url => url !== urlToRemove));
-  };
-
-  const handleRecurringChange = (field: keyof RecurringMessageSettings, value: any) => {
-    setRecurringSettings(prevSettings => ({
-      ...prevSettings,
-      [field]: value
-    }));
+  const handleDateChange = (date: Date | undefined) => {
+    if (date) {
+      setDeliveryDate(date);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitting(true);
     
-    try {
-      // Validate inputs
-      if (!title.trim() || !content.trim() || !recipient.trim()) {
-        toast({
-          title: "Invalid input",
-          description: "Please fill out all required fields.",
-          variant: "destructive"
-        });
-        setIsSubmitting(false);
-        return;
-      }
-      
-      // Create message object
-      const timelessMessage = {
-        id: uuidv4(),
-        title: title.trim(),
-        content: content.trim(),
-        recipient: recipient.trim(),
-        delivery_date: deliveryDate ? new Date(deliveryDate).toISOString() : null,
-        recurring: recurringSettings,
-        created_at: new Date().toISOString(),
-        content_type: mediaType,
-        attachments: mediaUrls,
-      };
-      
-      // Here you would send the data to your backend
-      console.log("Submitting message:", timelessMessage);
-      
-      // Show the success animation
-      setShowSuccessAnimation(true);
-      
-      // Reset form after animation completes
-      setTimeout(() => {
-        setTitle("");
-        setContent("");
-        setRecipient("");
-        setDeliveryDate("");
-        setMediaType(null);
-        setMediaUrls([]);
-        setRecurringSettings({
-          isRecurring: false
-        });
-        setShowSuccessAnimation(false);
-        
-        toast({
-          title: "Message created!",
-          description: "Your timeless message has been scheduled.",
-        });
-        
-        if (onComplete) {
-          onComplete(timelessMessage);
-        }
-        
-        setIsSubmitting(false);
-      }, 3000); // Allow time for animation to play
-    } catch (error) {
-      console.error("Error submitting message:", error);
+    if (!title) {
       toast({
-        title: "Submission failed",
-        description: "There was an error creating your message.",
-        variant: "destructive"
+        title: "Missing Information",
+        description: "Please provide a title for your message.",
+        variant: "destructive",
       });
+      return;
+    }
+
+    if (!recipient) {
+      toast({
+        title: "Missing Information",
+        description: "Please specify who this message is for.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (messageType === 'text' && !message) {
+      toast({
+        title: "Missing Content",
+        description: "Please enter your message content.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (messageType === 'rich' && !richMessage) {
+      toast({
+        title: "Missing Content",
+        description: "Please enter your message content.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (isTimeCapsule && !deliveryDate) {
+      toast({
+        title: "Missing Delivery Date",
+        description: "Please select when this message should be delivered.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      // Prepare the data object
+      const messageData = {
+        id: initialData?.id || uuidv4(),
+        title,
+        recipient,
+        messageType,
+        message: messageType === 'text' ? message : richMessage,
+        mediaUrl: messageType === 'media' ? mediaUrl : '',
+        isTimeCapsule,
+        deliveryDate: isTimeCapsule ? deliveryDate.toISOString() : null,
+        isRecurring,
+        recurringSettings: isRecurring ? recurringSettings : null,
+        createdAt: initialData?.createdAt || new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+
+      if (onSubmit) {
+        await onSubmit(messageData);
+      }
+
+      toast({
+        title: isEdit ? "Message Updated" : "Message Created",
+        description: isEdit 
+          ? "Your timeless message has been updated successfully."
+          : "Your timeless message has been created and stored securely.",
+      });
+
+      // Navigate back after success
+      setTimeout(() => {
+        navigate('/dashboard/timeless-messages');
+      }, 1500);
+    } catch (error) {
+      console.error("Error saving message:", error);
+      toast({
+        title: "Something went wrong",
+        description: "There was an error saving your message. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
       setIsSubmitting(false);
     }
   };
-  
+
+  const handleFileUploaded = (url: string) => {
+    setMediaUrl(url);
+  };
+
   return (
-    <>
-      <div className="space-y-6">
-        <div>
-          <Label htmlFor="title">Title</Label>
-          <Input
-            type="text"
-            id="title"
-            placeholder="Message Title"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            disabled={isSubmitting}
-          />
-        </div>
-        
-        <div>
-          <Label htmlFor="content">Content</Label>
-          <Textarea
-            id="content"
-            placeholder="Your Message"
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            disabled={isSubmitting}
-          />
-        </div>
-        
-        <div>
-          <Label htmlFor="recipient">Recipient</Label>
-          <Input
-            type="text"
-            id="recipient"
-            placeholder="Recipient's Name"
-            value={recipient}
-            onChange={(e) => setRecipient(e.target.value)}
-            disabled={isSubmitting}
-          />
-        </div>
-        
-        <div>
-          <Label>Delivery Date</Label>
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                variant={"outline"}
-                className={cn(
-                  "w-[240px] justify-start text-left font-normal",
-                  !deliveryDate && "text-muted-foreground"
-                )}
-                disabled={isSubmitting}
-              >
-                <CalendarIcon className="mr-2 h-4 w-4" />
-                {deliveryDate ? format(deliveryDate, "PPP") : <span>Pick a date</span>}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start">
-              <Calendar
-                mode="single"
-                selected={deliveryDate}
-                onSelect={setDeliveryDate}
-                disabled={isSubmitting}
-                initialFocus
+    <form onSubmit={handleSubmit} className="space-y-8">
+      <Card>
+        <CardHeader>
+          <CardTitle>{isEdit ? "Edit Message" : "Create a New Timeless Message"}</CardTitle>
+          <CardDescription>
+            Craft a message that will be preserved and delivered in the future.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="grid gap-3 md:grid-cols-2">
+            <div className="space-y-2">
+              <Label htmlFor="title">Message Title</Label>
+              <Input
+                id="title"
+                placeholder="Title of your message"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
               />
-            </PopoverContent>
-          </Popover>
-        </div>
-        
-        <div>
-          <Label>Media Type</Label>
-          <Select onValueChange={setMediaType} disabled={isSubmitting}>
-            <SelectTrigger className="w-[240px]">
-              <SelectValue placeholder="Select a media type" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="image">Image</SelectItem>
-              <SelectItem value="video">Video</SelectItem>
-              <SelectItem value="audio">Audio</SelectItem>
-              <SelectItem value="document">Document</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        
-        {mediaType && (
-          <div>
-            <Label>Upload Media</Label>
-            <FileUploader
-              mediaType={mediaType}
-              onMediaUploaded={handleMediaUpload}
-            />
-          </div>
-        )}
-        
-        {mediaUrls.length > 0 && (
-          <div>
-            <Label>Uploaded Media</Label>
-            <div className="flex flex-wrap gap-2">
-              {mediaUrls.map((url) => (
-                <div key={url} className="relative">
-                  <img src={url} alt="Uploaded Media" className="w-32 h-32 object-cover rounded-md" />
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="absolute top-0 right-0 bg-background/50 text-muted-foreground hover:text-red-500"
-                    onClick={() => handleRemoveMedia(url)}
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
-                      <path fillRule="evenodd" d="M5.47 5.47a.75.75 0 011.06 0L12 10.94l5.47-5.47a.75.75 0 111.06 1.06L13.06 12l5.47 5.47a.75.75 0 11-1.06 1.06L12 13.06l-5.47 5.47a.75.75 0 01-1.06-1.06L10.94 12 5.47 6.53a.75.75 0 010-1.06z" clipRule="evenodd" />
-                    </svg>
-                  </Button>
-                </div>
-              ))}
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="recipient">Recipient</Label>
+              <Input
+                id="recipient"
+                placeholder="Who is this message for?"
+                value={recipient}
+                onChange={(e) => setRecipient(e.target.value)}
+              />
             </div>
           </div>
-        )}
-        
-        <Accordion type="single" collapsible>
-          <AccordionItem value="recurring">
-            <AccordionTrigger>Recurring Message</AccordionTrigger>
-            <AccordionContent>
-              <div className="space-y-2">
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="isRecurring"
-                    checked={recurringSettings.isRecurring}
-                    onCheckedChange={(checked) => handleRecurringChange('isRecurring', checked)}
-                    disabled={isSubmitting}
-                  />
-                  <Label htmlFor="isRecurring">Enable Recurring Message</Label>
+
+          <div className="space-y-2">
+            <Label>Message Format</Label>
+            <RadioGroup 
+              defaultValue={messageType} 
+              onValueChange={setMessageType} 
+              className="flex flex-wrap gap-4"
+            >
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="text" id="text" />
+                <Label htmlFor="text">Simple Text</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="rich" id="rich" />
+                <Label htmlFor="rich">Rich Text</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="media" id="media" />
+                <Label htmlFor="media">Media (Video/Audio)</Label>
+              </div>
+            </RadioGroup>
+          </div>
+
+          {messageType === 'text' && (
+            <div className="space-y-2">
+              <Label htmlFor="message">Your Message</Label>
+              <Textarea
+                id="message"
+                placeholder="Write your message here..."
+                rows={8}
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+              />
+            </div>
+          )}
+
+          {messageType === 'rich' && (
+            <div className="space-y-2">
+              <Label>Rich Message Content</Label>
+              <RichTextEditor 
+                value={richMessage} 
+                onChange={setRichMessage} 
+                placeholder="Write your rich message content here..."
+              />
+            </div>
+          )}
+
+          {messageType === 'media' && (
+            <div className="space-y-4">
+              <Label>Upload Media</Label>
+              <FileUpload onFileUploaded={handleFileUploaded} />
+              {mediaUrl && (
+                <div className="mt-4">
+                  <p className="text-sm text-muted-foreground mb-2">Media Preview:</p>
+                  {mediaUrl.match(/\.(mp4|webm|ogg)$/i) ? (
+                    <video 
+                      src={mediaUrl} 
+                      controls 
+                      className="max-w-full h-auto border rounded-md"
+                    />
+                  ) : mediaUrl.match(/\.(mp3|wav|ogg)$/i) ? (
+                    <audio 
+                      src={mediaUrl} 
+                      controls 
+                      className="w-full" 
+                    />
+                  ) : (
+                    <img 
+                      src={mediaUrl} 
+                      alt="Uploaded media" 
+                      className="max-w-full h-auto border rounded-md" 
+                    />
+                  )}
                 </div>
-                
-                {recurringSettings.isRecurring && (
-                  <div className="space-y-2">
-                    <div>
-                      <Label htmlFor="frequency">Frequency</Label>
-                      <Select onValueChange={(value) => handleRecurringChange('frequency', value)} disabled={isSubmitting}>
-                        <SelectTrigger className="w-[240px]">
-                          <SelectValue placeholder="Select a frequency" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="daily">Daily</SelectItem>
-                          <SelectItem value="weekly">Weekly</SelectItem>
-                          <SelectItem value="monthly">Monthly</SelectItem>
-                          <SelectItem value="yearly">Yearly</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
+              )}
+            </div>
+          )}
+
+          <div className="space-y-4 border-t pt-4">
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label htmlFor="time-capsule">Time Capsule</Label>
+                <p className="text-sm text-muted-foreground">
+                  Schedule this message to be delivered on a specific date
+                </p>
+              </div>
+              <Switch
+                id="time-capsule"
+                checked={isTimeCapsule}
+                onCheckedChange={setIsTimeCapsule}
+              />
+            </div>
+
+            {isTimeCapsule && (
+              <div className="space-y-4 pl-4 border-l-2 border-primary/20">
+                <div className="space-y-2">
+                  <Label htmlFor="delivery-date">Delivery Date</Label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className={cn(
+                          "w-full justify-start text-left font-normal",
+                          !deliveryDate && "text-muted-foreground"
+                        )}
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {deliveryDate ? format(deliveryDate, "PPP") : <span>Pick a date</span>}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0">
+                      <Calendar
+                        mode="single"
+                        selected={deliveryDate}
+                        onSelect={handleDateChange}
+                        initialFocus
+                        disabled={(date) => date < new Date()}
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label htmlFor="recurring">Recurring Message</Label>
+                    <p className="text-sm text-muted-foreground">
+                      Send this message on a recurring schedule
+                    </p>
                   </div>
+                  <Switch
+                    id="recurring"
+                    checked={isRecurring}
+                    onCheckedChange={setIsRecurring}
+                  />
+                </div>
+
+                {isRecurring && (
+                  <RecurringMessageSettings
+                    settings={recurringSettings}
+                    onChange={setRecurringSettings}
+                  />
                 )}
               </div>
-            </AccordionContent>
-          </AccordionItem>
-        </Accordion>
-        
-        <Button onClick={handleSubmit} disabled={isSubmitting}>
-          {isSubmitting ? "Submitting..." : "Submit Message"}
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
+      <div className="flex justify-end space-x-2">
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() => navigate('/dashboard/timeless-messages')}
+          disabled={isSubmitting}
+        >
+          Cancel
         </Button>
-        
-        {/* Success Animation Dialog */}
-        <Dialog open={showSuccessAnimation} onOpenChange={setShowSuccessAnimation}>
-          <DialogContent className="sm:max-w-md p-0 bg-transparent border-none">
-            <div className="w-full h-64">
-              <AnimationPlayer 
-                config={{
-                  path: mediaConfig.animations.messageSubmitted.path,
-                  fallbackImage: mediaConfig.animations.messageSubmitted.fallbackImage
-                }}
-                onComplete={() => setShowSuccessAnimation(false)}
-              />
-            </div>
-          </DialogContent>
-        </Dialog>
+        <Button type="submit" disabled={isSubmitting}>
+          {isSubmitting ? 'Saving...' : isEdit ? 'Update Message' : 'Create Message'}
+        </Button>
       </div>
-    </>
+    </form>
   );
 };
 

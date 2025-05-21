@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import './App.css';
@@ -8,7 +9,7 @@ import DashboardLayout from './components/DashboardLayout';
 import DashboardHome from './pages/dashboard/DashboardHome';
 import LegacyVaultPage from './pages/dashboard/LegacyVaultPage';
 import IdeaVaultPage from './pages/dashboard/IdeaVaultPage';
-import WisdomExchangePage from './pages/dashboard/WisdomExchangePage';
+import MentorshipPage from './pages/dashboard/MentorshipPage';
 import TimelessMessagesPage from './pages/dashboard/TimelessMessagesPage';
 import ProfilePage from './pages/dashboard/ProfilePage';
 import PricingPage from './pages/pricing/index';
@@ -17,12 +18,12 @@ import PrivacyPolicyPage from './pages/legal/PrivacyPolicyPage';
 import CopyrightPolicyPage from './pages/legal/CopyrightPolicyPage';
 import CommunityGuidelinesPage from './pages/legal/CommunityGuidelinesPage';
 import NotFound from './pages/NotFound';
-import AuthGuard from './components/AuthGuard';
+import AuthGuard from './components/auth/AuthGuard';
 import UnauthorizedPage from './pages/UnauthorizedPage';
 import CreateLegacyPost from './pages/dashboard/legacy-vault/CreateLegacyPost';
 import CreateIdeaPost from './pages/dashboard/idea-vault/CreateIdeaPost';
 import CreateWisdomResource from './pages/dashboard/mentorship/CreateWisdomResource';
-import CreateTimelessMessage from './pages/dashboard/TimelessMessagesPage/CreateTimelessMessage';
+import CreateTimelessMessage from './pages/dashboard/timeless-messages/CreateTimelessMessage';
 
 // Admin Dashboard Pages
 import AdminDashboard from './pages/admin/AdminDashboard';
@@ -68,7 +69,7 @@ function App() {
           <Route path="legacy-vault/create" element={<CreateLegacyPost />} />
           <Route path="idea-vault" element={<IdeaVaultPage />} />
           <Route path="idea-vault/create" element={<CreateIdeaPost />} />
-          <Route path="mentorship" element={<WisdomExchangePage />} />
+          <Route path="mentorship" element={<MentorshipPage />} />
           <Route path="mentorship/create" element={<CreateWisdomResource />} />
           <Route path="timeless-messages" element={<TimelessMessagesPage />} />
           <Route path="timeless-messages/create" element={<CreateTimelessMessage />} />
