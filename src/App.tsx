@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { Route, Routes } from 'react-router-dom';
 import './App.css';
 import HomePage from './pages/HomePage';
 import SignIn from './pages/SignIn';
@@ -33,63 +33,61 @@ import SubscriptionPlans from './pages/admin/SubscriptionPlans';
 
 function App() {
   return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/signin" element={<SignIn />} />
-        <Route path="/signup" element={<SignUp />} />
-        <Route path="/unauthorized" element={<UnauthorizedPage />} />
-        
-        {/* Add admin routes */}
-        <Route path="/admin" element={
-          <AuthGuard>
-            <AdminDashboard />
-          </AuthGuard>
-        }>
-          <Route index element={<AdminOverview />} />
-          <Route path="users" element={<UsersManagement />} />
-          <Route path="subscriptions" element={<SubscriptionPlans />} />
-          <Route path="settings" element={<div>Admin Settings</div>} />
-        </Route>
-        
-        {/* Feature pages */}
-        <Route path="/features/legacy-vault" element={<LegacyVaultPage />} />
-        <Route path="/features/timeless-messages" element={<TimelessMessagesPage />} />
-        <Route path="/features/mentorship" element={<MentorshipPage />} />
-        <Route path="/features/idea-vault" element={<IdeaVaultPage />} />
-        
-        {/* Dashboard paths */}
-        <Route path="/dashboard" element={
-          <AuthGuard>
-            <DashboardLayout />
-          </AuthGuard>
-        }>
-          <Route index element={<DashboardHome />} />
-          <Route path="legacy-vault" element={<LegacyVaultPage />} />
-          <Route path="legacy-vault/create" element={<CreateLegacyPost />} />
-          <Route path="idea-vault" element={<IdeaVaultPage />} />
-          <Route path="idea-vault/create" element={<CreateIdeaPost />} />
-          <Route path="mentorship" element={<MentorshipPage />} />
-          <Route path="mentorship/create" element={<CreateWisdomResource />} />
-          <Route path="timeless-messages" element={<TimelessMessagesPage />} />
-          <Route path="timeless-messages/create" element={<CreateTimelessMessage />} />
-          <Route path="profile" element={<ProfilePage />} />
-          <Route path="settings" element={<div>Settings</div>} />
-        </Route>
-        
-        {/* Pricing */}
-        <Route path="/pricing" element={<PricingPage />} />
-        
-        {/* Legal */}
-        <Route path="/legal/terms" element={<TermsOfUsePage />} />
-        <Route path="/legal/privacy" element={<PrivacyPolicyPage />} />
-        <Route path="/legal/copyright" element={<CopyrightPolicyPage />} />
-        <Route path="/legal/community" element={<CommunityGuidelinesPage />} />
-        
-        {/* 404 route */}
-        <Route path="*" element={<NotFound />} />
-      </Routes>
-    </Router>
+    <Routes>
+      <Route path="/" element={<HomePage />} />
+      <Route path="/signin" element={<SignIn />} />
+      <Route path="/signup" element={<SignUp />} />
+      <Route path="/unauthorized" element={<UnauthorizedPage />} />
+      
+      {/* Add admin routes */}
+      <Route path="/admin" element={
+        <AuthGuard>
+          <AdminDashboard />
+        </AuthGuard>
+      }>
+        <Route index element={<AdminOverview />} />
+        <Route path="users" element={<UsersManagement />} />
+        <Route path="subscriptions" element={<SubscriptionPlans />} />
+        <Route path="settings" element={<div>Admin Settings</div>} />
+      </Route>
+      
+      {/* Feature pages */}
+      <Route path="/features/legacy-vault" element={<LegacyVaultPage />} />
+      <Route path="/features/timeless-messages" element={<TimelessMessagesPage />} />
+      <Route path="/features/mentorship" element={<MentorshipPage />} />
+      <Route path="/features/idea-vault" element={<IdeaVaultPage />} />
+      
+      {/* Dashboard paths */}
+      <Route path="/dashboard" element={
+        <AuthGuard>
+          <DashboardLayout />
+        </AuthGuard>
+      }>
+        <Route index element={<DashboardHome />} />
+        <Route path="legacy-vault" element={<LegacyVaultPage />} />
+        <Route path="legacy-vault/create" element={<CreateLegacyPost />} />
+        <Route path="idea-vault" element={<IdeaVaultPage />} />
+        <Route path="idea-vault/create" element={<CreateIdeaPost />} />
+        <Route path="mentorship" element={<MentorshipPage />} />
+        <Route path="mentorship/create" element={<CreateWisdomResource />} />
+        <Route path="timeless-messages" element={<TimelessMessagesPage />} />
+        <Route path="timeless-messages/create" element={<CreateTimelessMessage />} />
+        <Route path="profile" element={<ProfilePage />} />
+        <Route path="settings" element={<div>Settings</div>} />
+      </Route>
+      
+      {/* Pricing */}
+      <Route path="/pricing" element={<PricingPage />} />
+      
+      {/* Legal */}
+      <Route path="/legal/terms" element={<TermsOfUsePage />} />
+      <Route path="/legal/privacy" element={<PrivacyPolicyPage />} />
+      <Route path="/legal/copyright" element={<CopyrightPolicyPage />} />
+      <Route path="/legal/community" element={<CommunityGuidelinesPage />} />
+      
+      {/* 404 route */}
+      <Route path="*" element={<NotFound />} />
+    </Routes>
   );
 }
 
