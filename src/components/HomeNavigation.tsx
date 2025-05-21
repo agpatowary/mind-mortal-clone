@@ -20,10 +20,13 @@ const HomeNavigation: React.FC<HomeNavigationProps> = ({
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const { isAuthenticated, signOut } = useAuth();
-  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(true); // Default to dark mode
   
   useEffect(() => {
-    const isDark = localStorage.getItem('darkMode') === 'true';
+    // Check if dark mode is stored in localStorage
+    const storedDarkMode = localStorage.getItem('darkMode');
+    // If it's not stored, default to true (dark mode), otherwise use the stored value
+    const isDark = storedDarkMode === null ? true : storedDarkMode === 'true';
     setIsDarkMode(isDark);
     document.documentElement.classList.toggle('dark', isDark);
   }, []);
@@ -36,19 +39,15 @@ const HomeNavigation: React.FC<HomeNavigationProps> = ({
   };
   
   const sections = ['Home', 'Features', 'Experts', 'Case Studies', 'Join Us'];
-  
-  // Listen for custom navigation events
-  useEffect(() => {
-    const handleCustomNavigation = (e: CustomEvent) => {
-      const { index } = (e as CustomEvent<{ index: number }>).detail;
-      onNavigate(index);
-    };
-    
-    document.addEventListener('navigateToSlide', handleCustomNavigation as EventListener);
-    return () => {
-      document.removeEventListener('navigateToSlide', handleCustomNavigation as EventListener);
-    };
-  }, [onNavigate]);
+
+  // Handle sign out with manual navigation
+  const handleSignOut = async () => {
+    try {
+      await signOut(); // This now handles the navigation inside useAuth
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
+  };
   
   // For mobile, show a more compact navigation
   if (isMobile) {
@@ -162,7 +161,7 @@ const HomeNavigation: React.FC<HomeNavigationProps> = ({
               <Button 
                 variant="outline" 
                 size="sm"
-                onClick={signOut}
+                onClick={handleSignOut}
               >
                 Sign Out
               </Button>

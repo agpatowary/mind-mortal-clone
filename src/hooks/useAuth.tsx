@@ -217,24 +217,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  // Fixed signOut implementation to ensure proper cleanup and redirection
   const signOut = async () => {
     try {
       setIsLoading(true);
       
-      // First, perform the actual sign out
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
       
-      // Clear state after the API call
+      // Clear auth state
       setUser(null);
       setSession(null);
       setProfile(null);
       setRoles(['guest']);
-      
-      // Unsubscribe from auth changes
-      if (authSubscription) {
-        authSubscription.unsubscribe();
-      }
       
       // Show success message
       toast({
@@ -242,7 +237,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         description: "You have been signed out successfully.",
       });
       
-      // Hard redirect to home page after state is cleared and signout is complete
+      // Force navigation to home page
       window.location.href = '/';
     } catch (error: any) {
       console.error('Sign out error:', error);

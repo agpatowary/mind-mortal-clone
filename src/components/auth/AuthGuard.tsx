@@ -22,11 +22,14 @@ const AuthGuard: React.FC<AuthGuardProps> = ({
   const { isAuthenticated, roles, isLoading } = useAuth();
   const location = useLocation();
 
-  // Show loading spinner while auth state is being determined
+  // Improved loading spinner with better styling and centered position
   if (isLoading) {
     return (
-      <div className="fixed inset-0 flex items-center justify-center">
-        <Loader2 className="h-10 w-10 animate-spin text-primary" />
+      <div className="fixed inset-0 bg-background/50 backdrop-blur-sm flex items-center justify-center z-50">
+        <div className="bg-card p-6 rounded-lg shadow-lg flex flex-col items-center">
+          <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />
+          <p className="text-lg font-medium">Loading...</p>
+        </div>
       </div>
     );
   }

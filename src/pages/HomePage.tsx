@@ -81,7 +81,7 @@ const HomePage = () => {
     }, 800); // Wait for slide animation to complete
   };
   
-  // Handle wheel events for mouse scrolling - fixed implementation
+  // Fixed wheel event handler to properly prevent default and handle scrolling
   useEffect(() => {
     const handleWheel = (e: WheelEvent) => {
       e.preventDefault();
@@ -91,20 +91,20 @@ const HomePage = () => {
       handleScrollDebounced(direction);
     };
     
-    // Add event listener with passive: false to allow preventDefault
-    window.addEventListener('wheel', handleWheel, { passive: false } as EventListenerOptions);
+    // Add event listener with proper options and ensure it's attached to document
+    document.addEventListener('wheel', handleWheel, { passive: false });
     
     return () => {
-      window.removeEventListener('wheel', handleWheel, { passive: false } as EventListenerOptions);
+      document.removeEventListener('wheel', handleWheel, { passive: false });
       
       // Clear any pending timeouts when component unmounts
       if (scrollTimeoutRef.current) {
         window.clearTimeout(scrollTimeoutRef.current);
       }
     };
-  }, [isScrolling]); // Only depend on isScrolling state
+  }, [isScrolling, currentSlide]); // Add currentSlide to dependencies
   
-  // Handle touch events for mobile scrolling
+  // Handle touch events for mobile scrolling - improved implementation
   useEffect(() => {
     const handleTouchStart = (e: TouchEvent) => {
       touchStartY.current = e.touches[0].clientY;
@@ -112,6 +112,7 @@ const HomePage = () => {
     
     const handleTouchMove = (e: TouchEvent) => {
       if (touchStartY.current === null) return;
+      e.preventDefault(); // Prevent default to stop browser scrolling
       
       const touchY = e.touches[0].clientY;
       const diff = touchStartY.current - touchY;
@@ -127,16 +128,16 @@ const HomePage = () => {
       touchStartY.current = null;
     };
     
-    window.addEventListener('touchstart', handleTouchStart);
-    window.addEventListener('touchmove', handleTouchMove);
-    window.addEventListener('touchend', handleTouchEnd);
+    document.addEventListener('touchstart', handleTouchStart, { passive: false });
+    document.addEventListener('touchmove', handleTouchMove, { passive: false });
+    document.addEventListener('touchend', handleTouchEnd);
     
     return () => {
-      window.removeEventListener('touchstart', handleTouchStart);
-      window.removeEventListener('touchmove', handleTouchMove);
-      window.removeEventListener('touchend', handleTouchEnd);
+      document.removeEventListener('touchstart', handleTouchStart);
+      document.removeEventListener('touchmove', handleTouchMove);
+      document.removeEventListener('touchend', handleTouchEnd);
     };
-  }, [isScrolling]);
+  }, [isScrolling, currentSlide]); // Add currentSlide to dependencies
   
   // Navigate to next slide
   const nextSlide = () => {

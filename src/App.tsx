@@ -41,7 +41,7 @@ function App() {
       
       {/* Add admin routes */}
       <Route path="/admin" element={
-        <AuthGuard>
+        <AuthGuard allowedRoles={['admin']}>
           <AdminDashboard />
         </AuthGuard>
       }>
