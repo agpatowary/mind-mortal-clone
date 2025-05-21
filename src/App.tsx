@@ -11,7 +11,7 @@ import IdeaVaultPage from './pages/dashboard/IdeaVaultPage';
 import WisdomExchangePage from './pages/dashboard/WisdomExchangePage';
 import TimelessMessagesPage from './pages/dashboard/TimelessMessagesPage';
 import ProfilePage from './pages/dashboard/ProfilePage';
-import PricingPage from './pages/PricingPage';
+import PricingPage from './pages/pricing/index';
 import TermsOfUsePage from './pages/legal/TermsOfUsePage';
 import PrivacyPolicyPage from './pages/legal/PrivacyPolicyPage';
 import CopyrightPolicyPage from './pages/legal/CopyrightPolicyPage';
