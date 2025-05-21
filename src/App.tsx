@@ -8,7 +8,7 @@ import DashboardLayout from './components/DashboardLayout';
 import DashboardHome from './pages/dashboard/DashboardHome';
 import LegacyVaultPage from './pages/dashboard/LegacyVaultPage';
 import IdeaVaultPage from './pages/dashboard/IdeaVaultPage';
-import MentorshipPage from './pages/dashboard/MentorshipPage';
+import WisdomExchangePage from './pages/dashboard/WisdomExchangePage';
 import TimelessMessagesPage from './pages/dashboard/TimelessMessagesPage';
 import ProfilePage from './pages/dashboard/ProfilePage';
 import PricingPage from './pages/PricingPage';
@@ -68,7 +68,7 @@ function App() {
           <Route path="legacy-vault/create" element={<CreateLegacyPost />} />
           <Route path="idea-vault" element={<IdeaVaultPage />} />
           <Route path="idea-vault/create" element={<CreateIdeaPost />} />
-          <Route path="mentorship" element={<MentorshipPage />} />
+          <Route path="mentorship" element={<WisdomExchangePage />} />
           <Route path="mentorship/create" element={<CreateWisdomResource />} />
           <Route path="timeless-messages" element={<TimelessMessagesPage />} />
           <Route path="timeless-messages/create" element={<CreateTimelessMessage />} />
