@@ -25,12 +25,6 @@ import CreateIdeaPost from './pages/dashboard/idea-vault/CreateIdeaPost';
 import CreateWisdomResource from './pages/dashboard/mentorship/CreateWisdomResource';
 import CreateTimelessMessage from './pages/dashboard/timeless-messages/CreateTimelessMessage';
 
-//Feature Pages
-import LegacyVaultFeaturePage from './pages/features/LegacyVaultPage';
-import IdeaVaultFeaturePage from './pages/features/IdeaVaultPage';
-import MentorshipFeaturePage from './pages/features/MentorshipPage';
-import TimelessMessagesFeaturePage from './pages/features/TimelessMessagesPage';
-
 // Admin Dashboard Pages
 import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminOverview from './pages/admin/AdminOverview';
@@ -58,10 +52,10 @@ function App() {
       </Route>
       
       {/* Feature pages */}
-      <Route path="/features/legacy-vault" element={<LegacyVaultPage />} />
-      <Route path="/features/timeless-messages" element={<TimelessMessagesPage />} />
-      <Route path="/features/mentorship" element={<MentorshipPage />} />
-      <Route path="/features/idea-vault" element={<IdeaVaultPage />} />
+      <Route path="/features/legacy-vault" element={<LegacyVaultFeaturePage />} />
+      <Route path="/features/timeless-messages" element={<TimelessMessagesFeaturePage />} />
+      <Route path="/features/mentorship" element={<MentorshipFeaturePage />} />
+      <Route path="/features/idea-vault" element={<IdeaVaultFeaturePage />} />
       
       {/* Dashboard paths */}
       <Route path="/dashboard" element={
