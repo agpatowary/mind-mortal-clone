@@ -1,282 +1,116 @@
 
-import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Button } from '@/components/ui/button';
-import { ChevronUp, ChevronDown } from 'lucide-react';
-
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { motion } from 'framer-motion';
+import HomeNavigation from '@/components/HomeNavigation';
 import HeroSection from '@/components/home/HeroSection';
 import FeaturesSection from '@/components/home/FeaturesSection';
+import CaseStudiesSection from '@/components/home/CaseStudiesSection';
 import StoriesSection from '@/components/home/StoriesSection';
-import CtaSection from '@/components/home/CtaSection';
-import HomeNavigation from '@/components/HomeNavigation';
-import AnimatedBackground from '@/components/AnimatedBackground';
 import FeaturedMentorsSection from '@/components/home/FeaturedMentorsSection';
-
-// Import JSON data
-import homeContent from '@/data/homeContent.json';
-import { Feature, CaseStudy } from '@/types';
-
-// Add default CTA text to features items if missing
-const enhancedFeatures = {
-  title: homeContent.features.title,
-  items: homeContent.features.items.map((item: any) => ({
-    ...item,
-    cta: item.cta || "Learn More"
-  })) as Feature[]
-};
-
-// Format case studies for type compatibility
-const formatCaseStudies = (caseStudies: any): CaseStudy[] => {
-  return caseStudies.items.map((study: any) => ({
-    ...study,
-    description: study.content || study.description || "",
-  }));
-};
+import CtaSection from '@/components/home/CtaSection';
+import Footer from '@/components/Footer';
+import AnimatedBackground from '@/components/AnimatedBackground';
+import { usePerformanceMode } from '@/hooks/usePerformanceMode';
 
 const HomePage = () => {
-  const navigate = useNavigate();
-  
-  // State for current slide
-  const [currentSlide, setCurrentSlide] = useState(0);
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const [activeSection, setActiveSection] = useState(0);
   const [isScrolling, setIsScrolling] = useState(false);
-  const scrollTimeoutRef = useRef<number | null>(null);
-  const touchStartY = useRef<number | null>(null);
-  const lastScrollTime = useRef<number>(0);
+  const lastScrollTime = useRef(Date.now());
+  const { isPerformanceMode } = usePerformanceMode();
   
-  // Total number of slides
-  const totalSlides = 5;
+  const sections = [
+    'hero',
+    'features',
+    'case-studies',
+    'stories',
+    'mentors',
+    'cta'
+  ];
   
-  // Update isMobile state on window resize
-  useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
+  const scrollToSection = useCallback((index: number) => {
+    if (index >= 0 && index < sections.length) {
+      setActiveSection(index);
+      const element = document.getElementById(sections[index]);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+  }, [sections]);
+
+  const handleScroll = useCallback((e: WheelEvent) => {
+    e.preventDefault();
     
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-  
-  // Prevent scroll events from triggering multiple slide changes
-  const handleScrollDebounced = (direction: number) => {
     const now = Date.now();
-    // Only allow scrolling every 800ms
     if (isScrolling || now - lastScrollTime.current < 800) return;
     
     setIsScrolling(true);
     lastScrollTime.current = now;
     
-    if (direction > 0 && currentSlide < totalSlides - 1) {
-      setDirection(1);
-      setCurrentSlide(prev => prev + 1);
-    } else if (direction < 0 && currentSlide > 0) {
-      setDirection(-1);
-      setCurrentSlide(prev => prev - 1);
+    if (e.deltaY > 0) {
+      // Scroll down
+      scrollToSection(activeSection + 1);
+    } else {
+      // Scroll up
+      scrollToSection(activeSection - 1);
     }
     
-    // Clear any existing timeout
-    if (scrollTimeoutRef.current) {
-      window.clearTimeout(scrollTimeoutRef.current);
-    }
-    
-    // Set a new timeout
-    scrollTimeoutRef.current = window.setTimeout(() => {
+    setTimeout(() => {
       setIsScrolling(false);
-      scrollTimeoutRef.current = null;
-    }, 800); // Wait for slide animation to complete
+    }, 800);
+  }, [activeSection, isScrolling, scrollToSection]);
+  
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const wheelOptions = { passive: false } as EventListenerOptions;
+      
+      const handleWheelEvent = (e: WheelEvent) => handleScroll(e);
+      
+      window.addEventListener('wheel', handleWheelEvent, wheelOptions);
+      
+      return () => {
+        window.removeEventListener('wheel', handleWheelEvent, wheelOptions);
+      };
+    }
+  }, [handleScroll]);
+  
+  const navigationProps = {
+    activeSection,
+    setActiveSection: scrollToSection
   };
-  
-  // Fixed wheel event handler to properly prevent default and handle scrolling
-  useEffect(() => {
-    const handleWheel = (e: WheelEvent) => {
-      e.preventDefault();
-      
-      // Determine scroll direction
-      const direction = Math.sign(e.deltaY);
-      handleScrollDebounced(direction);
-    };
-    
-    // Add event listener with proper TypeScript compatible options
-    document.addEventListener('wheel', handleWheel, { 
-      capture: false,
-      once: false
-    } as EventListenerOptions);
-    
-    return () => {
-      document.removeEventListener('wheel', handleWheel, { 
-        capture: false,
-        once: false
-      } as EventListenerOptions);
-      
-      // Clear any pending timeouts when component unmounts
-      if (scrollTimeoutRef.current) {
-        window.clearTimeout(scrollTimeoutRef.current);
-      }
-    };
-  }, [isScrolling, currentSlide]); // Add currentSlide to dependencies
-  
-  // Handle touch events for mobile scrolling - improved implementation
-  useEffect(() => {
-    const handleTouchStart = (e: TouchEvent) => {
-      touchStartY.current = e.touches[0].clientY;
-    };
-    
-    const handleTouchMove = (e: TouchEvent) => {
-      if (touchStartY.current === null) return;
-      e.preventDefault(); // Prevent default to stop browser scrolling
-      
-      const touchY = e.touches[0].clientY;
-      const diff = touchStartY.current - touchY;
-      
-      // Only trigger if the user has moved their finger significantly
-      if (Math.abs(diff) > 50) {
-        handleScrollDebounced(diff > 0 ? 1 : -1);
-        touchStartY.current = null; // Reset to prevent multiple triggers
-      }
-    };
-    
-    const handleTouchEnd = () => {
-      touchStartY.current = null;
-    };
-    
-    document.addEventListener('touchstart', handleTouchStart, { passive: true });
-    document.addEventListener('touchmove', handleTouchMove, { passive: false });
-    document.addEventListener('touchend', handleTouchEnd, { passive: true });
-    
-    return () => {
-      document.removeEventListener('touchstart', handleTouchStart);
-      document.removeEventListener('touchmove', handleTouchMove);
-      document.removeEventListener('touchend', handleTouchEnd);
-    };
-  }, [isScrolling, currentSlide]); // Add currentSlide to dependencies
-  
-  // Handle keyboard navigation
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'ArrowDown') {
-        handleScrollDebounced(1);
-      } else if (e.key === 'ArrowUp') {
-        handleScrollDebounced(-1);
-      }
-    };
-    
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [currentSlide, isScrolling]);
-  
-  // Slide components array
-  const slides = [
-    <HeroSection key="hero" data={homeContent.hero} />,
-    <FeaturesSection key="features" data={enhancedFeatures} />,
-    <FeaturedMentorsSection key="mentors" />,
-    <StoriesSection key="stories" data={formatCaseStudies(homeContent.caseStudies)} />,
-    <CtaSection key="cta" data={homeContent.cta} />
-  ];
-  
-  const slideVariants = {
-    enter: (direction: number) => ({
-      y: direction > 0 ? '100%' : '-100%',
-      opacity: 0
-    }),
-    center: {
-      y: 0,
-      opacity: 1
-    },
-    exit: (direction: number) => ({
-      y: direction > 0 ? '-100%' : '100%',
-      opacity: 0
-    })
-  };
-  
-  // Track slide direction for animations
-  const [direction, setDirection] = useState(0);
-  
-  const handleNavigate = (index: number) => {
-    setDirection(index > currentSlide ? 1 : -1);
-    setCurrentSlide(index);
-  };
-  
-  // Listen for custom navigation events
-  useEffect(() => {
-    const handleCustomNavigation = (e: CustomEvent) => {
-      const { index } = (e as CustomEvent<{ index: number }>).detail;
-      handleNavigate(index);
-    };
-    
-    document.addEventListener('navigateToSlide', handleCustomNavigation as EventListener);
-    return () => {
-      document.removeEventListener('navigateToSlide', handleCustomNavigation as EventListener);
-    };
-  }, [currentSlide]);
-  
+
   return (
-    <div className="min-h-screen bg-background antialiased overflow-hidden">
-      <AnimatedBackground objectCount={isMobile ? 5 : 10}>
-        <div className="relative h-screen w-full">
-          {/* Slide container */}
-          <div className="h-screen w-full overflow-hidden">
-            <AnimatePresence custom={direction} mode="wait">
-              <motion.div
-                key={currentSlide}
-                custom={direction}
-                variants={slideVariants}
-                initial="enter"
-                animate="center"
-                exit="exit"
-                transition={{
-                  type: "tween",
-                  ease: "easeInOut",
-                  duration: 0.5
-                }}
-                className="absolute inset-0 w-full h-full"
-              >
-                {slides[currentSlide]}
-              </motion.div>
-            </AnimatePresence>
-          </div>
-          
-          {/* Slide Navigation - moved below the slides */}
-          <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-50">
-            <HomeNavigation currentSection={currentSlide} onNavigate={handleNavigate} />
-          </div>
-          
-          {/* Slide navigation arrows - Changed to up/down arrows */}
-          <div className="absolute bottom-1/2 right-4 transform translate-y-1/2 z-50">
-            <Button
-              variant="ghost"
-              size="icon"
-              className={`rounded-full bg-background/40 backdrop-blur-sm mb-2 ${currentSlide === 0 ? 'opacity-30 cursor-not-allowed' : 'opacity-100'}`}
-              onClick={() => handleScrollDebounced(-1)}
-              disabled={currentSlide === 0}
-            >
-              <ChevronUp className="h-6 w-6" />
-            </Button>
-            
-            <Button
-              variant="ghost"
-              size="icon"
-              className={`rounded-full bg-background/40 backdrop-blur-sm ${currentSlide === totalSlides - 1 ? 'opacity-30 cursor-not-allowed' : 'opacity-100'}`}
-              onClick={() => handleScrollDebounced(1)}
-              disabled={currentSlide === totalSlides - 1}
-            >
-              <ChevronDown className="h-6 w-6" />
-            </Button>
-          </div>
-          
-          {/* Slide indicators */}
-          <div className="absolute right-6 top-1/2 transform -translate-y-1/2 z-50 flex flex-col space-y-2">
-            {Array.from({ length: totalSlides }).map((_, index) => (
-              <button
-                key={index}
-                onClick={() => handleNavigate(index)}
-                className={`w-2 transition-all ${currentSlide === index ? 'h-8 bg-primary' : 'h-2 bg-muted-foreground/40'} rounded-full`}
-                aria-label={`Go to slide ${index + 1}`}
-              />
-            ))}
-          </div>
-        </div>
-      </AnimatedBackground>
+    <div className="flex flex-col min-h-screen bg-background overflow-x-hidden">
+      {!isPerformanceMode && <AnimatedBackground />}
+      
+      <HomeNavigation {...navigationProps} />
+      
+      <main className="flex-grow">
+        <section id="hero" className="min-h-screen flex items-center">
+          <HeroSection />
+        </section>
+        
+        <section id="features" className="min-h-screen flex items-center">
+          <FeaturesSection />
+        </section>
+        
+        <section id="case-studies" className="min-h-screen flex items-center">
+          <CaseStudiesSection />
+        </section>
+        
+        <section id="stories" className="min-h-screen flex items-center">
+          <StoriesSection />
+        </section>
+        
+        <section id="mentors" className="min-h-screen flex items-center">
+          <FeaturedMentorsSection />
+        </section>
+        
+        <section id="cta" className="min-h-screen flex items-center">
+          <CtaSection />
+        </section>
+      </main>
+      
+      <Footer />
     </div>
   );
 };

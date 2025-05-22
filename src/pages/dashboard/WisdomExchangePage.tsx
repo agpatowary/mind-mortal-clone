@@ -1,400 +1,260 @@
+
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { useNavigate } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Plus, Eye, Search, Tag, Clock, ThumbsUp } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import GroupCircles from '@/components/wisdom-exchange/GroupCircles';
 import { useAuth } from '@/hooks/useAuth';
-import { useToast } from '@/hooks/use-toast';
-import { motion } from 'framer-motion';
-import { Book, Clock, User, Edit, Filter, Eye, ThumbsUp, MessageSquare, FileText, Video, Headphones, Award } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 import PostInteractions from '@/components/social/PostInteractions';
-import BecomeAMentorForm from '@/components/mentor/BecomeAMentorForm';
-import DashboardAnimatedBackground from '@/components/dashboard/DashboardAnimatedBackground';
-import ViewDetailsButton from '@/components/dashboard/ViewDetailsButton';
-import { renderContent, truncateContent } from '@/utils/contentRenderers';
 
 const WisdomExchangePage = () => {
-  const { user, profile, roles, isLoading } = useAuth();
+  const navigate = useNavigate();
+  const { user, isMentor } = useAuth();
   const { toast } = useToast();
   const [resources, setResources] = useState<any[]>([]);
-  const [isLoadingResources, setIsLoadingResources] = useState(true);
-  const [activeTab, setActiveTab] = useState("explore");
+  const [filteredResources, setFilteredResources] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [typeFilter, setTypeFilter] = useState('');
 
-  // Function to check if user is a mentor
-  const isMentor = () => roles.includes('mentor');
-
+  // Fetch resources on component mount
   useEffect(() => {
     fetchResources();
-  }, [user?.id]);
+  }, [user]);
+
+  // Filter resources when search query or filter changes
+  useEffect(() => {
+    filterResources();
+  }, [resources, searchQuery, typeFilter]);
 
   const fetchResources = async () => {
-    if (!user) {
-      console.log("No user found, skipping resource fetch");
-      setIsLoadingResources(false);
-      return;
-    }
-
     try {
-      setIsLoadingResources(true);
-      console.log("Fetching wisdom resources for user:", user.id);
+      setIsLoading(true);
       
-      // First, get the wisdom resources
-      const { data: resourcesData, error: resourcesError } = await supabase
+      const { data, error } = await supabase
         .from('wisdom_resources')
         .select(`
-          id,
-          title,
-          description,
-          resource_type,
-          resource_url,
-          tags,
-          created_at,
-          views_count,
-          created_by,
-          published_status
+          *,
+          profiles(full_name, avatar_url)
         `)
-        .eq('published_status', 'published')
-        .limit(10);
-        
-      if (resourcesError) {
-        console.error('Error fetching wisdom resources:', resourcesError);
-        throw resourcesError;
-      }
+        .eq('is_public', true)
+        .order('created_at', { ascending: false });
       
-      console.log("Resources fetched:", resourcesData);
+      if (error) throw error;
       
-      if (!resourcesData || resourcesData.length === 0) {
-        setResources([]);
-        setIsLoadingResources(false);
-        return;
-      }
-
-      // For each resource, fetch additional data
-      const resourcesWithDetails = await Promise.all(
-        resourcesData.map(async (resource) => {
-          // Get creator profile
-          const { data: profileData, error: profileError } = await supabase
-            .from('profiles')
-            .select('full_name, avatar_url')
-            .eq('id', resource.created_by)
-            .single();
-            
-          if (profileError) {
-            console.warn('Error fetching profile for resource creator:', profileError);
-          }
-          
-          // Get likes count
-          const { count: likesCount, error: likesError } = await supabase
-            .from('post_likes')
-            .select('id', { count: 'exact', head: true })
-            .eq('post_id', resource.id)
-            .eq('post_type', 'wisdom_resources');
-            
-          if (likesError) {
-            console.warn('Error fetching likes count:', likesError);
-          }
-          
-          // Check if user liked the post
-          const { data: userLikeData, error: userLikeError } = await supabase
-            .from('post_likes')
-            .select('id')
-            .eq('post_id', resource.id)
-            .eq('post_type', 'wisdom_resources')
-            .eq('user_id', user.id);
-            
-          if (userLikeError) {
-            console.warn('Error checking if user liked post:', userLikeError);
-          }
-          
-          // Get comments count
-          const { count: commentsCount, error: commentsError } = await supabase
-            .from('post_comments')
-            .select('id', { count: 'exact', head: true })
-            .eq('post_id', resource.id)
-            .eq('post_type', 'wisdom_resources');
-            
-          if (commentsError) {
-            console.warn('Error fetching comments count:', commentsError);
-          }
-          
-          return {
-            ...resource,
-            profiles: {
-              full_name: profileData?.full_name || 'Anonymous',
-              avatar_url: profileData?.avatar_url
-            },
-            likes_count: { count: likesCount || 0 },
-            comments_count: { count: commentsCount || 0 },
-            user_liked: userLikeData && userLikeData.length > 0
-          };
-        })
-      );
-      
-      console.log("Resources with details:", resourcesWithDetails);
-      setResources(resourcesWithDetails);
+      setResources(data || []);
     } catch (error) {
-      console.error('Error in fetchResources function:', error);
+      console.error('Error fetching resources:', error);
       toast({
-        title: "Error fetching resources",
-        description: "There was a problem loading the wisdom resources.",
-        variant: "destructive"
+        title: 'Error',
+        description: 'Failed to load resources',
+        variant: 'destructive',
       });
     } finally {
-      setIsLoadingResources(false);
+      setIsLoading(false);
     }
   };
 
-  // Animation variants for staggered child animations
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1
-      }
+  const filterResources = () => {
+    let filtered = [...resources];
+    
+    // Apply search filter
+    if (searchQuery) {
+      filtered = filtered.filter(resource =>
+        resource.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (resource.description && resource.description.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        (resource.tags && resource.tags.some((tag: string) => tag.toLowerCase().includes(searchQuery.toLowerCase())))
+      );
     }
+    
+    // Apply type filter
+    if (typeFilter) {
+      filtered = filtered.filter(resource => resource.resource_type === typeFilter);
+    }
+    
+    setFilteredResources(filtered);
   };
 
-  const itemVariants = {
-    hidden: { y: 20, opacity: 0 },
-    visible: {
-      y: 0,
-      opacity: 1,
-      transition: {
-        type: "spring",
-        stiffness: 100,
-        damping: 12
-      }
+  const handleCreateResource = () => {
+    if (!user) {
+      toast({
+        title: 'Authentication required',
+        description: 'Please sign in to create wisdom resources',
+        variant: 'destructive',
+      });
+      return;
     }
+    
+    if (!isMentor()) {
+      toast({
+        title: 'Mentor access required',
+        description: 'Only mentors can create wisdom resources',
+        variant: 'destructive',
+      });
+      return;
+    }
+    
+    navigate('/dashboard/wisdom-exchange/create');
   };
 
-  // Resource type icons mapping
-  const resourceTypeIcon = (type: string) => {
-    switch (type) {
-      case 'article':
-        return <FileText className="h-5 w-5" />;
-      case 'video':
-        return <Video className="h-5 w-5" />;
-      case 'audio':
-        return <Headphones className="h-5 w-5" />;
-      default:
-        return <Book className="h-5 w-5" />;
+  const handleResourceLike = async (resourceId: string) => {
+    try {
+      // Refresh the resources after a like action
+      await fetchResources();
+    } catch (error) {
+      console.error('Error updating resource likes:', error);
     }
   };
 
   return (
-    <DashboardAnimatedBackground objectCount={8}>
-      <div className="container mx-auto max-w-7xl">
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="space-y-6"
-        >
-          <motion.div 
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            className="flex flex-col md:flex-row md:items-center justify-between gap-4"
-          >
-            <div>
-              <h1 className="text-3xl font-bold">Wisdom Exchange</h1>
-              <p className="text-muted-foreground mt-1">
-                Discover and share knowledge with the community
-              </p>
-            </div>
-            
-            <div className="flex items-center gap-3">
-              {isMentor() ? (
-                <Button className="flex items-center gap-2">
-                  <Edit className="h-4 w-4" />
-                  <span>Share Wisdom</span>
-                </Button>
-              ) : (
-                <BecomeAMentorForm />
-              )}
-            </div>
-          </motion.div>
-
-          <motion.div 
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.1 }}
-          >
-            <Tabs defaultValue="explore" value={activeTab} onValueChange={setActiveTab}>
-              <TabsList className="grid grid-cols-3 w-full md:w-[400px]">
-                <TabsTrigger value="explore">Explore</TabsTrigger>
-                <TabsTrigger value="following">Following</TabsTrigger>
-                <TabsTrigger value="saved">Saved</TabsTrigger>
-              </TabsList>
-              
-              <div className="flex justify-between items-center my-4">
-                <div className="flex items-center gap-2">
-                  <Badge variant="outline" className="flex items-center gap-1">
-                    <Filter className="h-3 w-3" />
-                    <span>All Resources</span>
-                  </Badge>
+    <div className="container mx-auto py-6">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-3xl font-bold">Wisdom Exchange</h1>
+        {isMentor() && (
+          <Button onClick={handleCreateResource}>
+            <Plus className="mr-2 h-4 w-4" />
+            Create Resource
+          </Button>
+        )}
+      </div>
+      
+      <Tabs defaultValue="feed" className="space-y-6">
+        <TabsList className="grid w-full max-w-md grid-cols-2">
+          <TabsTrigger value="feed">Wisdom Feed</TabsTrigger>
+          <TabsTrigger value="circles">Group Circles</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="feed">
+          <Card>
+            <CardHeader>
+              <CardTitle>Wisdom Resources</CardTitle>
+              <CardDescription>Browse wisdom resources shared by mentors</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-col md:flex-row gap-4 mb-6">
+                <div className="relative flex-1">
+                  <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    type="search"
+                    placeholder="Search resources..."
+                    className="pl-8"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
                 </div>
+                
+                <Select value={typeFilter} onValueChange={setTypeFilter}>
+                  <SelectTrigger className="w-full md:w-[180px]">
+                    <SelectValue placeholder="Resource Type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">All Types</SelectItem>
+                    <SelectItem value="article">Articles</SelectItem>
+                    <SelectItem value="video">Videos</SelectItem>
+                    <SelectItem value="podcast">Podcasts</SelectItem>
+                    <SelectItem value="book">Books</SelectItem>
+                    <SelectItem value="course">Courses</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
               
-              <TabsContent value="explore" className="space-y-6">
-                {isLoadingResources ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {[1, 2, 3, 4, 5, 6].map(i => (
-                      <Card key={i} className="relative overflow-hidden">
-                        <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-secondary/5 animate-pulse" />
-                        <CardHeader className="pb-2">
-                          <div className="w-2/3 h-6 bg-muted rounded animate-pulse mb-2"></div>
-                          <div className="w-full h-4 bg-muted/50 rounded animate-pulse"></div>
-                        </CardHeader>
-                        <CardContent>
-                          <div className="w-full h-20 bg-muted/30 rounded animate-pulse"></div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                ) : resources.length > 0 ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {resources.map((resource, index) => (
-                      <motion.div 
-                        key={resource.id}
-                        initial={{ y: 20, opacity: 0 }}
-                        animate={{ y: 0, opacity: 1 }}
-                        transition={{ delay: index * 0.05 }}
-                      >
-                        <Card className="h-full flex flex-col overflow-hidden">
-                          <CardHeader className="pb-2">
-                            <div className="flex justify-between items-start">
-                              <Badge className="mb-2" variant="outline">
-                                <div className="flex items-center gap-1">
-                                  {resourceTypeIcon(resource.resource_type)}
-                                  <span className="capitalize">{resource.resource_type}</span>
-                                </div>
-                              </Badge>
-                              
-                              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                <Eye className="h-4 w-4" />
-                                <span>{resource.views_count || 0}</span>
-                              </div>
-                            </div>
-                            <CardTitle className="text-xl line-clamp-1">{resource.title}</CardTitle>
-                            <CardDescription className="flex items-center gap-2 mt-1">
-                              <Avatar className="h-5 w-5">
-                                <AvatarImage src={resource.profiles?.avatar_url} />
-                                <AvatarFallback>
-                                  <User className="h-3 w-3" />
-                                </AvatarFallback>
-                              </Avatar>
-                              <span className="text-sm">{resource.profiles?.full_name || 'Anonymous'}</span>
-                              <span className="text-muted-foreground text-xs flex items-center gap-1">
-                                <Clock className="h-3 w-3" />
-                                {new Date(resource.created_at).toLocaleDateString()}
-                              </span>
-                            </CardDescription>
-                          </CardHeader>
-                          
-                          <CardContent className="flex-1">
-                            <div className="text-sm">
-                              {truncateContent(resource.description || '', 120)}
-                            </div>
-                            
-                            <div className="flex flex-wrap gap-1 mt-3">
-                              {resource.tags && resource.tags.map((tag: string, i: number) => (
-                                <Badge key={i} variant="secondary" className="text-xs">
-                                  {tag}
-                                </Badge>
-                              ))}
-                            </div>
-                          </CardContent>
-                          
-                          <CardFooter className="border-t pt-4 flex flex-col items-stretch">
-                            <div className="flex justify-between items-center mb-2">
-                              <div className="flex space-x-3 text-sm text-muted-foreground">
-                                <div className="flex items-center gap-1">
-                                  <ThumbsUp className="h-4 w-4" />
-                                  <span>{resource.likes_count?.count || 0}</span>
-                                </div>
-                                <div className="flex items-center gap-1">
-                                  <MessageSquare className="h-4 w-4" />
-                                  <span>{resource.comments_count?.count || 0}</span>
-                                </div>
-                              </div>
-                              
-                              <ViewDetailsButton 
-                                route={`/dashboard/wisdom/${resource.id}`}
-                                text="Read More"
-                              />
-                            </div>
-                            
-                            <PostInteractions 
-                              postId={resource.id}
-                              postType="wisdom_resources"
-                              initialLikesCount={resource.likes_count?.count || 0}
-                              initialCommentsCount={resource.comments_count?.count || 0}
-                              userLiked={!!resource.user_liked}
-                              onUpdate={fetchResources}
-                            />
-                          </CardFooter>
-                        </Card>
-                      </motion.div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="flex flex-col items-center justify-center py-12 text-center">
-                    <Book className="h-16 w-16 text-muted-foreground mb-4" />
-                    <h3 className="text-xl font-medium mb-2">No wisdom resources found</h3>
-                    <p className="text-muted-foreground max-w-md mb-6">
-                      {isMentor() 
-                        ? "Share your knowledge by creating the first wisdom resource!"
-                        : "There are no wisdom resources available yet. Follow mentors to see their content here."}
-                    </p>
-                    
-                    {isMentor() ? (
-                      <Button className="flex items-center gap-2">
-                        <Edit className="h-4 w-4" />
-                        <span>Create Resource</span>
-                      </Button>
-                    ) : (
-                      <BecomeAMentorForm />
-                    )}
-                  </div>
-                )}
-              </TabsContent>
-              
-              <TabsContent value="following">
-                <div className="flex flex-col items-center justify-center py-12 text-center">
-                  <Award className="h-16 w-16 text-muted-foreground mb-4" />
-                  <h3 className="text-xl font-medium mb-2">Follow mentors to see their content</h3>
-                  <p className="text-muted-foreground max-w-md mb-6">
-                    When you follow mentors, their wisdom resources will appear here.
-                  </p>
-                  
-                  <Button className="flex items-center gap-2" onClick={() => setActiveTab("explore")}>
-                    <User className="h-4 w-4" />
-                    <span>Find Mentors</span>
-                  </Button>
+              {isLoading ? (
+                <div className="flex justify-center py-12">
+                  <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full"></div>
                 </div>
-              </TabsContent>
-              
-              <TabsContent value="saved">
-                <div className="flex flex-col items-center justify-center py-12 text-center">
-                  <Book className="h-16 w-16 text-muted-foreground mb-4" />
-                  <h3 className="text-xl font-medium mb-2">No saved resources yet</h3>
-                  <p className="text-muted-foreground max-w-md mb-6">
-                    Resources you save will appear here for easier access.
-                  </p>
-                  
-                  <Button className="flex items-center gap-2" onClick={() => setActiveTab("explore")}>
-                    <Book className="h-4 w-4" />
-                    <span>Explore Resources</span>
-                  </Button>
+              ) : filteredResources.length > 0 ? (
+                <div className="space-y-6">
+                  {filteredResources.map((resource) => (
+                    <Card key={resource.id} className="overflow-hidden">
+                      <div className="p-6">
+                        <div className="flex items-center gap-3 mb-4">
+                          <Avatar>
+                            <AvatarImage src={resource.profiles?.avatar_url} />
+                            <AvatarFallback>{resource.profiles?.full_name?.charAt(0) || 'M'}</AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <p className="font-medium">{resource.profiles?.full_name || 'Anonymous'}</p>
+                            <p className="text-sm text-muted-foreground">
+                              {new Date(resource.created_at).toLocaleDateString()}
+                            </p>
+                          </div>
+                        </div>
+                        
+                        <h3 className="text-xl font-semibold mb-2">{resource.title}</h3>
+                        
+                        {resource.description && (
+                          <p className="text-muted-foreground mb-4">{resource.description}</p>
+                        )}
+                        
+                        <div className="flex flex-wrap gap-2 mb-4">
+                          <Badge variant="outline" className="flex items-center gap-1">
+                            <Tag className="h-3 w-3" />
+                            {resource.resource_type}
+                          </Badge>
+                          
+                          {resource.boost_count > 0 && (
+                            <Badge variant="secondary" className="flex items-center gap-1">
+                              <ThumbsUp className="h-3 w-3" />
+                              Boosted
+                            </Badge>
+                          )}
+                          
+                          {resource.tags && resource.tags.map((tag: string, i: number) => (
+                            <Badge key={i} variant="outline">
+                              {tag}
+                            </Badge>
+                          ))}
+                        </div>
+                        
+                        <div className="flex justify-between items-center mt-4">
+                          <PostInteractions 
+                            postId={resource.id} 
+                            postType="wisdom_resource"
+                            onUpdate={() => handleResourceLike(resource.id)}
+                          />
+                          
+                          <Button variant="outline" size="sm" className="flex items-center gap-1">
+                            <Eye className="h-4 w-4" />
+                            View Resource
+                          </Button>
+                        </div>
+                      </div>
+                    </Card>
+                  ))}
                 </div>
-              </TabsContent>
-            </Tabs>
-          </motion.div>
-        </motion.div>
-      </div>
-    </DashboardAnimatedBackground>
+              ) : (
+                <div className="text-center py-12">
+                  <h3 className="text-lg font-medium mb-2">No resources found</h3>
+                  <p className="text-muted-foreground mb-6">
+                    {searchQuery || typeFilter 
+                      ? "Try adjusting your search filters"
+                      : "No wisdom resources have been shared yet"}
+                  </p>
+                  {isMentor() && (
+                    <Button onClick={handleCreateResource}>
+                      <Plus className="mr-2 h-4 w-4" />
+                      Share Wisdom Resource
+                    </Button>
+                  )}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="circles">
+          <GroupCircles />
+        </TabsContent>
+      </Tabs>
+    </div>
   );
 };
 

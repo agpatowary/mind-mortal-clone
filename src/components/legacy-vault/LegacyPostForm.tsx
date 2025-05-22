@@ -1,333 +1,342 @@
 
 import React, { useState } from 'react';
-import { z } from "zod";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { 
-  Form, 
-  FormControl, 
-  FormField, 
-  FormItem, 
-  FormLabel, 
-  FormMessage 
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { format } from "date-fns";
-import { Calendar as CalendarIcon, ImageIcon, XIcon } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/hooks/useAuth";
-import { Textarea } from "@/components/ui/textarea";
-import FileUpload from "@/components/editor/FileUpload";
+import { useNavigate } from 'react-router-dom';
+import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
+import { v4 as uuidv4 } from 'uuid';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Switch } from '@/components/ui/switch';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
+import { ImageUploader } from '@/components/editor/ImageUploader';
+import { TimeCapsuleSettings } from '@/types';
 
-const legacyPostSchema = z.object({
-  title: z.string().min(3, { message: "Title must be at least 3 characters long" }),
-  content: z.string().min(1, { message: "Content is required" }),
-  category: z.string().min(1, { message: "Please select at least one category" }),
-  visibility: z.enum(["public", "draft"]),
-  subcategory: z.enum(["public-gallery", "time-capsule"]),
-  releaseDate: z.date().optional(),
+const formSchema = z.object({
+  title: z.string().min(1, 'Title is required'),
+  content: z.string().min(1, 'Content is required'),
+  isPublic: z.boolean().default(false),
+  isTimeCapsule: z.boolean().default(false),
+  releaseDate: z.string().optional().nullable(),
 });
 
-type LegacyPostFormValues = z.infer<typeof legacyPostSchema>;
+type FormValues = z.infer<typeof formSchema>;
 
-const LegacyPostForm: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<string>("public-gallery");
-  const [mediaUrls, setMediaUrls] = useState<string[]>([]);
-  const { toast } = useToast();
+const LegacyPostForm = () => {
   const { user } = useAuth();
+  const { toast } = useToast();
+  const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
-  const form = useForm<LegacyPostFormValues>({
-    resolver: zodResolver(legacyPostSchema),
+  const [activeTab, setActiveTab] = useState('public-gallery');
+  const [mediaFiles, setMediaFiles] = useState<string[]>([]);
+
+  const form = useForm<FormValues>({
+    resolver: zodResolver(formSchema),
     defaultValues: {
-      title: "",
-      content: "",
-      category: "",
-      visibility: "draft",
-      subcategory: "public-gallery",
+      title: '',
+      content: '',
+      isPublic: true,
+      isTimeCapsule: false,
+      releaseDate: null,
     },
   });
 
-  const onSubmit = async (values: LegacyPostFormValues) => {
+  const handleMediaUpload = (urls: string[]) => {
+    setMediaFiles((prev) => [...prev, ...urls]);
+  };
+
+  const removeMedia = (url: string) => {
+    setMediaFiles(prev => prev.filter(item => item !== url));
+  };
+
+  const onSubmit = async (values: FormValues) => {
+    if (!user) {
+      toast({
+        title: 'Authentication required',
+        description: 'You must be logged in to create a legacy post',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     try {
       setIsSubmitting(true);
+
+      // Determine post category based on active tab
+      const isTimeCapsule = activeTab === 'time-capsule';
       
-      if (!user) {
-        toast({
-          title: "Authentication required",
-          description: "You need to be logged in to create content.",
-          variant: "destructive",
-        });
-        return;
+      // Prepare release status and date if it's a time capsule
+      let releaseStatus = 'unpublished';
+      if (isTimeCapsule && values.releaseDate) {
+        releaseStatus = 'scheduled';
       }
 
-      // Prepare data for the database
-      const legacyPost = {
-        title: values.title,
-        content: values.content,
-        categories: [values.category],
-        visibility: values.visibility,
-        subcategory: values.subcategory,
-        user_id: user.id,
-        media_urls: mediaUrls,
-      };
-
-      // Add subcategory-specific data
-      if (values.subcategory === "time-capsule" && values.releaseDate) {
-        Object.assign(legacyPost, { release_date: values.releaseDate.toISOString() });
-      }
-
-      const { error } = await supabase
-        .from("legacy_posts")
-        .insert(legacyPost);
+      const { data, error } = await supabase
+        .from('legacy_posts')
+        .insert({
+          id: uuidv4(),
+          user_id: user.id,
+          title: values.title,
+          content: values.content,
+          is_public: values.isPublic,
+          is_time_capsule: isTimeCapsule,
+          release_date: isTimeCapsule ? values.releaseDate : null,
+          release_status: releaseStatus,
+          media_urls: mediaFiles,
+          media_type: mediaFiles.length > 0 ? 'image' : null,
+          visibility: values.isPublic ? 'public' : 'private',
+        })
+        .select();
 
       if (error) throw error;
 
       toast({
-        title: "Legacy post created",
-        description: "Your legacy post has been created successfully.",
+        title: 'Legacy post created!',
+        description: isTimeCapsule 
+          ? 'Your time capsule has been scheduled' 
+          : 'Your legacy post has been created',
       });
 
-      // Reset form and media
-      form.reset();
-      setMediaUrls([]);
-    } catch (error) {
-      console.error("Error creating legacy post:", error);
+      navigate('/dashboard/legacy-vault');
+    } catch (error: any) {
+      console.error('Error creating post:', error);
       toast({
-        title: "Error",
-        description: "There was an error creating your legacy post.",
-        variant: "destructive",
+        title: 'Error creating post',
+        description: error.message || 'Something went wrong',
+        variant: 'destructive',
       });
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const handleTabChange = (value: string) => {
-    setActiveTab(value);
-    form.setValue("subcategory", value as any);
-  };
-
-  const handleFileUploaded = (url: string) => {
-    setMediaUrls((prev) => [...prev, url]);
-  };
-
-  const removeMedia = (index: number) => {
-    setMediaUrls((prev) => prev.filter((_, i) => i !== index));
-  };
-
   return (
-    <div className="w-full p-4">
-      <Tabs defaultValue="public-gallery" onValueChange={handleTabChange}>
-        <TabsList className="grid grid-cols-2 mb-6">
-          <TabsTrigger value="public-gallery">Public Gallery</TabsTrigger>
-          <TabsTrigger value="time-capsule">Time Capsule</TabsTrigger>
-        </TabsList>
-        
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <FormField
-              control={form.control}
-              name="title"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Title</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Enter a title for your post" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-            <FormField
-              control={form.control}
-              name="category"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Category</FormLabel>
-                  <FormControl>
-                    <Input 
-                      placeholder="E.g., Technology, Life, Nature, Books" 
-                      {...field} 
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-            <TabsContent value="time-capsule">
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="grid grid-cols-2 mb-6">
+            <TabsTrigger value="public-gallery">Public Gallery</TabsTrigger>
+            <TabsTrigger value="time-capsule">Time Capsule</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="public-gallery" className="space-y-6">
+            <div className="space-y-4">
               <FormField
                 control={form.control}
-                name="releaseDate"
+                name="title"
                 render={({ field }) => (
-                  <FormItem className="flex flex-col">
-                    <FormLabel>Release Date</FormLabel>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <FormControl>
-                          <Button
-                            variant={"outline"}
-                            className={cn(
-                              "w-full pl-3 text-left font-normal",
-                              !field.value && "text-muted-foreground"
-                            )}
-                          >
-                            {field.value ? (
-                              format(field.value, "PPP")
-                            ) : (
-                              <span>Pick a date</span>
-                            )}
-                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                          </Button>
-                        </FormControl>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar
-                          mode="single"
-                          selected={field.value}
-                          onSelect={field.onChange}
-                          disabled={(date) =>
-                            date < new Date(new Date().setHours(0, 0, 0, 0))
-                          }
-                          initialFocus
-                        />
-                      </PopoverContent>
-                    </Popover>
+                  <FormItem>
+                    <FormLabel>Title</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Give your legacy post a title" {...field} />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-            </TabsContent>
-            
-            <div className="space-y-4">
-              <div>
-                <p className="text-sm font-medium mb-2">Media</p>
-                <FileUpload 
-                  onFileUploaded={handleFileUploaded}
-                  accept="image/*,video/*,audio/*"
-                  maxFiles={5}
-                  maxSize={10}
-                />
-              </div>
-              
-              {mediaUrls.length > 0 && (
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                  {mediaUrls.map((url, index) => (
-                    <div key={index} className="relative group">
-                      <div className="aspect-square rounded-md overflow-hidden bg-muted">
-                        {url.match(/\.(jpeg|jpg|gif|png)$/i) ? (
-                          <img 
-                            src={url} 
-                            alt={`Uploaded media ${index + 1}`} 
-                            className="w-full h-full object-cover"
-                          />
-                        ) : url.match(/\.(mp4|webm|ogg)$/i) ? (
-                          <video 
-                            src={url} 
-                            controls 
-                            className="w-full h-full object-cover"
-                          />
-                        ) : url.match(/\.(mp3|wav)$/i) ? (
-                          <div className="w-full h-full flex items-center justify-center bg-muted">
-                            <audio src={url} controls className="w-3/4" />
-                          </div>
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center">
-                            <ImageIcon className="h-10 w-10 text-muted-foreground" />
-                          </div>
-                        )}
+
+              <div className="space-y-2">
+                <Label>Media</Label>
+                <ImageUploader onUpload={handleMediaUpload} />
+                
+                {mediaFiles.length > 0 && (
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-4">
+                    {mediaFiles.map((url, index) => (
+                      <div key={index} className="relative group">
+                        <img 
+                          src={url} 
+                          alt={`Uploaded media ${index}`} 
+                          className="h-24 w-full object-cover rounded-md"
+                        />
+                        <Button
+                          type="button"
+                          variant="destructive"
+                          size="icon"
+                          className="absolute top-1 right-1 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                          onClick={() => removeMedia(url)}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
                       </div>
-                      <Button
-                        type="button"
-                        variant="destructive"
-                        size="icon"
-                        className="absolute top-1 right-1 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
-                        onClick={() => removeMedia(index)}
-                      >
-                        <XIcon className="h-3 w-3" />
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-            
-            <FormField
-              control={form.control}
-              name="content"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Content</FormLabel>
-                  <FormControl>
-                    <Textarea
-                      placeholder="Share your legacy..."
-                      className="min-h-[120px]"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-            <FormField
-              control={form.control}
-              name="visibility"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Visibility</FormLabel>
-                  <div className="flex space-x-4">
-                    <Button
-                      type="button"
-                      variant={field.value === "public" ? "default" : "outline"}
-                      onClick={() => field.onChange("public")}
-                    >
-                      Public
-                    </Button>
-                    <Button
-                      type="button"
-                      variant={field.value === "draft" ? "default" : "outline"}
-                      onClick={() => field.onChange("draft")}
-                    >
-                      Draft
-                    </Button>
+                    ))}
                   </div>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-            <div className="flex justify-end space-x-4">
-              <Button 
-                type="button" 
-                variant="outline"
-                onClick={() => {
-                  form.setValue("visibility", "draft");
-                  form.handleSubmit(onSubmit)();
-                }}
-              >
-                Save as Draft
-              </Button>
-              <Button 
-                type="submit"
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? "Publishing..." : "Publish"}
-              </Button>
+                )}
+              </div>
+
+              <FormField
+                control={form.control}
+                name="content"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Content</FormLabel>
+                    <FormControl>
+                      <Textarea 
+                        placeholder="Share your legacy..." 
+                        className="min-h-32"
+                        {...field} 
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="isPublic"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                    <div className="space-y-0.5">
+                      <FormLabel className="text-base">Public Post</FormLabel>
+                      <FormDescription>
+                        Make this post visible to others in the public gallery
+                      </FormDescription>
+                    </div>
+                    <FormControl>
+                      <Switch
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
             </div>
-          </form>
-        </Form>
-      </Tabs>
-    </div>
+          </TabsContent>
+
+          <TabsContent value="time-capsule" className="space-y-6">
+            <div className="space-y-4">
+              <FormField
+                control={form.control}
+                name="title"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Title</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Give your time capsule a title" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <div className="space-y-2">
+                <Label>Media</Label>
+                <ImageUploader onUpload={handleMediaUpload} />
+                
+                {mediaFiles.length > 0 && (
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-4">
+                    {mediaFiles.map((url, index) => (
+                      <div key={index} className="relative group">
+                        <img 
+                          src={url} 
+                          alt={`Uploaded media ${index}`} 
+                          className="h-24 w-full object-cover rounded-md"
+                        />
+                        <Button
+                          type="button"
+                          variant="destructive"
+                          size="icon"
+                          className="absolute top-1 right-1 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                          onClick={() => removeMedia(url)}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <FormField
+                control={form.control}
+                name="content"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Content</FormLabel>
+                    <FormControl>
+                      <Textarea 
+                        placeholder="Share your thoughts for the future..." 
+                        className="min-h-32"
+                        {...field} 
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="releaseDate"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Release Date</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="date"
+                        {...field}
+                        value={field.value || ''}
+                        onChange={(e) => field.onChange(e.target.value)}
+                      />
+                    </FormControl>
+                    <FormDescription>
+                      When should this time capsule be revealed?
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="isPublic"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                    <div className="space-y-0.5">
+                      <FormLabel className="text-base">Public Post</FormLabel>
+                      <FormDescription>
+                        Make this time capsule visible to others when revealed
+                      </FormDescription>
+                    </div>
+                    <FormControl>
+                      <Switch
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+            </div>
+          </TabsContent>
+        </Tabs>
+
+        <div className="flex justify-end gap-2">
+          <Button 
+            type="button" 
+            variant="outline" 
+            onClick={() => navigate('/dashboard/legacy-vault')}
+          >
+            Cancel
+          </Button>
+          <Button type="submit" disabled={isSubmitting}>
+            {isSubmitting ? 'Creating...' : 'Create Post'}
+          </Button>
+        </div>
+      </form>
+    </Form>
   );
 };
 
 export default LegacyPostForm;
+
+// Import statements for components used above
+import { FormDescription } from "@/components/ui/form";
+import { X } from "lucide-react";

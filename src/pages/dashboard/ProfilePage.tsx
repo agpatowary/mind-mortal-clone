@@ -3,7 +3,6 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
@@ -11,9 +10,9 @@ import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Textarea } from '@/components/ui/textarea';
-import { useSubscription } from '@/hooks/useSubscription';
 import { Badge } from '@/components/ui/badge';
 import { motion } from 'framer-motion';
+import { useSubscription } from '@/hooks/useSubscription';
 
 const ProfilePage = () => {
   const { user } = useAuth();
@@ -21,7 +20,7 @@ const ProfilePage = () => {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [profile, setProfile] = useState<any>(null);
-  const { subscription } = useSubscription();
+  const { subscription, isLoading: isSubscriptionLoading } = useSubscription();
   
   // Form state
   const [fullName, setFullName] = useState('');
@@ -140,7 +139,11 @@ const ProfilePage = () => {
               <CardDescription>Your current subscription plan</CardDescription>
             </CardHeader>
             <CardContent>
-              {subscription ? (
+              {isSubscriptionLoading ? (
+                <div className="text-center py-4">
+                  <p className="text-muted-foreground">Loading your subscription information...</p>
+                </div>
+              ) : subscription ? (
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-lg font-medium flex items-center gap-2">
@@ -164,7 +167,7 @@ const ProfilePage = () => {
                 </div>
               ) : (
                 <div className="text-center py-4">
-                  <p className="text-muted-foreground mb-4">Loading your subscription information...</p>
+                  <p className="text-muted-foreground mb-4">No active subscription</p>
                   <Button 
                     variant="outline" 
                     onClick={() => navigate('/dashboard/settings')}

@@ -12,6 +12,7 @@ export interface PostInteractionsProps {
   postType: 'legacy_post' | 'timeless_message' | 'wisdom_resource' | 'idea';
   initialLikesCount?: number;
   initialCommentsCount?: number;
+  initialUserLiked?: boolean;
   onComment?: () => void;
   onShare?: () => void;
   onUpdate?: () => Promise<void> | void;
@@ -20,8 +21,9 @@ export interface PostInteractionsProps {
 const PostInteractions: React.FC<PostInteractionsProps> = ({
   postId,
   postType,
-  initialLikesCount,
-  initialCommentsCount,
+  initialLikesCount = 0,
+  initialCommentsCount = 0,
+  initialUserLiked = false,
   onComment,
   onShare,
   onUpdate
@@ -29,7 +31,7 @@ const PostInteractions: React.FC<PostInteractionsProps> = ({
   const { user } = useAuth();
   const { toast } = useToast();
   const { toggleLike, isProcessing } = usePostLikes();
-  const [userLiked, setUserLiked] = useState(false);
+  const [userLiked, setUserLiked] = useState(initialUserLiked);
   const [likesCount, setLikesCount] = useState(initialLikesCount || 0);
   const [commentsCount, setCommentsCount] = useState(initialCommentsCount || 0);
   const [sharesCount, setSharesCount] = useState(0);
@@ -40,6 +42,12 @@ const PostInteractions: React.FC<PostInteractionsProps> = ({
       fetchCounts();
     }
   }, [user, postId, postType]);
+
+  useEffect(() => {
+    setLikesCount(initialLikesCount || 0);
+    setCommentsCount(initialCommentsCount || 0);
+    setUserLiked(initialUserLiked);
+  }, [initialLikesCount, initialCommentsCount, initialUserLiked]);
 
   const checkIfUserLiked = async () => {
     try {

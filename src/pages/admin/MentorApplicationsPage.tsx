@@ -77,7 +77,7 @@ const MentorApplicationsPage = () => {
     try {
       setIsLoading(true);
       
-      // Fetch mentor profiles that need approval
+      // First get all mentor profiles
       const { data: mentorProfiles, error: profilesError } = await supabase
         .from('mentor_profiles')
         .select(`
@@ -86,16 +86,38 @@ const MentorApplicationsPage = () => {
           industries,
           experience_years,
           monthly_availability,
-          created_at,
-          profiles!inner(id, full_name, email, avatar_url)
+          created_at
         `);
       
       if (profilesError) throw profilesError;
       
-      // Check which profiles belong to users who aren't already mentors
+      if (!mentorProfiles || mentorProfiles.length === 0) {
+        setApplications([]);
+        setFilteredApplications([]);
+        setIsLoading(false);
+        return;
+      }
+      
+      // Now for each mentor profile, get the user details from profiles table
       const formattedApplications: MentorApplication[] = [];
       
-      for (const profile of mentorProfiles || []) {
+      for (const profile of mentorProfiles) {
+        // Get user details
+        const { data: userData, error: userError } = await supabase
+          .from('profiles')
+          .select(`
+            full_name,
+            email,
+            avatar_url
+          `)
+          .eq('id', profile.id)
+          .single();
+          
+        if (userError) {
+          console.error('Error fetching user data for mentor:', userError);
+          continue;
+        }
+        
         // Check if user already has mentor role
         const { data: roleData, error: roleError } = await supabase
           .from('user_roles')
@@ -103,7 +125,10 @@ const MentorApplicationsPage = () => {
           .eq('user_id', profile.id)
           .eq('role', 'mentor');
           
-        if (roleError) throw roleError;
+        if (roleError) {
+          console.error('Error checking role for mentor:', roleError);
+          continue;
+        }
         
         // If user doesn't have mentor role, they are applying
         const status = roleData && roleData.length > 0 ? 'approved' : 'pending';
@@ -111,9 +136,9 @@ const MentorApplicationsPage = () => {
         formattedApplications.push({
           id: profile.id,
           user_id: profile.id,
-          full_name: profile.profiles.full_name,
-          email: profile.profiles.email,
-          avatar_url: profile.profiles.avatar_url,
+          full_name: userData?.full_name || 'Unknown',
+          email: userData?.email || 'No email',
+          avatar_url: userData?.avatar_url || '',
           expertise: profile.expertise || [],
           industries: profile.industries || [],
           experience_years: profile.experience_years || 0,

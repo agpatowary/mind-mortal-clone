@@ -24,7 +24,7 @@ const SignIn = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
-  const { setSession } = useAuth();
+  const { signIn } = useAuth();
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -37,19 +37,7 @@ const SignIn = () => {
   const onSubmit = async (values: FormValues) => {
     setIsLoading(true);
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: values.email,
-        password: values.password,
-      });
-
-      if (error) {
-        throw error;
-      }
-
-      if (data.session) {
-        setSession(data.session);
-        navigate('/dashboard');
-      }
+      await signIn(values.email, values.password);
     } catch (error: any) {
       toast({
         title: 'Error signing in',

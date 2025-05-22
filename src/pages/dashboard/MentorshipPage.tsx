@@ -1,87 +1,71 @@
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Plus, Users, BookOpen, Calendar } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/hooks/useAuth';
-import { useToast } from '@/hooks/use-toast';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { PlusCircle, BookOpen, Search, Filter, X } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Separator } from '@/components/ui/separator';
+import { motion } from 'framer-motion';
+import { useToast } from '@/hooks/use-toast';
 
 const MentorshipPage = () => {
+  const { user, isMentor } = useAuth();
   const navigate = useNavigate();
-  const { user } = useAuth();
   const { toast } = useToast();
-  const [isLoading, setIsLoading] = useState(true);
   const [resources, setResources] = useState<any[]>([]);
   const [mentors, setMentors] = useState<any[]>([]);
-  const [userRoles, setUserRoles] = useState<string[]>([]);
-
+  const [isLoading, setIsLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [expertiseFilter, setExpertiseFilter] = useState('');
+  const [industryFilter, setIndustryFilter] = useState('');
+  const [expertiseOptions, setExpertiseOptions] = useState<string[]>([]);
+  const [industryOptions, setIndustryOptions] = useState<string[]>([]);
+  
   useEffect(() => {
-    if (user) {
-      fetchUserRoles();
-      fetchResources();
-      fetchMentors();
-    }
+    fetchResources();
+    fetchMentors();
   }, [user]);
-
-  const fetchUserRoles = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', user?.id);
-
-      if (error) throw error;
-
-      if (data) {
-        setUserRoles(data.map(r => r.role));
-      }
-    } catch (error) {
-      console.error('Error fetching user roles:', error);
-    }
-  };
-
+  
   const fetchResources = async () => {
     try {
       setIsLoading(true);
       
-      // If user is a mentor, fetch their own resources
-      // If user is a mentee, fetch resources from mentors they're connected with
+      if (!user) return;
+      
+      // If user is a mentor, get their own resources
+      // If user is a mentee, get resources from mentors they are connected with
       let query = supabase
         .from('wisdom_resources')
-        .select(`
-          id,
-          title,
-          description,
-          resource_type,
-          created_at,
-          created_by,
-          profiles(full_name, avatar_url)
-        `)
-        .order('created_at', { ascending: false });
+        .select('*');
       
-      // Add conditions based on user role
-      if (!userRoles.includes('mentor') && !userRoles.includes('admin')) {
-        // For mentees, only show resources from their mentors
-        query = query
-          .in('created_by', function(subquery) {
-            subquery
-              .from('mentor_mentee_matches')
-              .select('mentor_id')
-              .eq('mentee_id', user?.id)
-              .eq('status', 'accepted');
-          })
-          .eq('is_public', true);
+      if (isMentor()) {
+        query = query.eq('created_by', user.id);
       } else {
-        // Mentors see their own resources
-        query = query.eq('created_by', user?.id);
+        // For mentees, get resources from connected mentors
+        // First, get all mentors the user is connected with
+        const { data: matches } = await supabase
+          .from('mentor_mentee_matches')
+          .select('mentor_id')
+          .eq('mentee_id', user.id)
+          .eq('status', 'accepted');
+        
+        if (matches && matches.length > 0) {
+          const mentorIds = matches.map(match => match.mentor_id);
+          query = query.in('created_by', mentorIds);
+        } else {
+          // If no connected mentors, show public resources
+          query = query.eq('is_public', true);
+        }
       }
       
-      const { data, error } = await query;
+      const { data, error } = await query.order('created_at', { ascending: false });
       
       if (error) throw error;
       
@@ -90,59 +74,149 @@ const MentorshipPage = () => {
       console.error('Error fetching resources:', error);
       toast({
         title: 'Error',
-        description: 'Failed to load resources. Please try again.',
+        description: 'Failed to load resources',
         variant: 'destructive',
       });
     } finally {
       setIsLoading(false);
     }
   };
-
+  
   const fetchMentors = async () => {
     try {
-      const { data, error } = await supabase
-        .from('mentor_profiles')
-        .select(`
-          id,
-          expertise,
-          industries,
-          experience_years,
-          wisdom_rating,
-          profiles(id, full_name, avatar_url)
-        `)
-        .eq('id', function(subquery) {
-          subquery
-            .from('user_roles')
-            .select('user_id')
-            .eq('role', 'mentor');
-        });
-
-      if (error) throw error;
-
-      setMentors(data || []);
+      if (!user) return;
+      
+      // Get all verified mentors
+      const { data: mentorData, error: mentorError } = await supabase.rpc('get_mentor_matches', {
+        mentee_id: user.id
+      });
+      
+      if (mentorError) throw mentorError;
+      
+      // Extract unique expertise and industries for filters
+      const allExpertise = mentorData?.flatMap(mentor => mentor.expertise || []) || [];
+      const allIndustries = mentorData?.flatMap(mentor => mentor.industries || []) || [];
+      
+      setExpertiseOptions([...new Set(allExpertise)]);
+      setIndustryOptions([...new Set(allIndustries)]);
+      setMentors(mentorData || []);
     } catch (error) {
       console.error('Error fetching mentors:', error);
     }
   };
-
-  const isMentor = userRoles.includes('mentor') || userRoles.includes('admin');
-
-  return (
-    <div className="container mx-auto space-y-6">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Mentorship</h1>
-          <p className="text-muted-foreground mt-1">Exchange wisdom, find mentors, grow together</p>
+  
+  const handleCreateResource = () => {
+    if (!isMentor()) {
+      toast({
+        title: 'Permission Denied',
+        description: 'Only mentors can create wisdom resources.',
+        variant: 'destructive',
+      });
+      return;
+    }
+    
+    navigate('/dashboard/mentorship/create');
+  };
+  
+  // Filter mentors based on search query and filters
+  const filteredMentors = mentors.filter(mentor => {
+    // Filter by search query
+    const matchesSearch = !searchQuery || 
+      mentor.full_name?.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    // Filter by expertise
+    const matchesExpertise = !expertiseFilter || 
+      (mentor.expertise && mentor.expertise.some(exp => exp.toLowerCase() === expertiseFilter.toLowerCase()));
+    
+    // Filter by industry
+    const matchesIndustry = !industryFilter || 
+      (mentor.industries && mentor.industries.some(ind => ind.toLowerCase() === industryFilter.toLowerCase()));
+    
+    return matchesSearch && matchesExpertise && matchesIndustry;
+  });
+  
+  const clearFilters = () => {
+    setSearchQuery('');
+    setExpertiseFilter('');
+    setIndustryFilter('');
+  };
+  
+  const renderResources = () => {
+    if (resources.length === 0) {
+      return (
+        <div className="text-center py-10">
+          <h3 className="text-lg font-medium">No resources available</h3>
+          <p className="text-muted-foreground mt-2">
+            {isMentor() 
+              ? "You haven't created any wisdom resources yet."
+              : "No resources available from your mentors."}
+          </p>
+          {isMentor() && (
+            <Button className="mt-4" onClick={handleCreateResource}>
+              <PlusCircle className="mr-2 h-4 w-4" />
+              Create Your First Resource
+            </Button>
+          )}
         </div>
-        {isMentor && (
-          <Button onClick={() => navigate('/dashboard/mentorship/create')} className="whitespace-nowrap">
-            <Plus className="mr-2 h-4 w-4" /> Create Resource
+      );
+    }
+    
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {resources.map((resource) => (
+          <Card key={resource.id}>
+            <CardHeader>
+              <CardTitle>{resource.title}</CardTitle>
+              <CardDescription>{resource.resource_type}</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground mb-4">
+                {resource.description || 'No description provided'}
+              </p>
+              {resource.tags && resource.tags.length > 0 && (
+                <div className="flex flex-wrap gap-1 mt-2">
+                  {resource.tags.map((tag: string, i: number) => (
+                    <Badge key={i} variant="outline">
+                      {tag}
+                    </Badge>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+            <CardFooter className="flex justify-between">
+              <p className="text-sm text-muted-foreground">
+                {new Date(resource.created_at).toLocaleDateString()}
+              </p>
+              <Button variant="ghost" size="sm">
+                <BookOpen className="mr-2 h-4 w-4" />
+                View Resource
+              </Button>
+            </CardFooter>
+          </Card>
+        ))}
+      </div>
+    );
+  };
+  
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+      className="container mx-auto py-6"
+    >
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-3xl font-bold">Mentorship</h1>
+        {isMentor() && (
+          <Button onClick={handleCreateResource}>
+            <PlusCircle className="mr-2 h-4 w-4" />
+            Create Resource
           </Button>
         )}
       </div>
-
-      <Tabs defaultValue="resources" className="w-full">
-        <TabsList className="mb-4">
+      
+      <Tabs defaultValue="resources" className="space-y-6">
+        <TabsList className="grid w-full max-w-md grid-cols-2">
           <TabsTrigger value="resources">My Resources</TabsTrigger>
           <TabsTrigger value="mentors">Find Mentors</TabsTrigger>
         </TabsList>
@@ -153,122 +227,123 @@ const MentorshipPage = () => {
               <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full"></div>
             </div>
           ) : (
-            resources.length > 0 ? (
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {resources.map((resource) => (
-                  <Card key={resource.id} className="overflow-hidden">
-                    <CardHeader className="pb-3">
-                      <CardTitle>{resource.title}</CardTitle>
-                      <CardDescription>{resource.description}</CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-2">
-                      <div className="flex items-center text-sm">
-                        <BookOpen className="mr-2 h-4 w-4 text-muted-foreground" />
-                        <span>Type: {resource.resource_type}</span>
-                      </div>
-                      <div className="flex items-center text-sm">
-                        <Calendar className="mr-2 h-4 w-4 text-muted-foreground" />
-                        <span>Created: {new Date(resource.created_at).toLocaleDateString()}</span>
-                      </div>
-                    </CardContent>
-                    <CardFooter className="border-t bg-muted/50 px-6 py-3">
-                      <Button variant="ghost" size="sm" className="ml-auto">View Details</Button>
-                    </CardFooter>
-                  </Card>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-12">
-                <BookOpen className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-                <h3 className="text-xl font-medium mb-2">No resources found</h3>
-                {isMentor ? (
-                  <>
-                    <p className="text-muted-foreground mb-6">You haven't created any resources yet.</p>
-                    <Button onClick={() => navigate('/dashboard/mentorship/create')}>
-                      Create Your First Resource
-                    </Button>
-                  </>
-                ) : (
-                  <>
-                    <p className="text-muted-foreground mb-6">
-                      You don't have access to any mentor resources yet. Connect with a mentor to see their resources.
-                    </p>
-                    <Button onClick={() => navigate('/dashboard/mentorship?tab=mentors')}>
-                      Find a Mentor
-                    </Button>
-                  </>
-                )}
-              </div>
-            )
+            renderResources()
           )}
         </TabsContent>
         
         <TabsContent value="mentors">
-          {isLoading ? (
-            <div className="flex justify-center py-12">
-              <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full"></div>
-            </div>
-          ) : (
-            mentors.length > 0 ? (
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {mentors.map((mentor) => (
-                  <Card key={mentor.id}>
-                    <CardHeader>
+          <Card>
+            <CardHeader>
+              <CardTitle>Find the Right Mentor</CardTitle>
+              <CardDescription>Connect with mentors that match your interests and goals</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-col md:flex-row gap-4 mb-6">
+                <div className="relative flex-1">
+                  <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    type="search"
+                    placeholder="Search mentors..."
+                    className="pl-8"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                </div>
+                
+                <div className="flex flex-col md:flex-row gap-2">
+                  <Select value={expertiseFilter} onValueChange={setExpertiseFilter}>
+                    <SelectTrigger className="w-full md:w-[180px]">
+                      <SelectValue placeholder="Expertise" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">All Expertise</SelectItem>
+                      {expertiseOptions.map((expertise, index) => (
+                        <SelectItem key={index} value={expertise}>
+                          {expertise}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  
+                  <Select value={industryFilter} onValueChange={setIndustryFilter}>
+                    <SelectTrigger className="w-full md:w-[180px]">
+                      <SelectValue placeholder="Industry" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">All Industries</SelectItem>
+                      {industryOptions.map((industry, index) => (
+                        <SelectItem key={index} value={industry}>
+                          {industry}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  
+                  {(searchQuery || expertiseFilter || industryFilter) && (
+                    <Button variant="ghost" size="icon" onClick={clearFilters}>
+                      <X className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
+              </div>
+              
+              {filteredMentors.length === 0 ? (
+                <div className="text-center py-10">
+                  <h3 className="text-lg font-medium">No mentors found</h3>
+                  <p className="text-muted-foreground mt-2">
+                    Try adjusting your search criteria or check back later.
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  {filteredMentors.map((mentor) => (
+                    <div key={mentor.mentor_id} className="flex flex-col md:flex-row gap-4 p-4 border rounded-lg">
                       <div className="flex items-center gap-4">
-                        <Avatar className="h-16 w-16">
-                          <AvatarImage src={mentor.profiles?.avatar_url} alt={mentor.profiles?.full_name} />
-                          <AvatarFallback>
-                            {mentor.profiles?.full_name?.charAt(0) || 'M'}
-                          </AvatarFallback>
+                        <Avatar className="h-12 w-12">
+                          <AvatarImage src={mentor.avatar_url} alt={mentor.full_name} />
+                          <AvatarFallback>{mentor.full_name?.charAt(0) || 'M'}</AvatarFallback>
                         </Avatar>
                         <div>
-                          <CardTitle>{mentor.profiles?.full_name}</CardTitle>
-                          <CardDescription>
-                            {mentor.expertise?.[0] || 'Mentorship'} • {mentor.experience_years || 0} yrs
-                          </CardDescription>
+                          <h3 className="font-semibold">{mentor.full_name}</h3>
+                          <div className="flex items-center text-sm text-muted-foreground">
+                            <span>{mentor.experience_years} years experience</span>
+                            <span className="mx-2">•</span>
+                            <span>{mentor.wisdom_rating} rating</span>
+                          </div>
                         </div>
                       </div>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="mb-4">
-                        <Badge variant="outline" className="mb-2 mr-2">
-                          {mentor.industries?.[0] || 'General'}
-                        </Badge>
-                        {mentor.expertise?.[0] && (
-                          <Badge variant="outline" className="mb-2 mr-2">
-                            {mentor.expertise[0]}
-                          </Badge>
-                        )}
-                        {mentor.expertise?.[1] && (
-                          <Badge variant="outline" className="mb-2">
-                            {mentor.expertise[1]}
-                          </Badge>
-                        )}
+                      
+                      <div className="flex-1 mt-4 md:mt-0">
+                        <div className="flex flex-wrap gap-1 mb-2">
+                          {mentor.expertise?.slice(0, 3).map((expertise: string, i: number) => (
+                            <Badge key={i} variant="secondary" className="mr-1">
+                              {expertise}
+                            </Badge>
+                          ))}
+                          {mentor.expertise?.length > 3 && (
+                            <Badge variant="outline">+{mentor.expertise.length - 3}</Badge>
+                          )}
+                        </div>
+                        <p className="text-sm text-muted-foreground">
+                          <strong>Industries:</strong> {mentor.industries?.join(', ') || 'Not specified'}
+                        </p>
                       </div>
-                      <p className="text-sm">
-                        Experienced mentor specializing in {mentor.expertise?.join(', ') || 'various fields'}.
-                      </p>
-                    </CardContent>
-                    <CardFooter className="flex justify-between">
-                      <Button variant="outline" size="sm">View Profile</Button>
-                      <Button size="sm">Connect</Button>
-                    </CardFooter>
-                  </Card>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-12">
-                <Users className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-                <h3 className="text-xl font-medium mb-2">No mentors found</h3>
-                <p className="text-muted-foreground mb-6">
-                  There are no mentors available at the moment. Check back later.
-                </p>
-              </div>
-            )
-          )}
+                      
+                      <div className="flex items-center gap-2 mt-4 md:mt-0">
+                        <Badge variant="outline" className="bg-green-500/10 text-green-600 border-green-500">
+                          {mentor.match_score}% Match
+                        </Badge>
+                        <Button size="sm">Connect</Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
-    </div>
+    </motion.div>
   );
 };
 
