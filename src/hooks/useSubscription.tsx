@@ -20,6 +20,7 @@ interface UseSubscription {
   checkSubscription: () => Promise<void>;
   createCheckout: (plan: 'Monthly' | 'Yearly' | 'Lifetime') => Promise<void>;
   openCustomerPortal: () => Promise<void>;
+  subscription_tier?: string; // Added for backward compatibility
 }
 
 export const useSubscription = (): UseSubscription => {
@@ -133,5 +134,6 @@ export const useSubscription = (): UseSubscription => {
     checkSubscription,
     createCheckout,
     openCustomerPortal,
+    subscription_tier: subscription?.tier, // Added for backward compatibility
   };
 };

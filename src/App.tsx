@@ -1,102 +1,131 @@
 
-import React from 'react';
-import { Route, Routes } from 'react-router-dom';
-import './App.css';
-import HomePage from './pages/HomePage';
-import SignIn from './pages/SignIn';
-import SignUp from './pages/SignUp';
-import DashboardLayout from './components/DashboardLayout';
-import DashboardHome from './pages/dashboard/DashboardHome';
-import LegacyVaultPage from './pages/dashboard/LegacyVaultPage';
-import IdeaVaultPage from './pages/dashboard/IdeaVaultPage';
-import MentorshipPage from './pages/dashboard/MentorshipPage';
-import TimelessMessagesPage from './pages/dashboard/TimelessMessagesPage';
-import ProfilePage from './pages/dashboard/ProfilePage';
-import SettingsPage from './pages/dashboard/SettingsPage';
-import PricingPage from './pages/pricing/index';
-import TermsOfUsePage from './pages/legal/TermsOfUsePage';
-import PrivacyPolicyPage from './pages/legal/PrivacyPolicyPage';
-import CopyrightPolicyPage from './pages/legal/CopyrightPolicyPage';
-import CommunityGuidelinesPage from './pages/legal/CommunityGuidelinesPage';
-import NotFound from './pages/NotFound';
-import AuthGuard from './components/auth/AuthGuard';
-import UnauthorizedPage from './pages/UnauthorizedPage';
-import CreateLegacyPost from './pages/dashboard/legacy-vault/CreateLegacyPost';
-import CreateIdeaPost from './pages/dashboard/idea-vault/CreateIdeaPost';
-import CreateWisdomResource from './pages/dashboard/mentorship/CreateWisdomResource';
-import CreateTimelessMessage from './pages/dashboard/timeless-messages/CreateTimelessMessage';
+import { Routes, Route } from 'react-router-dom';
+import { lazy, Suspense } from 'react';
+import { Toaster } from '@/components/ui/toaster';
+import LoadingScreen from '@/components/LoadingScreen';
+import AuthGuard from '@/components/auth/AuthGuard';
+import DashboardLayout from '@/components/DashboardLayout';
 
-//Feature Pages
-import LegacyVaultFeaturePage from './pages/features/LegacyVaultPage';
-import MentorshipFeaturePage from './pages/features/MentorshipPage';
-import IdeaVaultFeaturePage from './pages/features/IdeaVaultPage';
-import TimelessMessagesFeaturePage from './pages/features/TimelessMessagesPage';
+// Lazy-loaded components
+const HomePage = lazy(() => import('@/pages/HomePage'));
+const SignIn = lazy(() => import('@/pages/SignIn'));
+const SignUp = lazy(() => import('@/pages/SignUp'));
+const Dashboard = lazy(() => import('@/pages/Dashboard'));
+const NotFound = lazy(() => import('@/pages/NotFound'));
+const UnauthorizedPage = lazy(() => import('@/pages/UnauthorizedPage'));
 
-// Admin Dashboard Pages
-import AdminDashboard from './pages/admin/AdminDashboard';
-import AdminOverview from './pages/admin/AdminOverview';
-import UsersManagement from './pages/admin/UsersManagement';
-import SubscriptionPlans from './pages/admin/SubscriptionPlans';
-import MentorApplicationsPage from './pages/admin/MentorApplicationsPage';
+// Dashboard pages
+const DashboardHome = lazy(() => import('@/pages/dashboard/DashboardHome'));
+const ProfilePage = lazy(() => import('@/pages/dashboard/ProfilePage'));
+const SettingsPage = lazy(() => import('@/pages/dashboard/SettingsPage'));
+const LegacyVaultPage = lazy(() => import('@/pages/dashboard/LegacyVaultPage'));
+const IdeaVaultPage = lazy(() => import('@/pages/dashboard/IdeaVaultPage'));
+const TimelessMessagesPage = lazy(() => import('@/pages/dashboard/TimelessMessagesPage'));
+const MentorshipPage = lazy(() => import('@/pages/dashboard/MentorshipPage'));
+const CreateContentPage = lazy(() => import('@/pages/dashboard/CreateContentPage'));
+
+// Legacy Vault
+const CreateLegacyPost = lazy(() => import('@/pages/dashboard/legacy-vault/CreateLegacyPost'));
+
+// Idea Vault
+const CreateIdeaPost = lazy(() => import('@/pages/dashboard/idea-vault/CreateIdeaPost'));
+
+// Timeless Messages
+const CreateTimelessMessage = lazy(() => import('@/pages/dashboard/timeless-messages/CreateTimelessMessage'));
+
+// Mentorship (Wisdom Exchange)
+const CreateWisdomResource = lazy(() => import('@/pages/dashboard/mentorship/CreateWisdomResource'));
+
+// Admin pages
+const AdminDashboard = lazy(() => import('@/pages/admin/AdminDashboard'));
+const AdminOverview = lazy(() => import('@/pages/admin/AdminOverview'));
+const UsersManagement = lazy(() => import('@/pages/admin/UsersManagement'));
+const MentorApplicationsPage = lazy(() => import('@/pages/admin/MentorApplicationsPage'));
+const SubscriptionPlans = lazy(() => import('@/pages/admin/SubscriptionPlans'));
+
+// Feature pages for homepage
+const LegacyVaultFeaturePage = lazy(() => import('@/pages/features/LegacyVaultPage'));
+const IdeaVaultFeaturePage = lazy(() => import('@/pages/features/IdeaVaultPage'));
+const TimelessMessagesFeaturePage = lazy(() => import('@/pages/features/TimelessMessagesPage'));
+const MentorshipFeaturePage = lazy(() => import('@/pages/features/MentorshipPage'));
+
+// Pricing page
+const PricingPage = lazy(() => import('@/pages/pricing'));
+
+// Legal pages
+const PrivacyPolicyPage = lazy(() => import('@/pages/legal/PrivacyPolicyPage'));
+const TermsOfUsePage = lazy(() => import('@/pages/legal/TermsOfUsePage'));
+const CommunityGuidelinesPage = lazy(() => import('@/pages/legal/CommunityGuidelinesPage'));
+const CopyrightPolicyPage = lazy(() => import('@/pages/legal/CopyrightPolicyPage'));
 
 function App() {
   return (
-    <Routes>
-      <Route path="/" element={<HomePage />} />
-      <Route path="/signin" element={<SignIn />} />
-      <Route path="/signup" element={<SignUp />} />
-      <Route path="/unauthorized" element={<UnauthorizedPage />} />
+    <Suspense fallback={<LoadingScreen />}>
+      <Routes>
+        {/* Public routes */}
+        <Route path="/" element={<HomePage />} />
+        <Route path="/signin" element={<SignIn />} />
+        <Route path="/signup" element={<SignUp />} />
+        <Route path="/unauthorized" element={<UnauthorizedPage />} />
+        <Route path="/pricing" element={<PricingPage />} />
+        
+        {/* Feature pages */}
+        <Route path="/features/legacy-vault" element={<LegacyVaultFeaturePage />} />
+        <Route path="/features/idea-vault" element={<IdeaVaultFeaturePage />} />
+        <Route path="/features/timeless-messages" element={<TimelessMessagesFeaturePage />} />
+        <Route path="/features/mentorship" element={<MentorshipFeaturePage />} />
+        
+        {/* Legal pages */}
+        <Route path="/legal/privacy-policy" element={<PrivacyPolicyPage />} />
+        <Route path="/legal/terms-of-use" element={<TermsOfUsePage />} />
+        <Route path="/legal/community-guidelines" element={<CommunityGuidelinesPage />} />
+        <Route path="/legal/copyright-policy" element={<CopyrightPolicyPage />} />
+        
+        {/* Protected dashboard routes */}
+        <Route
+          path="/dashboard"
+          element={
+            <AuthGuard>
+              <DashboardLayout />
+            </AuthGuard>
+          }
+        >
+          <Route index element={<Dashboard />} />
+          <Route path="home" element={<DashboardHome />} />
+          <Route path="profile" element={<ProfilePage />} />
+          <Route path="settings" element={<SettingsPage />} />
+          <Route path="legacy-vault" element={<LegacyVaultPage />} />
+          <Route path="legacy-vault/create" element={<CreateLegacyPost />} />
+          <Route path="idea-vault" element={<IdeaVaultPage />} />
+          <Route path="idea-vault/create" element={<CreateIdeaPost />} />
+          <Route path="timeless-messages" element={<TimelessMessagesPage />} />
+          <Route path="timeless-messages/create" element={<CreateTimelessMessage />} />
+          <Route path="mentorship" element={<MentorshipPage />} />
+          <Route path="mentorship/create-resource" element={<CreateWisdomResource />} />
+          <Route path="create-content" element={<CreateContentPage />} />
+        </Route>
+        
+        {/* Admin routes */}
+        <Route
+          path="/admin"
+          element={
+            <AuthGuard requiredRole="admin">
+              <AdminDashboard />
+            </AuthGuard>
+          }
+        >
+          <Route index element={<AdminOverview />} />
+          <Route path="users" element={<UsersManagement />} />
+          <Route path="mentor-applications" element={<MentorApplicationsPage />} />
+          <Route path="subscription-plans" element={<SubscriptionPlans />} />
+        </Route>
+        
+        {/* Catch-all route for 404 */}
+        <Route path="*" element={<NotFound />} />
+      </Routes>
       
-      {/* Add admin routes */}
-      <Route path="/admin" element={
-        <AuthGuard allowedRoles={['admin']}>
-          <AdminDashboard />
-        </AuthGuard>
-      }>
-        <Route index element={<AdminOverview />} />
-        <Route path="users" element={<UsersManagement />} />
-        <Route path="subscriptions" element={<SubscriptionPlans />} />
-        <Route path="mentor-applications" element={<MentorApplicationsPage />} />
-        <Route path="settings" element={<div>Admin Settings</div>} />
-      </Route>
-      
-      {/* Feature pages */}
-      <Route path="/features/legacy-vault" element={<LegacyVaultFeaturePage />} />
-      <Route path="/features/timeless-messages" element={<TimelessMessagesFeaturePage />} />
-      <Route path="/features/mentorship" element={<MentorshipFeaturePage />} />
-      <Route path="/features/idea-vault" element={<IdeaVaultFeaturePage />} />
-      
-      {/* Dashboard paths */}
-      <Route path="/dashboard" element={
-        <AuthGuard>
-          <DashboardLayout />
-        </AuthGuard>
-      }>
-        <Route index element={<DashboardHome />} />
-        <Route path="legacy-vault" element={<LegacyVaultPage />} />
-        <Route path="legacy-vault/create" element={<CreateLegacyPost />} />
-        <Route path="idea-vault" element={<IdeaVaultPage />} />
-        <Route path="idea-vault/create" element={<CreateIdeaPost />} />
-        <Route path="mentorship" element={<MentorshipPage />} />
-        <Route path="mentorship/create" element={<CreateWisdomResource />} />
-        <Route path="timeless-messages" element={<TimelessMessagesPage />} />
-        <Route path="timeless-messages/create" element={<CreateTimelessMessage />} />
-        <Route path="profile" element={<ProfilePage />} />
-        <Route path="settings" element={<SettingsPage />} />
-      </Route>
-      
-      {/* Pricing */}
-      <Route path="/pricing" element={<PricingPage />} />
-      
-      {/* Legal */}
-      <Route path="/legal/terms" element={<TermsOfUsePage />} />
-      <Route path="/legal/privacy" element={<PrivacyPolicyPage />} />
-      <Route path="/legal/copyright" element={<CopyrightPolicyPage />} />
-      <Route path="/legal/community" element={<CommunityGuidelinesPage />} />
-      
-      {/* 404 route */}
-      <Route path="*" element={<NotFound />} />
-    </Routes>
+      <Toaster />
+    </Suspense>
   );
 }
 

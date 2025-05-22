@@ -15,8 +15,9 @@ import { Switch } from '@/components/ui/switch';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
-import { ImageUploader } from '@/components/editor/ImageUploader';
-import { TimeCapsuleSettings } from '@/types';
+import ImageUploader from '@/components/editor/ImageUploader';
+import { FormDescription } from "@/components/ui/form";
+import { X } from "lucide-react";
 
 const formSchema = z.object({
   title: z.string().min(1, 'Title is required'),
@@ -47,8 +48,8 @@ const LegacyPostForm = () => {
     },
   });
 
-  const handleMediaUpload = (urls: string[]) => {
-    setMediaFiles((prev) => [...prev, ...urls]);
+  const onImageUploaded = (url: string) => {
+    setMediaFiles(prev => [...prev, url]);
   };
 
   const removeMedia = (url: string) => {
@@ -143,7 +144,7 @@ const LegacyPostForm = () => {
 
               <div className="space-y-2">
                 <Label>Media</Label>
-                <ImageUploader onUpload={handleMediaUpload} />
+                <ImageUploader onImageUploaded={onImageUploaded} />
                 
                 {mediaFiles.length > 0 && (
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-4">
@@ -228,7 +229,7 @@ const LegacyPostForm = () => {
 
               <div className="space-y-2">
                 <Label>Media</Label>
-                <ImageUploader onUpload={handleMediaUpload} />
+                <ImageUploader onImageUploaded={onImageUploaded} />
                 
                 {mediaFiles.length > 0 && (
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-4">
@@ -336,7 +337,3 @@ const LegacyPostForm = () => {
 };
 
 export default LegacyPostForm;
-
-// Import statements for components used above
-import { FormDescription } from "@/components/ui/form";
-import { X } from "lucide-react";

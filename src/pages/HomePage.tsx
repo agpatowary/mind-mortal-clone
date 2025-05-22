@@ -11,12 +11,13 @@ import CtaSection from '@/components/home/CtaSection';
 import Footer from '@/components/Footer';
 import AnimatedBackground from '@/components/AnimatedBackground';
 import { usePerformanceMode } from '@/hooks/usePerformanceMode';
+import { useCallback as useCallbackStable } from 'react';
 
 const HomePage = () => {
   const [activeSection, setActiveSection] = useState(0);
   const [isScrolling, setIsScrolling] = useState(false);
   const lastScrollTime = useRef(Date.now());
-  const { isPerformanceMode } = usePerformanceMode();
+  const { reducedMotion } = usePerformanceMode();
   
   const sections = [
     'hero',
@@ -27,17 +28,17 @@ const HomePage = () => {
     'cta'
   ];
   
-  const scrollToSection = useCallback((index: number) => {
+  const scrollToSection = useCallbackStable((index: number) => {
     if (index >= 0 && index < sections.length) {
       setActiveSection(index);
       const element = document.getElementById(sections[index]);
       if (element) {
-        element.scrollIntoView({ behavior: 'smooth' });
+        element.scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth' });
       }
     }
-  }, [sections]);
+  }, [sections, reducedMotion]);
 
-  const handleScroll = useCallback((e: WheelEvent) => {
+  const handleScroll = useCallbackStable((e: WheelEvent) => {
     e.preventDefault();
     
     const now = Date.now();
@@ -60,29 +61,27 @@ const HomePage = () => {
   }, [activeSection, isScrolling, scrollToSection]);
   
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const wheelOptions = { passive: false } as EventListenerOptions;
-      
-      const handleWheelEvent = (e: WheelEvent) => handleScroll(e);
-      
-      window.addEventListener('wheel', handleWheelEvent, wheelOptions);
-      
-      return () => {
-        window.removeEventListener('wheel', handleWheelEvent, wheelOptions);
-      };
-    }
+    const wheelHandler = (e: WheelEvent) => handleScroll(e);
+    
+    window.addEventListener('wheel', wheelHandler, { passive: false } as AddEventListenerOptions);
+    
+    return () => {
+      window.removeEventListener('wheel', wheelHandler, { passive: false } as AddEventListenerOptions);
+    };
   }, [handleScroll]);
   
-  const navigationProps = {
-    activeSection,
-    setActiveSection: scrollToSection
-  };
+  const handleNavigation = useCallback((sectionIndex: number) => {
+    scrollToSection(sectionIndex);
+  }, [scrollToSection]);
 
   return (
     <div className="flex flex-col min-h-screen bg-background overflow-x-hidden">
-      {!isPerformanceMode && <AnimatedBackground />}
+      {!reducedMotion && <AnimatedBackground />}
       
-      <HomeNavigation {...navigationProps} />
+      <HomeNavigation 
+        currentSection={activeSection} 
+        onNavigate={handleNavigation} 
+      />
       
       <main className="flex-grow">
         <section id="hero" className="min-h-screen flex items-center">

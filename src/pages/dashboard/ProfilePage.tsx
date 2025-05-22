@@ -1,260 +1,180 @@
 
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
+import React, { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { Textarea } from '@/components/ui/textarea';
-import { Badge } from '@/components/ui/badge';
-import { motion } from 'framer-motion';
-import { useSubscription } from '@/hooks/useSubscription';
+import { Loader2, Mail, MapPin, User } from 'lucide-react';
+import SubscriptionStatus from '@/components/subscription/SubscriptionStatus';
 
 const ProfilePage = () => {
-  const { user } = useAuth();
-  const navigate = useNavigate();
+  const { user, profile, refreshProfile } = useAuth();
   const { toast } = useToast();
-  const [isLoading, setIsLoading] = useState(false);
-  const [profile, setProfile] = useState<any>(null);
-  const { subscription, isLoading: isSubscriptionLoading } = useSubscription();
+  const [isUpdating, setIsUpdating] = useState(false);
   
-  // Form state
-  const [fullName, setFullName] = useState('');
-  const [username, setUsername] = useState('');
-  const [bio, setBio] = useState('');
-  const [location, setLocation] = useState('');
-  const [avatarUrl, setAvatarUrl] = useState('');
-  
-  useEffect(() => {
-    if (user) {
-      fetchProfile();
-    }
-  }, [user]);
-  
-  const fetchProfile = async () => {
+  const handleUpdateProfile = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const formData = new FormData(e.target as HTMLFormElement);
+    
+    const updateData = {
+      full_name: formData.get('fullName') as string,
+      bio: formData.get('bio') as string,
+      location: formData.get('location') as string,
+      phone: formData.get('phone') as string,
+    };
+    
     try {
-      setIsLoading(true);
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user?.id)
-        .single();
-      
-      if (error) throw error;
-      
-      if (data) {
-        setProfile(data);
-        setFullName(data.full_name || '');
-        setUsername(data.username || '');
-        setBio(data.bio || '');
-        setLocation(data.location || '');
-        setAvatarUrl(data.avatar_url || '');
-      }
-    } catch (error) {
-      console.error('Error fetching profile:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-  
-  const updateProfile = async () => {
-    try {
-      setIsLoading(true);
+      setIsUpdating(true);
       
       const { error } = await supabase
         .from('profiles')
-        .update({
-          full_name: fullName,
-          username,
-          bio,
-          location,
-          avatar_url: avatarUrl,
-          updated_at: new Date().toISOString(),
-        })
+        .update(updateData)
         .eq('id', user?.id);
-      
+        
       if (error) throw error;
       
       toast({
         title: 'Profile updated',
-        description: 'Your profile has been updated successfully.',
+        description: 'Your profile has been updated successfully',
       });
       
-      fetchProfile();
-    } catch (error) {
+      // Refresh profile data
+      await refreshProfile();
+      
+    } catch (error: any) {
       console.error('Error updating profile:', error);
       toast({
-        title: 'Error',
-        description: 'There was an error updating your profile.',
+        title: 'Error updating profile',
+        description: error.message,
         variant: 'destructive',
       });
     } finally {
-      setIsLoading(false);
+      setIsUpdating(false);
     }
-  };
-
-  const getSubscriptionBadge = () => {
-    if (!subscription) return null;
-    
-    if (subscription.status === 'active') {
-      return (
-        <Badge variant="outline" className="bg-green-500/10 text-green-600 border-green-500">
-          {subscription.tier} Plan
-        </Badge>
-      );
-    }
-    
-    if (subscription.status === 'trialing') {
-      return (
-        <Badge variant="outline" className="bg-blue-500/10 text-blue-600 border-blue-500">
-          Trial ({subscription.tier})
-        </Badge>
-      );
-    }
-    
-    return (
-      <Badge variant="outline" className="bg-muted text-muted-foreground">
-        Free Plan
-      </Badge>
-    );
   };
   
+  if (!user) {
+    return (
+      <div className="container py-12">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold">Please sign in to view your profile</h1>
+        </div>
+      </div>
+    );
+  }
+  
   return (
-    <div className="container mx-auto py-6 max-w-4xl">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3 }}
-      >
-        <h1 className="text-3xl font-bold mb-6">Profile</h1>
-        
-        <div className="grid gap-6">
+    <div className="container py-6">
+      <div className="flex flex-col lg:flex-row gap-6">
+        <div className="w-full lg:w-3/4 space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>Subscription Status</CardTitle>
-              <CardDescription>Your current subscription plan</CardDescription>
+              <CardTitle className="flex items-center">
+                <User className="mr-2 h-5 w-5" />
+                Profile Information
+              </CardTitle>
+              <CardDescription>
+                Update your personal information
+              </CardDescription>
             </CardHeader>
             <CardContent>
-              {isSubscriptionLoading ? (
-                <div className="text-center py-4">
-                  <p className="text-muted-foreground">Loading your subscription information...</p>
-                </div>
-              ) : subscription ? (
-                <div className="flex items-center justify-between">
+              <form onSubmit={handleUpdateProfile} className="space-y-4">
+                <div className="flex flex-col sm:flex-row gap-4 items-center mb-4">
+                  <Avatar className="h-20 w-20">
+                    <AvatarImage src={profile?.avatar_url || ''} alt={profile?.full_name || ''} />
+                    <AvatarFallback>{profile?.full_name?.charAt(0) || user.email?.charAt(0)}</AvatarFallback>
+                  </Avatar>
+                  
                   <div>
-                    <p className="text-lg font-medium flex items-center gap-2">
-                      {getSubscriptionBadge()}
+                    <h3 className="text-xl font-bold">{profile?.full_name || 'Your Name'}</h3>
+                    <p className="text-muted-foreground flex items-center gap-1">
+                      <Mail className="h-3 w-3" />
+                      {user.email}
                     </p>
-                    {subscription.expires_at && (
-                      <p className="text-sm text-muted-foreground mt-1">
-                        {subscription.status === 'active' 
-                          ? `Renews on ${new Date(subscription.expires_at).toLocaleDateString()}`
-                          : `Expires on ${new Date(subscription.expires_at).toLocaleDateString()}`
-                        }
+                    {profile?.location && (
+                      <p className="text-muted-foreground flex items-center gap-1">
+                        <MapPin className="h-3 w-3" />
+                        {profile.location}
                       </p>
                     )}
                   </div>
-                  <Button
-                    variant="outline"
-                    onClick={() => navigate('/dashboard/settings')}
-                  >
-                    Manage Subscription
-                  </Button>
-                </div>
-              ) : (
-                <div className="text-center py-4">
-                  <p className="text-muted-foreground mb-4">No active subscription</p>
-                  <Button 
-                    variant="outline" 
-                    onClick={() => navigate('/dashboard/settings')}
-                  >
-                    Manage Subscription
-                  </Button>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Personal Information</CardTitle>
-              <CardDescription>Update your personal details</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-6">
-                <div className="flex flex-col md:flex-row gap-4 items-start md:items-center">
-                  <Avatar className="w-20 h-20">
-                    <AvatarImage src={avatarUrl} alt={fullName} />
-                    <AvatarFallback>{fullName?.charAt(0) || user?.email?.charAt(0)}</AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1">
-                    <Label htmlFor="avatar" className="block mb-2">Profile Picture</Label>
-                    <Input
-                      id="avatar"
-                      type="text"
-                      placeholder="URL to your avatar image"
-                      value={avatarUrl}
-                      onChange={(e) => setAvatarUrl(e.target.value)}
-                    />
-                  </div>
                 </div>
                 
-                <div className="grid gap-4 md:grid-cols-2">
-                  <div>
-                    <Label htmlFor="fullName" className="block mb-2">Full Name</Label>
-                    <Input
-                      id="fullName"
-                      value={fullName}
-                      onChange={(e) => setFullName(e.target.value)}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="username" className="block mb-2">Username</Label>
-                    <Input
-                      id="username"
-                      value={username}
-                      onChange={(e) => setUsername(e.target.value)}
-                    />
-                  </div>
+                <div className="space-y-2">
+                  <Label htmlFor="fullName">Full Name</Label>
+                  <Input
+                    id="fullName"
+                    name="fullName"
+                    defaultValue={profile?.full_name || ''}
+                    placeholder="Enter your full name"
+                  />
                 </div>
                 
-                <div>
-                  <Label htmlFor="location" className="block mb-2">Location</Label>
+                <div className="space-y-2">
+                  <Label htmlFor="location">Location</Label>
                   <Input
                     id="location"
-                    value={location}
-                    onChange={(e) => setLocation(e.target.value)}
+                    name="location"
+                    defaultValue={profile?.location || ''}
+                    placeholder="City, Country"
                   />
                 </div>
                 
-                <div>
-                  <Label htmlFor="bio" className="block mb-2">Bio</Label>
+                <div className="space-y-2">
+                  <Label htmlFor="phone">Phone Number</Label>
+                  <Input
+                    id="phone"
+                    name="phone"
+                    defaultValue={profile?.phone || ''}
+                    placeholder="Your phone number"
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="bio">Bio</Label>
                   <Textarea
                     id="bio"
+                    name="bio"
+                    defaultValue={profile?.bio || ''}
                     placeholder="Tell us about yourself"
-                    value={bio}
-                    onChange={(e) => setBio(e.target.value)}
-                    className="min-h-[120px]"
+                    rows={4}
                   />
                 </div>
                 
-                <div className="flex justify-end">
-                  <Button 
-                    onClick={updateProfile} 
-                    disabled={isLoading}
-                  >
-                    {isLoading ? 'Saving...' : 'Save Changes'}
-                  </Button>
-                </div>
-              </div>
+                <Button type="submit" disabled={isUpdating}>
+                  {isUpdating ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Updating...
+                    </>
+                  ) : (
+                    'Update Profile'
+                  )}
+                </Button>
+              </form>
             </CardContent>
           </Card>
         </div>
-      </motion.div>
+        
+        <div className="w-full lg:w-1/4 space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Subscription</CardTitle>
+              <CardDescription>
+                Your current subscription status
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <SubscriptionStatus />
+            </CardContent>
+          </Card>
+        </div>
+      </div>
     </div>
   );
 };
