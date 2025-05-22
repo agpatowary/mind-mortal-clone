@@ -195,4 +195,4 @@ const TimelessMessagesFeaturePage: React.FC = () => {
   );
 };
 
-export default TimelessMessagesPage;
+export default TimelessMessagesFeaturePage;
