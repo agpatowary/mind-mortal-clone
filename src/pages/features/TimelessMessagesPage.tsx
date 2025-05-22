@@ -8,7 +8,7 @@ import Logo from '@/components/Logo';
 import { ArrowLeft, Clock, FileText, Calendar, Bell, Heart } from 'lucide-react';
 import AnimatedBackground from '@/components/AnimatedBackground';
 
-const TimelessMessagesPage: React.FC = () => {
+const TimelessMessagesFeaturePage: React.FC = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
