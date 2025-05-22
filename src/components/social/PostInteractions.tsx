@@ -8,12 +8,13 @@ import { cn } from '@/lib/utils';
 export interface PostInteractionsProps {
   postId: string;
   postType: 'legacy_post' | 'timeless_message' | 'wisdom_resource' | 'idea';
-  userLiked: boolean;
+  userLiked?: boolean;
   likesCount?: number;
   commentsCount?: number;
   onLikeToggle?: () => Promise<void>;
   onCommentClick?: () => void;
   onShareClick?: () => void;
+  onUpdate?: () => Promise<void>;
   variant?: 'default' | 'minimal';
   className?: string;
 }
@@ -27,6 +28,7 @@ const PostInteractions: React.FC<PostInteractionsProps> = ({
   onLikeToggle,
   onCommentClick,
   onShareClick,
+  onUpdate,
   variant = 'default',
   className
 }) => {
@@ -46,6 +48,9 @@ const PostInteractions: React.FC<PostInteractionsProps> = ({
     if (newLikedState !== isLiked) {
       setIsLiked(newLikedState);
       setCurrentLikesCount(prev => newLikedState ? prev + 1 : prev - 1);
+      if (onUpdate) {
+        await onUpdate();
+      }
     }
   };
 

@@ -60,7 +60,7 @@ const CopyrightPolicyPage = lazy(() => import('@/pages/legal/CopyrightPolicyPage
 
 function App() {
   return (
-    <Suspense fallback={<LoadingScreen />}>
+    <Suspense fallback={<LoadingScreen isLoading={true} />}>
       <Routes>
         {/* Public routes */}
         <Route path="/" element={<HomePage />} />
@@ -109,7 +109,7 @@ function App() {
         <Route
           path="/admin"
           element={
-            <AuthGuard requiredRole="admin">
+            <AuthGuard>
               <AdminDashboard />
             </AuthGuard>
           }

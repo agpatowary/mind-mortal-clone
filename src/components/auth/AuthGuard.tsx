@@ -1,60 +1,46 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
-import { Loader2 } from 'lucide-react';
+import LoadingScreen from '@/components/LoadingScreen';
 
-type RoleType = 'admin' | 'mentor' | 'disciple' | 'all';
-
-interface AuthGuardProps {
+export interface AuthGuardProps {
   children: React.ReactNode;
-  allowedRoles?: RoleType[];
-  requireAuth?: boolean;
-  redirectTo?: string;
+  requiredRole?: string;
 }
 
-const AuthGuard: React.FC<AuthGuardProps> = ({
-  children,
-  allowedRoles = ['all'],
-  requireAuth = true,
-  redirectTo = '/signin'
-}) => {
-  const { isAuthenticated, roles, isLoading } = useAuth();
+const AuthGuard: React.FC<AuthGuardProps> = ({ children, requiredRole }) => {
+  const { user, isLoading, checkUserRole } = useAuth();
   const location = useLocation();
 
-  // Improved loading spinner with better styling and centered position
-  if (isLoading) {
-    return (
-      <div className="fixed inset-0 bg-background/50 backdrop-blur-sm flex items-center justify-center z-50">
-        <div className="bg-card p-6 rounded-lg shadow-lg flex flex-col items-center">
-          <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />
-          <p className="text-lg font-medium">Loading...</p>
-        </div>
-      </div>
-    );
-  }
+  // Check if the user has the required role if specified
+  const hasRequiredRole = React.useMemo(() => {
+    if (!requiredRole || !user) return true;
+    return checkUserRole && checkUserRole(requiredRole);
+  }, [user, requiredRole, checkUserRole]);
 
-  // If authentication is required but user is not authenticated
-  if (requireAuth && !isAuthenticated()) {
-    return <Navigate to={redirectTo} state={{ from: location }} replace />;
-  }
-
-  // If user is authenticated but doesn't have the required role
-  if (isAuthenticated() && allowedRoles[0] !== 'all') {
-    const hasRequiredRole = allowedRoles.some(role => 
-      role === 'all' || roles.includes(role)
-    );
-
-    if (!hasRequiredRole) {
-      return <Navigate to="/unauthorized" replace />;
+  useEffect(() => {
+    // This is for debugging purposes
+    if (requiredRole && user && !hasRequiredRole) {
+      console.log(`User does not have the required role: ${requiredRole}`);
     }
+  }, [user, requiredRole, hasRequiredRole]);
+
+  if (isLoading) {
+    return <LoadingScreen isLoading={true} />;
   }
 
-  // If no authentication is required but user is authenticated (e.g., for sign-in page)
-  if (!requireAuth && isAuthenticated()) {
-    return <Navigate to="/dashboard" replace />;
+  if (!user) {
+    // User is not authenticated, redirect to login
+    return <Navigate to="/signin" state={{ from: location }} replace />;
   }
 
+  if (requiredRole && !hasRequiredRole) {
+    // User is authenticated but doesn't have the required role
+    return <Navigate to="/unauthorized" replace />;
+  }
+
+  // User is authenticated and has required role (if specified)
   return <>{children}</>;
 };
 

@@ -12,6 +12,7 @@ import Footer from '@/components/Footer';
 import AnimatedBackground from '@/components/AnimatedBackground';
 import { usePerformanceMode } from '@/hooks/usePerformanceMode';
 import { useCallback as useCallbackStable } from 'react';
+import homeContent from '@/data/homeContent.json';
 
 const HomePage = () => {
   const [activeSection, setActiveSection] = useState(0);
@@ -85,19 +86,19 @@ const HomePage = () => {
       
       <main className="flex-grow">
         <section id="hero" className="min-h-screen flex items-center">
-          <HeroSection />
+          <HeroSection data={homeContent.hero} />
         </section>
         
         <section id="features" className="min-h-screen flex items-center">
-          <FeaturesSection />
+          <FeaturesSection data={homeContent.features} />
         </section>
         
         <section id="case-studies" className="min-h-screen flex items-center">
-          <CaseStudiesSection />
+          <CaseStudiesSection data={homeContent.caseStudies} />
         </section>
         
         <section id="stories" className="min-h-screen flex items-center">
-          <StoriesSection />
+          <StoriesSection data={{}} />
         </section>
         
         <section id="mentors" className="min-h-screen flex items-center">
@@ -105,7 +106,7 @@ const HomePage = () => {
         </section>
         
         <section id="cta" className="min-h-screen flex items-center">
-          <CtaSection />
+          <CtaSection data={homeContent.cta} />
         </section>
       </main>
       

@@ -1,241 +1,292 @@
 
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { useNavigate } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/hooks/useAuth';
-import { ViewDetailsButton } from '@/components/dashboard/ViewDetailsButton';
-import { useToast } from '@/hooks/use-toast';
-import { Loader2, BookOpen, Users, Star, Plus } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
+import { Tab, Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Clock, Target, Award, Users, BookOpen, Star } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
+import ViewDetailsButton from "@/components/dashboard/ViewDetailsButton";
+import { useAuth } from "@/hooks/useAuth";
+import GroupCircles from "@/components/wisdom-exchange/GroupCircles";
 
 const MentorshipPage = () => {
-  const { user, isMentor } = useAuth();
   const navigate = useNavigate();
-  const { toast } = useToast();
-  const [resources, setResources] = useState<any[]>([]);
-  const [mentors, setMentors] = useState<any[]>([]);
-  const [loading, setLoading] = useState({
-    resources: true,
-    mentors: true
-  });
-
-  // Fetch wisdom resources
-  useEffect(() => {
-    const fetchResources = async () => {
-      try {
-        setLoading(prev => ({ ...prev, resources: true }));
-        
-        let query = supabase
-          .from('wisdom_resources')
-          .select('*, profiles!wisdom_resources_created_by_fkey(full_name, avatar_url)');
-        
-        // If user is not a mentor, only show resources from mentors they're connected with
-        if (!isMentor()) {
-          query = query.eq('is_public', true);
-        }
-        
-        const { data, error } = await query.order('created_at', { ascending: false });
-        
-        if (error) throw error;
-        
-        setResources(data || []);
-      } catch (error) {
-        console.error('Error fetching resources:', error);
-        toast({
-          title: 'Error',
-          description: 'Failed to load mentorship resources',
-          variant: 'destructive',
-        });
-      } finally {
-        setLoading(prev => ({ ...prev, resources: false }));
+  const { user, profile } = useAuth();
+  const [activeTab, setActiveTab] = useState("mentors");
+  
+  // Mock data - would come from API in real application
+  const mentors = [
+    {
+      id: 1,
+      name: "Dr. Sarah Chen",
+      title: "Innovation Specialist",
+      specialties: ["Technology", "Business Strategy", "Leadership"],
+      rating: 4.9,
+      reviews: 28,
+      students: 47,
+      imgUrl: "/lovable-uploads/placeholder.svg",
+    },
+    {
+      id: 2,
+      name: "Michael Johnson",
+      title: "Entrepreneurship Coach",
+      specialties: ["Startups", "Funding", "Product Development"],
+      rating: 4.7,
+      reviews: 34,
+      students: 52,
+      imgUrl: "/lovable-uploads/placeholder.svg",
+    },
+    {
+      id: 3,
+      name: "Dr. James Wilson",
+      title: "Academic Mentor",
+      specialties: ["Research", "Publishing", "Higher Education"],
+      rating: 4.8,
+      reviews: 19,
+      students: 31,
+      imgUrl: "/lovable-uploads/placeholder.svg",
+    }
+  ];
+  
+  const recommendedGroups = [
+    {
+      id: 1,
+      name: "Tech Innovators Circle",
+      members: 28,
+      topics: ["AI", "Blockchain", "Web3"],
+      recentActivity: "5 new discussions today"
+    },
+    {
+      id: 2,
+      name: "Creators & Founders",
+      members: 42,
+      topics: ["Startups", "Creative Process", "Funding"],
+      recentActivity: "New meeting scheduled"
+    },
+    {
+      id: 3,
+      name: "Legacy Builders",
+      members: 19,
+      topics: ["Life Stories", "Wisdom", "Mentorship"],
+      recentActivity: "3 new resources shared"
+    }
+  ];
+  
+  const myResources = [
+    {
+      id: 1,
+      title: "Starting Your First Business",
+      type: "Guide",
+      views: 124,
+      engagement: "High",
+      dateCreated: "2023-04-15"
+    },
+    {
+      id: 2,
+      title: "Leadership Lessons From My Career",
+      type: "Story Collection",
+      views: 87,
+      engagement: "Medium",
+      dateCreated: "2023-03-20"
+    }
+  ];
+  
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1
       }
-    };
-    
-    fetchResources();
-  }, [isMentor]);
-
-  // Fetch available mentors
-  useEffect(() => {
-    const fetchMentors = async () => {
-      try {
-        setLoading(prev => ({ ...prev, mentors: true }));
-        
-        const { data, error } = await supabase
-          .from('mentor_verification_status')
-          .select('*, profiles!inner(full_name, avatar_url, bio)')
-          .eq('is_verified', true);
-        
-        if (error) throw error;
-        
-        setMentors(data || []);
-      } catch (error) {
-        console.error('Error fetching mentors:', error);
-        toast({
-          title: 'Error',
-          description: 'Failed to load mentors',
-          variant: 'destructive',
-        });
-      } finally {
-        setLoading(prev => ({ ...prev, mentors: false }));
-      }
-    };
-    
-    fetchMentors();
-  }, []);
-
-  const handleCreateResource = () => {
-    navigate('/dashboard/mentorship/create-resource');
+    }
   };
-
+  
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: {
+      y: 0,
+      opacity: 1,
+      transition: { duration: 0.5 }
+    }
+  };
+  
   return (
-    <div className="container py-6">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-3xl font-bold">Mentorship</h1>
-        {isMentor() && (
-          <Button onClick={handleCreateResource}>
-            <Plus className="mr-2 h-4 w-4" />
+    <div className="container max-w-5xl mx-auto py-6">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight mb-1">Knowledge Exchange</h1>
+          <p className="text-muted-foreground">Connect with mentors and share wisdom with others.</p>
+        </div>
+        
+        <div className="mt-4 md:mt-0">
+          <Button onClick={() => navigate("/dashboard/mentorship/create-resource")}>
             Create Resource
           </Button>
-        )}
+        </div>
       </div>
       
-      <Tabs defaultValue="resources" className="space-y-6">
-        <TabsList className="grid w-full max-w-md grid-cols-2">
-          <TabsTrigger value="resources">My Resources</TabsTrigger>
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-8">
+        <TabsList className="w-full md:w-auto grid grid-cols-2 md:grid-cols-3">
           <TabsTrigger value="mentors">Find Mentors</TabsTrigger>
+          <TabsTrigger value="groups">Knowledge Groups</TabsTrigger>
+          <TabsTrigger value="resources">My Resources</TabsTrigger>
         </TabsList>
         
-        {/* Resources Tab */}
-        <TabsContent value="resources">
-          {loading.resources ? (
-            <div className="flex justify-center py-12">
-              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            </div>
-          ) : resources.length === 0 ? (
-            <Card>
-              <CardContent className="flex flex-col items-center justify-center py-12 text-center">
-                <BookOpen className="h-12 w-12 text-muted-foreground mb-4" />
-                <h3 className="text-lg font-medium mb-2">No resources found</h3>
-                <p className="text-muted-foreground mb-6 max-w-md">
-                  {isMentor() 
-                    ? "You haven't created any mentorship resources yet. Create your first resource to share your knowledge."
-                    : "No mentorship resources are available yet. Connect with mentors to access their resources."}
-                </p>
-                {isMentor() && (
-                  <Button onClick={handleCreateResource}>
-                    <Plus className="mr-2 h-4 w-4" />
-                    Create Resource
-                  </Button>
-                )}
-              </CardContent>
-            </Card>
-          ) : (
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {resources.map((resource) => (
-                <Card key={resource.id} className="overflow-hidden">
-                  <div className="relative h-40 bg-muted">
-                    {resource.resource_url && (
-                      <img 
-                        src={resource.resource_url} 
-                        alt={resource.title}
-                        className="object-cover w-full h-full"
-                      />
-                    )}
-                    <div className="absolute top-2 right-2">
-                      <Badge variant={resource.is_public ? "default" : "outline"}>
-                        {resource.is_public ? "Public" : "Private"}
-                      </Badge>
-                    </div>
-                  </div>
-                  <CardHeader className="p-4">
-                    <div className="flex items-start justify-between">
-                      <CardTitle className="text-lg line-clamp-2">{resource.title}</CardTitle>
-                    </div>
-                    <div className="flex items-center mt-2">
-                      <Avatar className="h-6 w-6 mr-2">
-                        <AvatarImage src={resource.profiles?.avatar_url} />
-                        <AvatarFallback>{resource.profiles?.full_name?.charAt(0) || '?'}</AvatarFallback>
+        <TabsContent value="mentors" className="mt-6">
+          <motion.div 
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+          >
+            {mentors.map(mentor => (
+              <motion.div key={mentor.id} variants={itemVariants}>
+                <Card className="h-full hover:shadow-md transition-shadow duration-300">
+                  <CardHeader className="pb-2">
+                    <div className="flex items-start gap-4">
+                      <Avatar className="h-14 w-14 border">
+                        <AvatarImage src={mentor.imgUrl} alt={mentor.name} />
+                        <AvatarFallback>{mentor.name.charAt(0)}</AvatarFallback>
                       </Avatar>
-                      <span className="text-sm text-muted-foreground">{resource.profiles?.full_name}</span>
+                      <div>
+                        <CardTitle className="text-lg">{mentor.name}</CardTitle>
+                        <CardDescription>{mentor.title}</CardDescription>
+                        <div className="flex items-center mt-1">
+                          <Star className="h-4 w-4 text-yellow-500 fill-yellow-500 mr-1" />
+                          <span className="text-sm font-medium mr-1">{mentor.rating}</span>
+                          <span className="text-xs text-muted-foreground">({mentor.reviews} reviews)</span>
+                        </div>
+                      </div>
                     </div>
                   </CardHeader>
-                  <CardContent className="p-4 pt-0">
-                    <p className="text-muted-foreground text-sm line-clamp-2 mb-4">{resource.description}</p>
-                    <div className="flex justify-between items-center">
-                      <div className="flex items-center">
-                        <Badge variant="outline">{resource.resource_type}</Badge>
-                      </div>
-                      <ViewDetailsButton 
-                        href={`/dashboard/mentorship/resource/${resource.id}`} 
-                      />
+                  <CardContent className="pb-4">
+                    <div className="flex flex-wrap gap-1 mb-3">
+                      {mentor.specialties.map((specialty, i) => (
+                        <Badge key={i} variant="secondary" className="font-normal">
+                          {specialty}
+                        </Badge>
+                      ))}
+                    </div>
+                    <div className="flex items-center text-sm text-muted-foreground">
+                      <Users className="h-4 w-4 mr-1" />
+                      <span>{mentor.students} mentees</span>
                     </div>
                   </CardContent>
+                  <CardFooter>
+                    <ViewDetailsButton 
+                      onClick={() => navigate(`/dashboard/mentorship/mentor/${mentor.id}`)}
+                    />
+                  </CardFooter>
                 </Card>
-              ))}
-            </div>
-          )}
+              </motion.div>
+            ))}
+          </motion.div>
         </TabsContent>
         
-        {/* Find Mentors Tab */}
-        <TabsContent value="mentors">
-          {loading.mentors ? (
-            <div className="flex justify-center py-12">
-              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            </div>
-          ) : mentors.length === 0 ? (
-            <Card>
-              <CardContent className="flex flex-col items-center justify-center py-12 text-center">
-                <Users className="h-12 w-12 text-muted-foreground mb-4" />
-                <h3 className="text-lg font-medium mb-2">No mentors available</h3>
-                <p className="text-muted-foreground mb-6 max-w-md">
-                  There are no verified mentors available at the moment. Check back later as new mentors join the platform.
-                </p>
-              </CardContent>
-            </Card>
-          ) : (
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {mentors.map((mentor) => (
-                <Card key={mentor.id}>
-                  <CardContent className="p-6">
-                    <div className="flex flex-col items-center text-center mb-4">
-                      <Avatar className="h-20 w-20 mb-4">
-                        <AvatarImage src={mentor.profiles?.avatar_url} />
-                        <AvatarFallback>{mentor.profiles?.full_name?.charAt(0) || '?'}</AvatarFallback>
-                      </Avatar>
-                      <h3 className="font-medium text-lg">{mentor.profiles?.full_name}</h3>
-                      <div className="flex items-center mt-1">
-                        <Star className="h-4 w-4 text-yellow-500 fill-yellow-500 mr-1" />
-                        <span>{mentor.wisdom_rating || 5}</span>
-                        <span className="mx-2">•</span>
-                        <span>{mentor.experience_years} years experience</span>
-                      </div>
+        <TabsContent value="groups" className="mt-6">
+          <motion.div 
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            className="grid grid-cols-1 lg:grid-cols-2 gap-6"
+          >
+            {recommendedGroups.map(group => (
+              <motion.div key={group.id} variants={itemVariants}>
+                <Card className="h-full hover:shadow-md transition-shadow duration-300">
+                  <CardHeader>
+                    <CardTitle className="text-xl">{group.name}</CardTitle>
+                    <CardDescription>{group.members} active members</CardDescription>
+                  </CardHeader>
+                  <CardContent className="pb-0">
+                    <div className="mb-4">
+                      <GroupCircles userCount={group.members} size="sm" />
                     </div>
-                    
-                    <p className="text-muted-foreground text-sm text-center mb-4 line-clamp-3">
-                      {mentor.profiles?.bio || "No bio available"}
-                    </p>
-                    
-                    <div className="flex flex-wrap gap-1 justify-center mb-4">
-                      {mentor.expertise?.slice(0, 3).map((exp: string, i: number) => (
-                        <Badge key={i} variant="secondary" className="font-normal">{exp}</Badge>
+                    <div className="flex flex-wrap gap-1 mb-4">
+                      {group.topics.map((topic, i) => (
+                        <Badge key={i} variant="outline" className="font-normal">
+                          {topic}
+                        </Badge>
                       ))}
-                      {(mentor.expertise?.length || 0) > 3 && (
-                        <Badge variant="outline">+{(mentor.expertise?.length || 0) - 3} more</Badge>
-                      )}
                     </div>
-                    
-                    <Button className="w-full" onClick={() => navigate(`/dashboard/mentorship/mentor/${mentor.id}`)}>
-                      View Profile
-                    </Button>
+                    <div className="text-sm flex items-center text-muted-foreground mt-2">
+                      <Clock className="h-4 w-4 mr-2" />
+                      {group.recentActivity}
+                    </div>
                   </CardContent>
+                  <CardFooter className="pt-4">
+                    <Button variant="outline" className="w-full">
+                      Join Group
+                    </Button>
+                  </CardFooter>
                 </Card>
-              ))}
-            </div>
-          )}
+              </motion.div>
+            ))}
+          </motion.div>
+        </TabsContent>
+        
+        <TabsContent value="resources" className="mt-6">
+          <motion.div 
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+          >
+            {myResources.length > 0 ? (
+              <div className="space-y-4">
+                {myResources.map(resource => (
+                  <motion.div key={resource.id} variants={itemVariants}>
+                    <Card>
+                      <CardHeader className="pb-2">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <CardTitle>{resource.title}</CardTitle>
+                            <CardDescription className="flex items-center mt-1">
+                              <BookOpen className="h-4 w-4 mr-1" />
+                              {resource.type}
+                            </CardDescription>
+                          </div>
+                          <Badge>{resource.engagement} Engagement</Badge>
+                        </div>
+                      </CardHeader>
+                      <CardContent className="pb-2">
+                        <div className="grid grid-cols-2 gap-4 text-sm">
+                          <div className="flex items-center">
+                            <Target className="h-4 w-4 mr-2 text-muted-foreground" />
+                            <span>{resource.views} Views</span>
+                          </div>
+                          <div className="flex items-center">
+                            <Clock className="h-4 w-4 mr-2 text-muted-foreground" />
+                            <span>Created {resource.dateCreated}</span>
+                          </div>
+                        </div>
+                      </CardContent>
+                      <CardFooter className="flex justify-between">
+                        <Button variant="outline" size="sm">
+                          Edit Resource
+                        </Button>
+                        <Button size="sm">
+                          View Analytics
+                        </Button>
+                      </CardFooter>
+                    </Card>
+                  </motion.div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-12">
+                <BookOpen className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                <h3 className="text-lg font-medium mb-2">No Resources Yet</h3>
+                <p className="text-muted-foreground mb-6">
+                  Share your knowledge by creating wisdom resources
+                </p>
+                <Button onClick={() => navigate("/dashboard/mentorship/create-resource")}>
+                  Create Your First Resource
+                </Button>
+              </div>
+            )}
+          </motion.div>
         </TabsContent>
       </Tabs>
     </div>
