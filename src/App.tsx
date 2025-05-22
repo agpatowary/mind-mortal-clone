@@ -25,6 +25,12 @@ import CreateIdeaPost from './pages/dashboard/idea-vault/CreateIdeaPost';
 import CreateWisdomResource from './pages/dashboard/mentorship/CreateWisdomResource';
 import CreateTimelessMessage from './pages/dashboard/timeless-messages/CreateTimelessMessage';
 
+//Feature Pages
+import LegacyVaultFeaturePage from './pages/features/LegacyVaultPage';
+import IdeaVaultFeaturePage from './pages/features/IdeaVaultPage';
+import MentorshipFeaturePage from './pages/features/MentorshipPage';
+import TimelessMessagesFeaturePage from './pages/features/TimelessMessagesPage';
+
 // Admin Dashboard Pages
 import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminOverview from './pages/admin/AdminOverview';

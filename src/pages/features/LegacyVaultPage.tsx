@@ -9,7 +9,7 @@ import Logo from '@/components/Logo';
 import { ArrowLeft, BookOpen, Archive, Shield, Tags, Clock } from 'lucide-react';
 import AnimatedBackground from '@/components/AnimatedBackground';
 
-const LegacyVaultPage: React.FC = () => {
+const LegacyVaultFeaturePage: React.FC = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -185,4 +185,4 @@ const LegacyVaultPage: React.FC = () => {
   );
 };
 
-export default LegacyVaultPage;
+export default LegacyVaultFeaturePage;

@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import AnimatedBackground from '@/components/AnimatedBackground';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
-const IdeaVaultPage = () => {
+const IdeaVaultFeaturePage = () => {
   const navigate = useNavigate();
 
   return (
@@ -119,4 +119,4 @@ const IdeaVaultPage = () => {
   );
 };
 
-export default IdeaVaultPage;
+export default IdeaVaultFeaturePage;

@@ -7,7 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import AnimatedBackground from '@/components/AnimatedBackground';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
-const MentorshipPage = () => {
+const MentorshipFeaturePage = () => {
   const navigate = useNavigate();
 
   return (
@@ -119,4 +119,4 @@ const MentorshipPage = () => {
   );
 };
 
-export default MentorshipPage;
+export default MentorshipFeaturePage;
