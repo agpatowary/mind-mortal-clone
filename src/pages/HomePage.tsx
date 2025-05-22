@@ -14,6 +14,14 @@ import { usePerformanceMode } from '@/hooks/usePerformanceMode';
 import { useCallback as useCallbackStable } from 'react';
 import homeContent from '@/data/homeContent.json';
 
+interface Feature {
+  title: string;
+  description: string;
+  icon: string;
+  link: string;
+  cta?: string;
+}
+
 const HomePage = () => {
   const [activeSection, setActiveSection] = useState(0);
   const [isScrolling, setIsScrolling] = useState(false);
@@ -75,6 +83,33 @@ const HomePage = () => {
     scrollToSection(sectionIndex);
   }, [scrollToSection]);
 
+  // Add missing cta property to features
+  const featuresWithCta = {
+    ...homeContent.features,
+    items: homeContent.features.items.map(item => ({
+      ...item,
+      cta: `Explore ${item.title}`
+    }))
+  };
+
+  // Default stories data if needed
+  const storiesData = {
+    items: [
+      {
+        title: "Young Innovator",
+        description: "My ideas sat in notebooks for years. Now, they're in a vault. One just got feedback from a mentor I admire."
+      },
+      {
+        title: "Grieving Daughter",
+        description: "My mother's voice lives on. On my birthday, I received a message she recorded before she passed. MMortal gave me more than memory—it gave me presence."
+      },
+      {
+        title: "Retired Professional",
+        description: "After 40 years in the field, I thought my knowledge would die with me. Now it teaches others. That's peace."
+      }
+    ]
+  };
+
   return (
     <div className="flex flex-col min-h-screen bg-background overflow-x-hidden">
       {!reducedMotion && <AnimatedBackground />}
@@ -90,7 +125,7 @@ const HomePage = () => {
         </section>
         
         <section id="features" className="min-h-screen flex items-center">
-          <FeaturesSection data={homeContent.features} />
+          <FeaturesSection data={featuresWithCta} />
         </section>
         
         <section id="case-studies" className="min-h-screen flex items-center">
@@ -98,7 +133,7 @@ const HomePage = () => {
         </section>
         
         <section id="stories" className="min-h-screen flex items-center">
-          <StoriesSection data={{}} />
+          <StoriesSection data={storiesData} />
         </section>
         
         <section id="mentors" className="min-h-screen flex items-center">

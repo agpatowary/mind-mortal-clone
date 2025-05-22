@@ -10,14 +10,14 @@ export interface AuthGuardProps {
 }
 
 const AuthGuard: React.FC<AuthGuardProps> = ({ children, requiredRole }) => {
-  const { user, isLoading, checkUserRole } = useAuth();
+  const { user, isLoading, hasRole } = useAuth();
   const location = useLocation();
 
   // Check if the user has the required role if specified
   const hasRequiredRole = React.useMemo(() => {
     if (!requiredRole || !user) return true;
-    return checkUserRole && checkUserRole(requiredRole);
-  }, [user, requiredRole, checkUserRole]);
+    return hasRole ? hasRole(requiredRole) : false;
+  }, [user, requiredRole, hasRole]);
 
   useEffect(() => {
     // This is for debugging purposes

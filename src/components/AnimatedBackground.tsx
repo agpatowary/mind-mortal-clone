@@ -7,13 +7,26 @@ export interface AnimatedBackgroundProps {
   color?: string;
   intensity?: 'light' | 'medium' | 'strong';
   pattern?: 'dots' | 'grid' | 'noise';
+  // Additional optional props for feature pages
+  mouseInteraction?: boolean;
+  density?: number;
+  speed?: number;
+  interactionStrength?: number;
+  particleSize?: string;
+  objectCount?: number;
 }
 
 const AnimatedBackground: React.FC<AnimatedBackgroundProps> = ({
   children,
   color = '#F97316',
   intensity = 'medium',
-  pattern = 'dots'
+  pattern = 'dots',
+  mouseInteraction,
+  density,
+  speed,
+  interactionStrength,
+  particleSize,
+  objectCount
 }) => {
   // Determine opacity based on intensity
   const getOpacity = () => {
@@ -28,7 +41,7 @@ const AnimatedBackground: React.FC<AnimatedBackgroundProps> = ({
   // Create array of floating elements
   const createElements = () => {
     const elements = [];
-    const count = pattern === 'dots' ? 50 : pattern === 'grid' ? 25 : 40;
+    const count = objectCount || (pattern === 'dots' ? 50 : pattern === 'grid' ? 25 : 40);
     
     for (let i = 0; i < count; i++) {
       const size = Math.random() * 10 + 5; // Size between 5-15px
@@ -36,8 +49,8 @@ const AnimatedBackground: React.FC<AnimatedBackgroundProps> = ({
         id: i,
         x: Math.random() * 100, // Position X (0-100%)
         y: Math.random() * 100, // Position Y (0-100%)
-        size,
-        duration: Math.random() * 20 + 20, // Animation duration between 20-40s
+        size: particleSize ? parseInt(particleSize) : size,
+        duration: (speed || 1) * (Math.random() * 20 + 20), // Animation duration between 20-40s
         delay: Math.random() * 20 // Delay start by 0-20s
       });
     }
@@ -45,7 +58,7 @@ const AnimatedBackground: React.FC<AnimatedBackgroundProps> = ({
     return elements;
   };
   
-  const elements = React.useMemo(() => createElements(), [pattern]);
+  const elements = React.useMemo(() => createElements(), [pattern, objectCount, particleSize, speed]);
   const opacity = getOpacity();
   
   return (
