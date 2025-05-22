@@ -12,6 +12,7 @@ import IdeaVaultPage from './pages/dashboard/IdeaVaultPage';
 import MentorshipPage from './pages/dashboard/MentorshipPage';
 import TimelessMessagesPage from './pages/dashboard/TimelessMessagesPage';
 import ProfilePage from './pages/dashboard/ProfilePage';
+import SettingsPage from './pages/dashboard/SettingsPage';
 import PricingPage from './pages/pricing/index';
 import TermsOfUsePage from './pages/legal/TermsOfUsePage';
 import PrivacyPolicyPage from './pages/legal/PrivacyPolicyPage';
@@ -36,6 +37,7 @@ import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminOverview from './pages/admin/AdminOverview';
 import UsersManagement from './pages/admin/UsersManagement';
 import SubscriptionPlans from './pages/admin/SubscriptionPlans';
+import MentorApplicationsPage from './pages/admin/MentorApplicationsPage';
 
 function App() {
   return (
@@ -54,6 +56,7 @@ function App() {
         <Route index element={<AdminOverview />} />
         <Route path="users" element={<UsersManagement />} />
         <Route path="subscriptions" element={<SubscriptionPlans />} />
+        <Route path="mentor-applications" element={<MentorApplicationsPage />} />
         <Route path="settings" element={<div>Admin Settings</div>} />
       </Route>
       
@@ -79,7 +82,7 @@ function App() {
         <Route path="timeless-messages" element={<TimelessMessagesPage />} />
         <Route path="timeless-messages/create" element={<CreateTimelessMessage />} />
         <Route path="profile" element={<ProfilePage />} />
-        <Route path="settings" element={<div>Settings</div>} />
+        <Route path="settings" element={<SettingsPage />} />
       </Route>
       
       {/* Pricing */}

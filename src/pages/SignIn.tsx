@@ -1,147 +1,130 @@
 
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { z } from 'zod';
-import { motion } from 'framer-motion';
-import { useAuth } from '@/hooks/useAuth';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import Logo from '../components/Logo';
-import { Loader2 } from 'lucide-react';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { ArrowLeft } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
 
-// Form validation schema
 const formSchema = z.object({
-  email: z.string().email({ message: "Please enter a valid email address" }),
-  password: z.string().min(6, { message: "Password must be at least 6 characters" }),
+  email: z.string().email({ message: 'Please enter a valid email address' }),
+  password: z.string().min(6, { message: 'Password must be at least 6 characters' }),
 });
 
 type FormValues = z.infer<typeof formSchema>;
 
-const SignIn: React.FC = () => {
-  const { signIn, isLoading } = useAuth();
-  
+const SignIn = () => {
+  const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
+  const navigate = useNavigate();
+  const { setSession } = useAuth();
+
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      email: "",
-      password: "",
+      email: '',
+      password: '',
     },
   });
 
   const onSubmit = async (values: FormValues) => {
-    await signIn(values.email, values.password);
-  };
+    setIsLoading(true);
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: values.email,
+        password: values.password,
+      });
 
-  // Animation variants
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1,
+      if (error) {
+        throw error;
       }
-    }
-  };
 
-  const itemVariants = {
-    hidden: { y: 20, opacity: 0 },
-    visible: {
-      y: 0,
-      opacity: 1,
-      transition: { 
-        type: "spring", 
-        stiffness: 100,
-        damping: 10
+      if (data.session) {
+        setSession(data.session);
+        navigate('/dashboard');
       }
+    } catch (error: any) {
+      toast({
+        title: 'Error signing in',
+        description: error.message || 'Something went wrong. Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-muted/40">
-      <motion.div
-        variants={containerVariants}
-        initial="hidden"
-        animate="visible"
-        className="w-full max-w-md"
-      >
-        <Card className="border-2 border-primary/10 shadow-lg backdrop-blur-sm bg-background/80">
-          <CardHeader className="text-center">
-            <motion.div variants={itemVariants} className="flex justify-center mb-4">
-              <Logo className="h-12 w-12" />
-            </motion.div>
-            <motion.div variants={itemVariants}>
-              <CardTitle className="text-2xl">Welcome back</CardTitle>
-              <CardDescription>
-                Sign in to access your legacy vault, mentorship connections, and timeless messages.
-              </CardDescription>
-            </motion.div>
+    <div className="flex min-h-screen items-center justify-center bg-background">
+      <div className="w-full max-w-md p-4">
+        <Button 
+          variant="ghost" 
+          className="mb-4" 
+          onClick={() => navigate('/')}
+        >
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Back to Home
+        </Button>
+        
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-2xl">Sign In</CardTitle>
+            <CardDescription>
+              Enter your credentials to access your account
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                <motion.div variants={itemVariants}>
-                  <FormField
-                    control={form.control}
-                    name="email"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Email</FormLabel>
-                        <FormControl>
-                          <Input placeholder="m@example.com" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </motion.div>
-                
-                <motion.div variants={itemVariants}>
-                  <FormField
-                    control={form.control}
-                    name="password"
-                    render={({ field }) => (
-                      <FormItem>
-                        <div className="flex items-center justify-between">
-                          <FormLabel>Password</FormLabel>
-                          <Link to="/forgot-password" className="text-sm text-primary hover:underline">
-                            Forgot password?
-                          </Link>
-                        </div>
-                        <FormControl>
-                          <Input type="password" placeholder="••••••••" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </motion.div>
-                
-                <motion.div variants={itemVariants}>
-                  <Button type="submit" className="w-full" disabled={isLoading}>
-                    {isLoading ? (
-                      <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Signing in...</>
-                    ) : (
-                      "Sign In"
-                    )}
-                  </Button>
-                </motion.div>
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Email</FormLabel>
+                      <FormControl>
+                        <Input placeholder="your.email@example.com" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="password"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Password</FormLabel>
+                      <FormControl>
+                        <Input type="password" placeholder="••••••••" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <Button type="submit" className="w-full" disabled={isLoading}>
+                  {isLoading ? 'Signing in...' : 'Sign In'}
+                </Button>
               </form>
             </Form>
           </CardContent>
-          <CardFooter className="flex flex-col items-center gap-4">
-            <motion.div variants={itemVariants} className="text-sm text-muted-foreground">
-              Don't have an account?{" "}
+          <CardFooter className="flex flex-col items-center space-y-2">
+            <div className="text-sm text-muted-foreground">
+              Don't have an account?{' '}
               <Link to="/signup" className="text-primary hover:underline">
                 Sign up
               </Link>
-            </motion.div>
+            </div>
           </CardFooter>
         </Card>
-      </motion.div>
+      </div>
     </div>
   );
 };

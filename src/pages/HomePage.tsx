@@ -43,6 +43,7 @@ const HomePage = () => {
   const [isScrolling, setIsScrolling] = useState(false);
   const scrollTimeoutRef = useRef<number | null>(null);
   const touchStartY = useRef<number | null>(null);
+  const lastScrollTime = useRef<number>(0);
   
   // Total number of slides
   const totalSlides = 5;
@@ -59,14 +60,19 @@ const HomePage = () => {
   
   // Prevent scroll events from triggering multiple slide changes
   const handleScrollDebounced = (direction: number) => {
-    if (isScrolling) return;
+    const now = Date.now();
+    // Only allow scrolling every 800ms
+    if (isScrolling || now - lastScrollTime.current < 800) return;
     
     setIsScrolling(true);
+    lastScrollTime.current = now;
     
-    if (direction > 0) {
-      nextSlide();
-    } else {
-      prevSlide();
+    if (direction > 0 && currentSlide < totalSlides - 1) {
+      setDirection(1);
+      setCurrentSlide(prev => prev + 1);
+    } else if (direction < 0 && currentSlide > 0) {
+      setDirection(-1);
+      setCurrentSlide(prev => prev - 1);
     }
     
     // Clear any existing timeout
@@ -91,11 +97,17 @@ const HomePage = () => {
       handleScrollDebounced(direction);
     };
     
-    // Add event listener with proper options and ensure it's attached to document
-    document.addEventListener('wheel', handleWheel, { passive: false });
+    // Add event listener with proper TypeScript compatible options
+    document.addEventListener('wheel', handleWheel, { 
+      capture: false,
+      once: false
+    } as EventListenerOptions);
     
     return () => {
-      document.removeEventListener('wheel', handleWheel, { passive: false });
+      document.removeEventListener('wheel', handleWheel, { 
+        capture: false,
+        once: false
+      } as EventListenerOptions);
       
       // Clear any pending timeouts when component unmounts
       if (scrollTimeoutRef.current) {
@@ -128,9 +140,9 @@ const HomePage = () => {
       touchStartY.current = null;
     };
     
-    document.addEventListener('touchstart', handleTouchStart, { passive: false });
+    document.addEventListener('touchstart', handleTouchStart, { passive: true });
     document.addEventListener('touchmove', handleTouchMove, { passive: false });
-    document.addEventListener('touchend', handleTouchEnd);
+    document.addEventListener('touchend', handleTouchEnd, { passive: true });
     
     return () => {
       document.removeEventListener('touchstart', handleTouchStart);
@@ -139,35 +151,19 @@ const HomePage = () => {
     };
   }, [isScrolling, currentSlide]); // Add currentSlide to dependencies
   
-  // Navigate to next slide
-  const nextSlide = () => {
-    if (currentSlide < totalSlides - 1) {
-      setDirection(1);
-      setCurrentSlide(currentSlide + 1);
-    }
-  };
-  
-  // Navigate to previous slide
-  const prevSlide = () => {
-    if (currentSlide > 0) {
-      setDirection(-1);
-      setCurrentSlide(currentSlide - 1);
-    }
-  };
-  
   // Handle keyboard navigation
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'ArrowDown') {
-        nextSlide();
+        handleScrollDebounced(1);
       } else if (e.key === 'ArrowUp') {
-        prevSlide();
+        handleScrollDebounced(-1);
       }
     };
     
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [currentSlide]);
+  }, [currentSlide, isScrolling]);
   
   // Slide components array
   const slides = [
@@ -251,7 +247,7 @@ const HomePage = () => {
               variant="ghost"
               size="icon"
               className={`rounded-full bg-background/40 backdrop-blur-sm mb-2 ${currentSlide === 0 ? 'opacity-30 cursor-not-allowed' : 'opacity-100'}`}
-              onClick={prevSlide}
+              onClick={() => handleScrollDebounced(-1)}
               disabled={currentSlide === 0}
             >
               <ChevronUp className="h-6 w-6" />
@@ -261,7 +257,7 @@ const HomePage = () => {
               variant="ghost"
               size="icon"
               className={`rounded-full bg-background/40 backdrop-blur-sm ${currentSlide === totalSlides - 1 ? 'opacity-30 cursor-not-allowed' : 'opacity-100'}`}
-              onClick={nextSlide}
+              onClick={() => handleScrollDebounced(1)}
               disabled={currentSlide === totalSlides - 1}
             >
               <ChevronDown className="h-6 w-6" />

@@ -4,20 +4,11 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Archive } from 'lucide-react';
 import { motion } from 'framer-motion';
-
-// Import the actual content creation component
-import ContentCreationContainer from '@/components/content/ContentCreationContainer';
-import { RouteInfo } from '@/types';
+import LegacyPostForm from '@/components/legacy-vault/LegacyPostForm';
 
 const CreateLegacyPost = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  
-  // Create a properly typed routeInfo object
-  const routeInfo: RouteInfo = {
-    returnPath: '/dashboard/legacy-vault',
-    pathname: location.pathname
-  };
   
   return (
     <motion.div
@@ -37,10 +28,7 @@ const CreateLegacyPost = () => {
           </CardDescription>
         </CardHeader>
         <CardContent className="pt-6">
-          <ContentCreationContainer 
-            initialTab="legacy-vault"
-            routeInfo={routeInfo}
-          />
+          <LegacyPostForm />
         </CardContent>
       </Card>
     </motion.div>
