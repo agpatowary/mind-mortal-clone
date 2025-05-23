@@ -109,18 +109,9 @@ function App() {
                 </AuthGuard>
               }
             />
+          
             <Route
               path="/dashboard/legacy-vault/create"
-              element={
-                <AuthGuard>
-                  <DashboardLayout>
-                    <LegacyPostCreate />
-                  </DashboardLayout>
-                </AuthGuard>
-              }
-            />
-            <Route
-              path="/dashboard/legacy-vault/edit/:postId"
               element={
                 <AuthGuard>
                   <DashboardLayout>
