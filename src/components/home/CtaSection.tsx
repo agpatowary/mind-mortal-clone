@@ -24,10 +24,10 @@ const CtaSection: React.FC<CtaSectionProps> = ({ data }) => {
   
   // Legal page links
   const legalLinks = [
-    { title: "Terms of Use", path: "/legal/terms" },
-    { title: "Privacy Policy", path: "/legal/privacy" },
+    { title: "Terms of Use", path: "/legal/terms-of-use" },
+    { title: "Privacy Policy", path: "/legal/privacy-policy" },
     { title: "Community Guidelines", path: "/legal/community-guidelines" },
-    { title: "Copyright Policy", path: "/legal/copyright" }
+    { title: "Copyright Policy", path: "/legal/copyright-policy" }
   ];
   
   return (
