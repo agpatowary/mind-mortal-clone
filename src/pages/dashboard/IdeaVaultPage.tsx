@@ -89,7 +89,7 @@ const IdeaVaultPage: React.FC = () => {
         >
           <div className="flex justify-between items-center">
             <div>
-              <h1 className="text-3xl font-bold">Idea Vault</h1>
+              <h1 className="text-3xl font-bold">Idea</h1>
               <p className="text-muted-foreground mt-2">
                 Refine, share, and fund your ideas. Turn your dreams into reality.
               </p>
