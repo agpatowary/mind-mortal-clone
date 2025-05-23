@@ -281,12 +281,12 @@ const Dashboard: React.FC = () => {
                     <CardHeader>
                       <CardTitle className="flex items-center gap-2">
                         <Book className="h-5 w-5 text-primary" />
-                        Legacy Vault
+                        Legacy
                       </CardTitle>
-                      <CardDescription>Access your personal legacy vault</CardDescription>
+                      <CardDescription>Access your personal legacy</CardDescription>
                     </CardHeader>
                     <CardContent>
-                      <Button className="w-full">Open Vault</Button>
+                      <Button className="w-full">Open Legacy</Button>
                     </CardContent>
                   </Card>
                 </motion.div>
