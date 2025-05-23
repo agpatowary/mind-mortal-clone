@@ -170,7 +170,7 @@ const DashboardHome: React.FC = () => {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <FileText className="h-5 w-5 text-blue-500" />
-                    Legacy Vault
+                    Legacy
                   </CardTitle>
                   <CardDescription>
                     Preserve your memories and stories for future generations
@@ -185,7 +185,7 @@ const DashboardHome: React.FC = () => {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Lightbulb className="h-5 w-5 text-yellow-500" />
-                    Idea Vault
+                    Idea
                   </CardTitle>
                   <CardDescription>
                     Document and refine your innovative ideas
