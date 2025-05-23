@@ -9,11 +9,14 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import PostInteractions from '@/components/social/PostInteractions';
+import PostDetailsModal from '@/components/modals/PostDetailsModal';
 import DashboardAnimatedBackground from '@/components/dashboard/DashboardAnimatedBackground';
 
 const LegacyVaultPage: React.FC = () => {
   const [posts, setPosts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedPost, setSelectedPost] = useState<any>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const { user } = useAuth();
   const navigate = useNavigate();
 
@@ -47,6 +50,11 @@ const LegacyVaultPage: React.FC = () => {
     navigate('/dashboard/legacy-vault/create');
   };
 
+  const handleViewDetails = (post: any) => {
+    setSelectedPost(post);
+    setIsModalOpen(true);
+  };
+
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -72,7 +80,6 @@ const LegacyVaultPage: React.FC = () => {
 
   // Helper function to safely render content
   const renderContent = (content: string) => {
-    // If content appears to be HTML, render it safely
     return content ? (
       <p className="line-clamp-3" dangerouslySetInnerHTML={{ __html: content }} />
     ) : (
@@ -148,10 +155,15 @@ const LegacyVaultPage: React.FC = () => {
                         <PostInteractions 
                           postId={post.id} 
                           postType="legacy_post"
+                          onUpdate={fetchPosts}
                         />
                         <div className="flex justify-end mt-4">
-                          <Button variant="outline" size="sm">
-                            Read More
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => handleViewDetails(post)}
+                          >
+                            View Details
                           </Button>
                         </div>
                       </CardFooter>
@@ -222,9 +234,14 @@ const LegacyVaultPage: React.FC = () => {
                         <PostInteractions 
                           postId={post.id} 
                           postType="legacy_post"
+                          onUpdate={fetchPosts}
                         />
                         <div className="flex justify-end mt-4">
-                          <Button variant="outline" size="sm">
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => handleViewDetails(post)}
+                          >
                             View Details
                           </Button>
                         </div>
@@ -253,6 +270,14 @@ const LegacyVaultPage: React.FC = () => {
             )}
           </TabsContent>
         </Tabs>
+
+        <PostDetailsModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          post={selectedPost}
+          postType="legacy_post"
+          onUpdate={fetchPosts}
+        />
       </div>
     </DashboardAnimatedBackground>
   );

@@ -47,23 +47,36 @@ const MentorshipPage = () => {
         
         if (resourcesError) throw resourcesError;
         
-        // Fetch mentors
+        // Fetch mentors with proper join
         const { data: mentorsData, error: mentorsError } = await supabase
           .from('profiles')
           .select(`
             id, 
             full_name, 
             bio,
-            mentor_profiles!inner (
+            mentor_profiles (
               expertise,
               experience_years,
               industries
             )
           `)
-          .eq('user_roles.role', 'mentor')
           .not('mentor_profiles', 'is', null);
         
-        if (mentorsError) throw mentorsError;
+        if (mentorsError) {
+          console.error('Mentors query error:', mentorsError);
+          // Set empty array if there's an error
+          setMentors([]);
+        } else {
+          // Format mentors data
+          const formattedMentors = mentorsData?.map(item => ({
+            id: item.id,
+            fullName: item.full_name || 'Anonymous',
+            specialty: item.mentor_profiles?.[0]?.expertise?.[0] || 'General Mentorship',
+            experience: `${item.mentor_profiles?.[0]?.experience_years || 0} yrs`,
+            description: item.bio || 'Experienced mentor ready to help with your growth journey.'
+          })) || [];
+          setMentors(formattedMentors);
+        }
         
         // Format resources data
         const formattedResources = resourcesData?.map(item => ({
@@ -74,17 +87,7 @@ const MentorshipPage = () => {
           createdAt: item.created_at ? new Date(item.created_at).toLocaleDateString() : 'Unknown date'
         })) || [];
 
-        // Format mentors data
-        const formattedMentors = mentorsData?.map(item => ({
-          id: item.id,
-          fullName: item.full_name || 'Anonymous',
-          specialty: item.mentor_profiles?.expertise?.[0] || 'General Mentorship',
-          experience: `${item.mentor_profiles?.experience_years || 0} yrs`,
-          description: item.bio || 'Experienced mentor ready to help with your growth journey.'
-        })) || [];
-
         setResources(formattedResources);
-        setMentors(formattedMentors);
       } catch (error) {
         console.error('Error fetching mentorship data:', error);
         toast({
@@ -100,6 +103,14 @@ const MentorshipPage = () => {
     fetchData();
   }, [toast]);
 
+  const handleCreateOrBecomeAction = () => {
+    if (isMentor()) {
+      navigate('/dashboard/mentorship/create');
+    } else {
+      navigate('/dashboard/become-mentor');
+    }
+  };
+
   return (
     <div className="container mx-auto space-y-6">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
@@ -107,17 +118,16 @@ const MentorshipPage = () => {
           <h1 className="text-3xl font-bold tracking-tight">Mentorship</h1>
           <p className="text-muted-foreground mt-1">Exchange wisdom, find mentors, grow together</p>
         </div>
-        {isMentor && (
-          <Button onClick={() => navigate('/dashboard/mentorship/create')} className="whitespace-nowrap">
-            <Plus className="mr-2 h-4 w-4" /> Create Resource
-          </Button>
-        )}
+        <Button onClick={handleCreateOrBecomeAction} className="whitespace-nowrap">
+          <Plus className="mr-2 h-4 w-4" /> 
+          {isMentor() ? 'Create Resource' : 'Become a Mentor'}
+        </Button>
       </div>
 
       <Tabs defaultValue="resources" className="w-full">
         <TabsList className="mb-4">
-          <TabsTrigger value="resources">My Resources</TabsTrigger>
-          <TabsTrigger value="mentors">Find Mentors</TabsTrigger>
+          <TabsTrigger value="resources">Resources</TabsTrigger>
+          <TabsTrigger value="mentors">Mentors</TabsTrigger>
         </TabsList>
         
         <TabsContent value="resources">
@@ -180,58 +190,77 @@ const MentorshipPage = () => {
         </TabsContent>
         
         <TabsContent value="mentors">
-          {loading ? (
-            <div className="flex justify-center py-12">
-              <div className="flex flex-col items-center">
-                <div className="h-12 w-12 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
-                <p className="mt-4 text-muted-foreground">Finding mentors...</p>
-              </div>
-            </div>
-          ) : mentors.length > 0 ? (
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {mentors.map((mentor) => (
-                <Card key={mentor.id}>
-                  <CardHeader>
-                    <div className="flex items-center gap-4">
-                      <div className="h-16 w-16 rounded-full bg-muted flex items-center justify-center">
-                        <Users className="h-8 w-8 text-muted-foreground" />
-                      </div>
-                      <div>
-                        <CardTitle>{mentor.fullName}</CardTitle>
-                        <CardDescription>{mentor.specialty} • {mentor.experience}</CardDescription>
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-sm">{mentor.description}</p>
+          <Tabs defaultValue="find" className="w-full">
+            <TabsList className="mb-4">
+              <TabsTrigger value="find">Find Mentors</TabsTrigger>
+              <TabsTrigger value="connected">Connected Mentors</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="find">
+              {loading ? (
+                <div className="flex justify-center py-12">
+                  <div className="flex flex-col items-center">
+                    <div className="h-12 w-12 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
+                    <p className="mt-4 text-muted-foreground">Finding mentors...</p>
+                  </div>
+                </div>
+              ) : mentors.length > 0 ? (
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {mentors.map((mentor) => (
+                    <Card key={mentor.id}>
+                      <CardHeader>
+                        <div className="flex items-center gap-4">
+                          <div className="h-16 w-16 rounded-full bg-muted flex items-center justify-center">
+                            <Users className="h-8 w-8 text-muted-foreground" />
+                          </div>
+                          <div>
+                            <CardTitle>{mentor.fullName}</CardTitle>
+                            <CardDescription>{mentor.specialty} • {mentor.experience}</CardDescription>
+                          </div>
+                        </div>
+                      </CardHeader>
+                      <CardContent>
+                        <p className="text-sm">{mentor.description}</p>
+                      </CardContent>
+                      <CardFooter className="flex justify-between">
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => navigate(`/dashboard/mentorship/mentor/${mentor.id}`)}
+                        >
+                          View Profile
+                        </Button>
+                        <Button 
+                          size="sm"
+                          onClick={() => navigate(`/dashboard/mentorship/connect/${mentor.id}`)}
+                        >
+                          Connect
+                        </Button>
+                      </CardFooter>
+                    </Card>
+                  ))}
+                </div>
+              ) : (
+                <Card className="bg-muted/50">
+                  <CardContent className="flex flex-col items-center justify-center py-12 text-center">
+                    <Users className="h-12 w-12 text-muted-foreground mb-4" />
+                    <h3 className="text-lg font-semibold mb-2">No mentors found</h3>
+                    <p className="text-muted-foreground">We're still growing our mentor community. Check back soon!</p>
                   </CardContent>
-                  <CardFooter className="flex justify-between">
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => navigate(`/dashboard/mentorship/mentor/${mentor.id}`)}
-                    >
-                      View Profile
-                    </Button>
-                    <Button 
-                      size="sm"
-                      onClick={() => navigate(`/dashboard/mentorship/connect/${mentor.id}`)}
-                    >
-                      Connect
-                    </Button>
-                  </CardFooter>
                 </Card>
-              ))}
-            </div>
-          ) : (
-            <Card className="bg-muted/50">
-              <CardContent className="flex flex-col items-center justify-center py-12 text-center">
-                <Users className="h-12 w-12 text-muted-foreground mb-4" />
-                <h3 className="text-lg font-semibold mb-2">No mentors found</h3>
-                <p className="text-muted-foreground">We're still growing our mentor community. Check back soon!</p>
-              </CardContent>
-            </Card>
-          )}
+              )}
+            </TabsContent>
+            
+            <TabsContent value="connected">
+              <Card className="bg-muted/50">
+                <CardContent className="flex flex-col items-center justify-center py-12 text-center">
+                  <Users className="h-12 w-12 text-muted-foreground mb-4" />
+                  <h3 className="text-lg font-semibold mb-2">No connected mentors yet</h3>
+                  <p className="text-muted-foreground">Connect with mentors to start your learning journey!</p>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
         </TabsContent>
       </Tabs>
     </div>

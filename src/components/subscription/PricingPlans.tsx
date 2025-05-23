@@ -5,11 +5,6 @@ import { Check } from "lucide-react";
 import { useSubscription } from "@/hooks/useSubscription";
 import { Loader2 } from "lucide-react";
 
-interface PlanFeature {
-  name: string;
-  included: boolean;
-}
-
 interface PricingPlanProps {
   title: string;
   price: string;
@@ -33,7 +28,7 @@ const PricingPlan = ({
   disabled = false,
   current = false
 }: PricingPlanProps) => {
-  const { createCheckout, subscription_tier, isLoading } = useSubscription();
+  const { createCheckout, subscriptionData, isLoading } = useSubscription();
 
   const handleSubscribe = () => {
     createCheckout(planType);
@@ -93,7 +88,7 @@ const PricingPlan = ({
 };
 
 const PricingPlans = () => {
-  const { subscription_tier, isLoading, openCustomerPortal } = useSubscription();
+  const { subscriptionData, isLoading, openCustomerPortal } = useSubscription();
 
   return (
     <div className="container mx-auto py-12">
@@ -102,7 +97,7 @@ const PricingPlans = () => {
         <p className="text-muted-foreground max-w-2xl mx-auto">
           Choose the plan that works best for you and your legacy needs.
         </p>
-        {subscription_tier && (
+        {subscriptionData.subscription_tier && (
           <Button 
             variant="outline" 
             className="mt-4"
@@ -120,7 +115,7 @@ const PricingPlans = () => {
           description="The first step"
           planType="Monthly"
           buttonText="Subscribe Monthly"
-          current={subscription_tier === 'Monthly'}
+          current={subscriptionData.subscription_tier === 'Monthly'}
           disabled={isLoading}
           features={[
             "Access to Legacy Vault",
@@ -136,7 +131,7 @@ const PricingPlans = () => {
           planType="Yearly"
           buttonText="Subscribe Yearly"
           popular={true}
-          current={subscription_tier === 'Yearly'}
+          current={subscriptionData.subscription_tier === 'Yearly'}
           disabled={isLoading}
           features={[
             "Advanced Legacy Vault",
@@ -151,7 +146,7 @@ const PricingPlans = () => {
           description="Immortal"
           planType="Lifetime"
           buttonText="Get Lifetime Access"
-          current={subscription_tier === 'Lifetime'}
+          current={subscriptionData.subscription_tier === 'Lifetime'}
           disabled={isLoading}
           features={[
             "Unlimited Legacy Vault storage",

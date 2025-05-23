@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
@@ -7,12 +8,15 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import PostInteractions from '@/components/social/PostInteractions';
+import PostDetailsModal from '@/components/modals/PostDetailsModal';
 import { Badge } from "@/components/ui/badge";
 import DashboardAnimatedBackground from '@/components/dashboard/DashboardAnimatedBackground';
 
 const TimelessMessagesPage: React.FC = () => {
   const [messages, setMessages] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedMessage, setSelectedMessage] = useState<any>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const { user } = useAuth();
   const navigate = useNavigate();
 
@@ -43,8 +47,12 @@ const TimelessMessagesPage: React.FC = () => {
   };
 
   const handleCreateMessage = () => {
-    // Updated to navigate directly to the correct path
     navigate('/dashboard/timeless-messages/create');
+  };
+
+  const handleViewDetails = (message: any) => {
+    setSelectedMessage(message);
+    setIsModalOpen(true);
   };
 
   const containerVariants = {
@@ -146,6 +154,9 @@ const TimelessMessagesPage: React.FC = () => {
                         <Clock className="h-5 w-5 text-primary" />
                       )}
                       {message.title}
+                      <Badge variant={message.status === 'sent' ? 'default' : 'secondary'}>
+                        {message.status}
+                      </Badge>
                     </CardTitle>
                     <CardDescription className="flex items-center gap-4">
                       <span>Created on {new Date(message.created_at).toLocaleDateString()}</span>
@@ -180,7 +191,11 @@ const TimelessMessagesPage: React.FC = () => {
                       onUpdate={fetchMessages}
                     />
                     <div className="flex justify-end mt-4">
-                      <Button variant="outline" size="sm">
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => handleViewDetails(message)}
+                      >
                         View Details
                       </Button>
                     </div>
@@ -207,6 +222,14 @@ const TimelessMessagesPage: React.FC = () => {
             )}
           </motion.div>
         )}
+
+        <PostDetailsModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          post={selectedMessage}
+          postType="timeless_message"
+          onUpdate={fetchMessages}
+        />
       </div>
     </DashboardAnimatedBackground>
   );

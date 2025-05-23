@@ -136,7 +136,8 @@ export const useSubscription = () => {
   }, [user?.id]);
 
   return {
-    ...subscriptionData,
+    subscriptionData,
+    isLoading: subscriptionData.isLoading,
     checkSubscription,
     createCheckout,
     openCustomerPortal,
