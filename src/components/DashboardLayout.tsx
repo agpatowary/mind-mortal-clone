@@ -55,8 +55,8 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   };
 
   return (
+  <DashboardAnimatedBackground>
     <div className="flex h-screen bg-background">
-      <DashboardAnimatedBackground />
       <DashboardSidebar />
       <main className="flex-1 overflow-auto">
         <div className="flex justify-between items-center p-4 border-b">
@@ -98,7 +98,9 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
         </div>
       </main>
     </div>
-  );
+  </DashboardAnimatedBackground>
+);
+
 };
 
 export default DashboardLayout;
