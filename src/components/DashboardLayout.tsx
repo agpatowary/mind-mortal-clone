@@ -12,13 +12,15 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   return (
     <div className="flex h-screen bg-background">
       <DashboardAnimatedBackground>
-        <DashboardSidebar />
-        <main className="flex-1 overflow-auto">
-          <div className="container mx-auto p-6">
-            {children}
-          </div>
-        </main>
-        <ProfileDropdown />
+        <div className="flex w-full h-full">
+          <DashboardSidebar />
+          <main className="flex-1 overflow-auto relative">
+            <div className="container mx-auto p-6 relative z-10">
+              {children}
+            </div>
+          </main>
+          <ProfileDropdown />
+        </div>
       </DashboardAnimatedBackground>
     </div>
   );
