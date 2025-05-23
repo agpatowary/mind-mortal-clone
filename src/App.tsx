@@ -1,6 +1,7 @@
+
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { QueryClient, QueryClientProvider } from 'react-query';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { TooltipProvider } from "@/components/ui/tooltip"
 import { Toaster } from "@/components/ui/toaster"
 
@@ -12,19 +13,19 @@ import MentorshipPage from '@/pages/dashboard/MentorshipPage';
 import TimelessMessagesPage from '@/pages/dashboard/TimelessMessagesPage';
 import SettingsPage from '@/pages/dashboard/SettingsPage';
 import ProfilePage from '@/pages/dashboard/ProfilePage';
-import SigninPage from '@/pages/auth/SigninPage';
-import SignupPage from '@/pages/auth/SignupPage';
-import PricingPage from '@/pages/PricingPage';
-import NotFoundPage from '@/pages/NotFoundPage';
+import SigninPage from '@/pages/SignIn';
+import SignupPage from '@/pages/SignUp';
+import PricingPage from '@/pages/pricing';
+import NotFoundPage from '@/pages/NotFound';
 
-import DashboardLayout from '@/layouts/DashboardLayout';
+import DashboardLayout from '@/components/DashboardLayout';
 import { AuthProvider, useAuth } from '@/hooks/useAuth';
 
-import LegacyPostCreate from '@/pages/dashboard/legacy/LegacyPostCreate';
-import LegacyPostEdit from '@/pages/dashboard/legacy/LegacyPostEdit';
-import IdeaPostCreate from '@/pages/dashboard/idea/IdeaPostCreate';
-import TimelessMessageCreate from '@/pages/dashboard/message/TimelessMessageCreate';
-import MentorshipResourceCreate from '@/pages/dashboard/mentorship/MentorshipResourceCreate';
+import LegacyPostCreate from '@/pages/dashboard/CreateContentPage';
+import LegacyPostEdit from '@/pages/dashboard/legacy-vault/CreateLegacyPost';
+import IdeaPostCreate from '@/pages/dashboard/idea-vault/CreateIdeaPost';
+import TimelessMessageCreate from '@/pages/dashboard/timeless-messages/CreateTimelessMessage';
+import MentorshipResourceCreate from '@/pages/dashboard/mentorship/CreateWisdomResource';
 import BecomeMentorPage from '@/pages/dashboard/BecomeMentorPage';
 
 const queryClient = new QueryClient();
@@ -175,7 +176,6 @@ function App() {
                 }
               />
               
-              {/* Add this new route with other dashboard routes */}
               <Route
                 path="/dashboard/become-mentor"
                 element={

@@ -11,8 +11,16 @@ const HomePage: React.FC = () => {
   const [currentSection, setCurrentSection] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
 
+  // Dummy data for HeroSection
+  const heroData = {
+    title: "Your Story. Your Legacy. Forever.",
+    subtitle: "Preserve your wisdom. Share your ideas. Connect with the future.",
+    primaryButtonText: "Start Your Journey",
+    secondaryButtonText: "Explore Features"
+  };
+
   const sections = [
-    { component: HeroSection, name: 'hero' },
+    { component: () => <HeroSection data={heroData} />, name: 'hero' },
     { component: FeaturesSection, name: 'features' },
     { component: FeaturedMentorsSection, name: 'mentors' },
     { component: CaseStudiesSection, name: 'case-studies' },
@@ -78,7 +86,11 @@ const HomePage: React.FC = () => {
       }
     };
 
-    // Add event listeners with passive: false to allow preventDefault
+    // Remove any existing event listeners first
+    window.removeEventListener('wheel', handleWheel);
+    window.removeEventListener('keydown', handleKeyDown);
+
+    // Add fresh event listeners with passive: false to allow preventDefault
     window.addEventListener('wheel', handleWheel, { passive: false });
     window.addEventListener('keydown', handleKeyDown);
 
