@@ -98,7 +98,7 @@ const LegacyVaultPage: React.FC = () => {
         >
           <div className="flex justify-between items-center">
             <div>
-              <h1 className="text-3xl font-bold">Legacy Vault</h1>
+              <h1 className="text-3xl font-bold">Legacy</h1>
               <p className="text-muted-foreground mt-2">
                 Browse and interact with legacy posts
               </p>
