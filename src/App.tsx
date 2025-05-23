@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -31,6 +30,12 @@ import UsersManagement from '@/pages/admin/UsersManagement';
 import MentorApplications from '@/pages/admin/MentorApplications';
 import SubscriptionPlans from '@/pages/admin/SubscriptionPlans';
 
+// Legal pages
+import CommunityGuidelinesPage from '@/pages/legal/CommunityGuidelinesPage';
+import PrivacyPolicyPage from '@/pages/legal/PrivacyPolicyPage';
+import TermsOfUsePage from '@/pages/legal/TermsOfUsePage';
+import CopyrightPolicyPage from '@/pages/legal/CopyrightPolicyPage';
+
 import DashboardLayout from '@/components/DashboardLayout';
 import AuthGuard from '@/components/auth/AuthGuard';
 import { AuthProvider } from '@/hooks/useAuth';
@@ -62,7 +67,13 @@ function App() {
             <Route path="/features/mentorship" element={<FeatureMentorshipPage />} />
             <Route path="/features/timeless-messages" element={<FeatureTimelessMessagesPage />} />
 
-            {/* Admin Routes */}
+            {/* Legal Pages */}
+            <Route path="/legal/community-guidelines" element={<CommunityGuidelinesPage />} />
+            <Route path="/legal/privacy-policy" element={<PrivacyPolicyPage />} />
+            <Route path="/legal/terms-of-use" element={<TermsOfUsePage />} />
+            <Route path="/legal/copyright-policy" element={<CopyrightPolicyPage />} />
+
+            {/* Admin Routes - Nested routing to keep sidebar visible */}
             <Route
               path="/admin"
               element={
@@ -70,39 +81,12 @@ function App() {
                   <AdminDashboard />
                 </AuthGuard>
               }
-            />
-            <Route
-              path="/admin/overview"
-              element={
-                <AuthGuard>
-                  <AdminOverview />
-                </AuthGuard>
-              }
-            />
-            <Route
-              path="/admin/users"
-              element={
-                <AuthGuard>
-                  <UsersManagement />
-                </AuthGuard>
-              }
-            />
-            <Route
-              path="/admin/mentor-applications"
-              element={
-                <AuthGuard>
-                  <MentorApplications />
-                </AuthGuard>
-              }
-            />
-            <Route
-              path="/admin/subscription-plans"
-              element={
-                <AuthGuard>
-                  <SubscriptionPlans />
-                </AuthGuard>
-              }
-            />
+            >
+              <Route index element={<AdminOverview />} />
+              <Route path="users" element={<UsersManagement />} />
+              <Route path="mentor-applications" element={<MentorApplications />} />
+              <Route path="subscription-plans" element={<SubscriptionPlans />} />
+            </Route>
 
             {/* Dashboard Routes */}
             <Route
