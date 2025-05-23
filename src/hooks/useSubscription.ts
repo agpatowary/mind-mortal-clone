@@ -47,7 +47,7 @@ export function useSubscription() {
             active,
             startDate: data.created_at,
             endDate: data.subscription_end,
-            plan_id: data.plan_id
+            plan_id: data.plan_id || undefined
           });
         } else {
           // No subscription found, set to free plan

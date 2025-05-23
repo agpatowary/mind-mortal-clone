@@ -11,14 +11,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Badge } from '@/components/ui/badge';
-import { XCircle, PlusCircle, Lightbulb, Eye, EyeOff, FileImage } from 'lucide-react';
-import ImageUploader from '@/components/editor/ImageUploader';
-
-interface MediaItem {
-  url: string;
-  type: 'image' | 'document' | 'video';
-  name?: string;
-}
+import { XCircle, PlusCircle, Lightbulb, Eye, EyeOff } from 'lucide-react';
 
 interface IdeaFormState {
   title: string;
@@ -26,7 +19,6 @@ interface IdeaFormState {
   content: string;
   tags: string[];
   isPublic: boolean;
-  media: MediaItem[];
 }
 
 const CreateIdeaPost = () => {
@@ -40,8 +32,7 @@ const CreateIdeaPost = () => {
     description: '',
     content: '',
     tags: [],
-    isPublic: true,
-    media: []
+    isPublic: true
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -77,20 +68,6 @@ const CreateIdeaPost = () => {
     setFormState(prev => ({ ...prev, isPublic: !prev.isPublic }));
   };
 
-  const handleAddMedia = (newMedia: MediaItem) => {
-    setFormState(prev => ({
-      ...prev,
-      media: [...prev.media, newMedia]
-    }));
-  };
-
-  const handleRemoveMedia = (url: string) => {
-    setFormState(prev => ({
-      ...prev,
-      media: prev.media.filter(item => item.url !== url)
-    }));
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -116,19 +93,14 @@ const CreateIdeaPost = () => {
     
     try {
       const { data, error } = await supabase
-        .from('wisdom_resources')
+        .from('idea_posts')
         .insert({
           title: formState.title,
           description: formState.description,
-          resource_type: 'idea',
-          created_by: user.id,
-          tags: formState.tags,
-          resource_url: formState.media.length > 0 ? formState.media[0].url : null,
-          file_path: null,
-          published_status: 'published',
-          is_public: formState.isPublic,
           content: formState.content,
-          media_items: formState.media.length > 0 ? formState.media : null
+          user_id: user.id,
+          tags: formState.tags,
+          is_public: formState.isPublic
         })
         .select();
         
@@ -203,58 +175,6 @@ const CreateIdeaPost = () => {
                 onChange={handleChange}
                 className="min-h-[300px]"
               />
-            </div>
-
-            <div className="space-y-2">
-              <Label>Add Media</Label>
-              <div className="border rounded-md p-4">
-                <ImageUploader 
-                  onImageUploaded={(url) => handleAddMedia({
-                    url,
-                    type: 'image',
-                    name: url.split('/').pop() || 'image'
-                  })}
-                />
-                
-                {formState.media.length > 0 && (
-                  <div className="mt-4 space-y-2">
-                    <Label>Uploaded Media</Label>
-                    <div className="flex flex-wrap gap-3">
-                      {formState.media.map((item, index) => (
-                        <div key={index} className="relative group">
-                          {item.type === 'image' ? (
-                            <div className="w-24 h-24 relative border rounded overflow-hidden">
-                              <img 
-                                src={item.url} 
-                                alt={item.name || 'Uploaded image'} 
-                                className="w-full h-full object-cover"
-                              />
-                              <button
-                                type="button"
-                                className="absolute top-1 right-1 bg-background/80 rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                                onClick={() => handleRemoveMedia(item.url)}
-                              >
-                                <XCircle className="h-4 w-4 text-destructive" />
-                              </button>
-                            </div>
-                          ) : (
-                            <div className="w-24 h-24 relative border rounded flex items-center justify-center bg-muted">
-                              <FileImage className="h-8 w-8 text-muted-foreground" />
-                              <button
-                                type="button"
-                                className="absolute top-1 right-1 bg-background/80 rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                                onClick={() => handleRemoveMedia(item.url)}
-                              >
-                                <XCircle className="h-4 w-4 text-destructive" />
-                              </button>
-                            </div>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
             </div>
             
             <div className="space-y-2">

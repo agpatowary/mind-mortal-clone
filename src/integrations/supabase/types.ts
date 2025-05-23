@@ -89,6 +89,59 @@ export type Database = {
           },
         ]
       }
+      idea_posts: {
+        Row: {
+          boost_count: number | null
+          boost_until: string | null
+          content: string | null
+          created_at: string | null
+          description: string | null
+          id: string
+          is_featured: boolean | null
+          is_public: boolean | null
+          tags: string[] | null
+          title: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          boost_count?: number | null
+          boost_until?: string | null
+          content?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_featured?: boolean | null
+          is_public?: boolean | null
+          tags?: string[] | null
+          title: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          boost_count?: number | null
+          boost_until?: string | null
+          content?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_featured?: boolean | null
+          is_public?: boolean | null
+          tags?: string[] | null
+          title?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "idea_posts_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       legacy_posts: {
         Row: {
           categories: string[] | null
@@ -707,6 +760,7 @@ export type Database = {
           created_at: string
           email: string
           id: string
+          plan_id: string | null
           stripe_customer_id: string | null
           subscribed: boolean
           subscription_end: string | null
@@ -718,6 +772,7 @@ export type Database = {
           created_at?: string
           email: string
           id?: string
+          plan_id?: string | null
           stripe_customer_id?: string | null
           subscribed?: boolean
           subscription_end?: string | null
@@ -729,6 +784,7 @@ export type Database = {
           created_at?: string
           email?: string
           id?: string
+          plan_id?: string | null
           stripe_customer_id?: string | null
           subscribed?: boolean
           subscription_end?: string | null

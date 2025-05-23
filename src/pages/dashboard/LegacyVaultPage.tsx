@@ -1,14 +1,14 @@
+
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { MessageSquare, Heart, Clock, MapPin, Plus } from 'lucide-react';
+import { MessageSquare, Clock, Plus } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import PostInteractions from '@/components/social/PostInteractions';
-import { Badge } from "@/components/ui/badge";
 import DashboardAnimatedBackground from '@/components/dashboard/DashboardAnimatedBackground';
 
 const LegacyVaultPage: React.FC = () => {
@@ -44,7 +44,6 @@ const LegacyVaultPage: React.FC = () => {
   };
 
   const handleCreateLegacy = () => {
-    // Updated to navigate directly to the correct path
     navigate('/dashboard/legacy-vault/create');
   };
 
@@ -108,10 +107,9 @@ const LegacyVaultPage: React.FC = () => {
         </motion.div>
 
         <Tabs defaultValue="public" className="mb-8">
-          <TabsList className="grid grid-cols-3 mb-8">
+          <TabsList className="grid grid-cols-2 mb-8">
             <TabsTrigger value="public">Public Gallery</TabsTrigger>
             <TabsTrigger value="timeCapsule">Time Capsule</TabsTrigger>
-            <TabsTrigger value="location">Location-Based</TabsTrigger>
           </TabsList>
 
           <TabsContent value="public">
@@ -150,7 +148,6 @@ const LegacyVaultPage: React.FC = () => {
                         <PostInteractions 
                           postId={post.id} 
                           postType="legacy_post"
-                          onUpdate={fetchPosts}
                         />
                         <div className="flex justify-end mt-4">
                           <Button variant="outline" size="sm">
@@ -225,7 +222,6 @@ const LegacyVaultPage: React.FC = () => {
                         <PostInteractions 
                           postId={post.id} 
                           postType="legacy_post"
-                          onUpdate={fetchPosts}
                         />
                         <div className="flex justify-end mt-4">
                           <Button variant="outline" size="sm">
@@ -248,81 +244,6 @@ const LegacyVaultPage: React.FC = () => {
                         </p>
                         <Button onClick={handleCreateLegacy}>
                           <Plus className="h-4 w-4 mr-2" /> Create Time Capsule
-                        </Button>
-                      </CardContent>
-                    </Card>
-                  </motion.div>
-                )}
-              </motion.div>
-            )}
-          </TabsContent>
-
-          <TabsContent value="location">
-            {loading ? (
-              <div className="flex justify-center py-12">
-                <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full"></div>
-              </div>
-            ) : (
-              <motion.div
-                variants={containerVariants}
-                initial="hidden"
-                animate="visible"
-                className="grid grid-cols-1 gap-6"
-              >
-                {posts.filter(post => post.subcategory === "location-based").map(post => (
-                  <motion.div 
-                    key={post.id} 
-                    variants={itemVariants}
-                    whileHover={{ scale: 1.01 }}
-                    transition={{ type: "spring", stiffness: 300 }}
-                  >
-                    <Card className="hover:shadow-lg transition-all duration-300">
-                      <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                          <MapPin className="h-5 w-5 text-red-500" />
-                          {post.title}
-                        </CardTitle>
-                        <CardDescription>
-                          Created on {new Date(post.created_at).toLocaleDateString()}
-                        </CardDescription>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="bg-secondary/50 p-4 rounded-md mb-4">
-                          <p className="font-medium">
-                            Location: {post.location && typeof post.location === 'object' 
-                              ? post.location.name || 'Unnamed location'
-                              : 'Location details not available'}
-                          </p>
-                        </div>
-                        {renderContent(post.content)}
-                      </CardContent>
-                      <CardFooter className="flex flex-col items-stretch">
-                        <PostInteractions 
-                          postId={post.id} 
-                          postType="legacy_post"
-                          onUpdate={fetchPosts}
-                        />
-                        <div className="flex justify-end mt-4">
-                          <Button variant="outline" size="sm">
-                            View on Map
-                          </Button>
-                        </div>
-                      </CardFooter>
-                    </Card>
-                  </motion.div>
-                ))}
-
-                {posts.filter(post => post.subcategory === "location-based").length === 0 && (
-                  <motion.div variants={itemVariants}>
-                    <Card className="border-dashed">
-                      <CardContent className="flex flex-col items-center justify-center py-12">
-                        <MapPin className="h-12 w-12 mb-4 text-muted-foreground" />
-                        <h3 className="text-xl font-medium mb-2">No location-based memories yet</h3>
-                        <p className="text-muted-foreground mb-6 text-center max-w-md">
-                          Create your first location-based memory to preserve stories tied to special places
-                        </p>
-                        <Button onClick={handleCreateLegacy}>
-                          <Plus className="h-4 w-4 mr-2" /> Create Location Memory
                         </Button>
                       </CardContent>
                     </Card>

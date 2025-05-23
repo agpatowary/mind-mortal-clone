@@ -36,21 +36,19 @@ export const makeSpecificUserAdmin = async () => {
   const EMAIL_TO_MAKE_ADMIN = 'agpatowary@gmail.com';
   
   try {
-    // Find user by email
-    const { data: user, error: userError } = await supabase
-      .from('profiles')
-      .select('id')
-      .eq('email', EMAIL_TO_MAKE_ADMIN)
-      .maybeSingle();
-      
+    // Find user by email using auth API
+    const { data: users, error: userError } = await supabase.auth.admin.listUsers();
+    
     if (userError) throw userError;
     
-    if (!user) {
+    const targetUser = users.users.find(user => user.email === EMAIL_TO_MAKE_ADMIN);
+    
+    if (!targetUser) {
       return { success: false, message: `User with email ${EMAIL_TO_MAKE_ADMIN} not found` };
     }
     
     // Make the user admin
-    return await makeUserAdmin(user.id);
+    return await makeUserAdmin(targetUser.id);
   } catch (error) {
     console.error('Error making specific user admin:', error);
     return { success: false, error };

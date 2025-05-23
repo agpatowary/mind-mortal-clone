@@ -91,11 +91,11 @@ const HomePage = () => {
       handleScrollDebounced(direction);
     };
     
-    // Add event listener with proper options and ensure it's attached to document
+    // Add event listener with proper options
     document.addEventListener('wheel', handleWheel, { passive: false });
     
     return () => {
-      document.removeEventListener('wheel', handleWheel, { passive: false });
+      document.removeEventListener('wheel', handleWheel);
       
       // Clear any pending timeouts when component unmounts
       if (scrollTimeoutRef.current) {
