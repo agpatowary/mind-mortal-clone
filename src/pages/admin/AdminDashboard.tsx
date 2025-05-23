@@ -4,6 +4,7 @@ import { useNavigate, Outlet } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { buttonVariants } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import { toast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { Link } from 'react-router-dom';
@@ -13,7 +14,8 @@ import {
   Settings,
   BarChart,
   LogOut,
-  Award
+  Award,
+  ArrowLeft
 } from "lucide-react";
 
 const AdminDashboard = () => {
@@ -21,7 +23,6 @@ const AdminDashboard = () => {
   const navigate = useNavigate();
 
   React.useEffect(() => {
-    // Admin-only access
     if (!isAdmin()) {
       toast({
         title: "Access Denied",
@@ -50,7 +51,7 @@ const AdminDashboard = () => {
     },
     {
       title: 'Subscriptions',
-      href: '/admin/subscriptions',
+      href: '/admin/subscription-plans',
       icon: CreditCard
     },
     {
@@ -64,12 +65,27 @@ const AdminDashboard = () => {
     await signOut();
   };
 
+  const handleBackToDashboard = () => {
+    navigate('/dashboard');
+  };
+
   return (
     <div className="flex h-screen w-full bg-background overflow-hidden">
       {/* Admin Sidebar */}
       <aside className="hidden md:flex w-64 flex-col bg-sidebar border-r border-sidebar-border">
-        <div className="py-4 px-6 border-b border-sidebar-border flex justify-between items-center">
-          <h2 className="text-xl font-bold text-primary">Admin Portal</h2>
+        <div className="py-4 px-6 border-b border-sidebar-border">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-bold text-primary">Admin Portal</h2>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleBackToDashboard}
+            className="w-full"
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to Dashboard
+          </Button>
         </div>
         
         <div className="p-6 space-y-2 flex-1">
@@ -107,7 +123,16 @@ const AdminDashboard = () => {
       
       {/* Mobile admin navbar */}
       <div className="md:hidden flex items-center justify-between p-4 border-b border-border w-full sticky top-0 bg-background z-10">
-        <h2 className="text-lg font-bold text-primary">Admin Portal</h2>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleBackToDashboard}
+          >
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+          <h2 className="text-lg font-bold text-primary">Admin Portal</h2>
+        </div>
         <div className="flex gap-2">
           {sidebarItems.map((item) => (
             <Link

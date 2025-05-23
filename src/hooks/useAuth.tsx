@@ -35,15 +35,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  // Initialize auth state from supabase session
   useEffect(() => {
-    // Set up auth state change listener
     const { data } = supabase.auth.onAuthStateChange(
       async (event, newSession) => {
         console.log('Auth state change:', event, newSession ? 'session exists' : 'no session');
         
         if (event === 'SIGNED_OUT') {
-          // Clear all user data immediately on sign out
           setSession(null);
           setUser(null);
           setProfile(null);
@@ -51,11 +48,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           return;
         }
         
-        // Handle other session changes
         setSession(newSession);
         setUser(newSession?.user ?? null);
         
-        // If session exists, fetch profile and roles
         if (newSession?.user) {
           await fetchUserProfile(newSession.user.id);
           await fetchUserRoles(newSession.user.id);
@@ -63,10 +58,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     );
 
-    // Store subscription to clean up later
     setAuthSubscription(data);
 
-    // THEN check for existing session
     const initializeAuth = async () => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
@@ -96,7 +89,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     initializeAuth();
 
-    // Cleanup subscription on unmount
     return () => {
       if (authSubscription) {
         authSubscription.unsubscribe();
@@ -129,11 +121,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (data && data.length > 0) {
         setRoles(data as UserRole[]);
       } else {
-        setRoles(['disciple']); // Default role
+        setRoles(['disciple']);
       }
     } catch (error) {
       console.error('Error fetching user roles:', error);
-      setRoles(['disciple']); // Fallback to default role
+      setRoles(['disciple']);
     }
   };
 
@@ -141,9 +133,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (!user) return;
     
     try {
-      // Re-fetch the profile
       await fetchUserProfile(user.id);
-      // Re-fetch roles
       await fetchUserRoles(user.id);
       
       return;
@@ -216,7 +206,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  // Fixed signOut implementation to ensure proper cleanup and redirection
   const signOut = async () => {
     try {
       setIsLoading(true);
@@ -224,20 +213,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
       
-      // Clear auth state
       setUser(null);
       setSession(null);
       setProfile(null);
       setRoles(['guest']);
       
-      // Show success message
       toast({
         title: "Signed out",
         description: "You have been signed out successfully.",
       });
       
-      // Force navigation to home page
-      window.location.href = '/';
+      navigate('/');
     } catch (error: any) {
       console.error('Sign out error:', error);
       toast({
@@ -250,7 +236,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  // Role checker functions
   const isAdmin = () => roles.includes('admin');
   const isMentor = () => roles.includes('mentor');
   const isDisciple = () => roles.includes('disciple');

@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -14,74 +14,106 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { UserSummary } from '@/types';
+import { supabase } from '@/integrations/supabase/client';
+
+interface User {
+  id: string;
+  full_name: string | null;
+  username: string | null;
+  email: string;
+  roles: string[];
+  subscription_tier: string | null;
+  created_at: string;
+}
 
 const UsersManagement = () => {
   const [searchQuery, setSearchQuery] = useState('');
+  const [users, setUsers] = useState<User[]>([]);
+  const [loading, setLoading] = useState(true);
   
-  // Mock data for user list
-  const mockUsers: UserSummary[] = [
-    {
-      id: '1',
-      fullName: 'Jane Cooper',
-      email: 'jane.cooper@example.com',
-      role: ['disciple'],
-      status: 'active',
-      joinDate: '2023-01-10',
-      planType: 'Monthly'
-    },
-    {
-      id: '2',
-      fullName: 'Wade Warren',
-      email: 'wade.warren@example.com',
-      role: ['mentor'],
-      status: 'active',
-      joinDate: '2023-02-15',
-      planType: 'Yearly'
-    },
-    {
-      id: '3',
-      fullName: 'Esther Howard',
-      email: 'esther.howard@example.com',
-      role: ['disciple'],
-      status: 'pending',
-      joinDate: '2023-03-20'
-    },
-    {
-      id: '4',
-      fullName: 'Cameron Williamson',
-      email: 'cameron.williamson@example.com',
-      role: ['admin'],
-      status: 'active',
-      joinDate: '2023-01-05',
-      planType: 'Lifetime'
-    },
-    {
-      id: '5',
-      fullName: 'Brooklyn Simmons',
-      email: 'brooklyn.simmons@example.com',
-      role: ['disciple'],
-      status: 'suspended',
-      joinDate: '2023-02-22',
-      planType: 'Monthly'
-    }
-  ];
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        // First, get all profiles
+        const { data: profiles, error: profilesError } = await supabase
+          .from('profiles')
+          .select('id, full_name, username')
+          .order('full_name');
+
+        if (profilesError) throw profilesError;
+
+        // Get user roles for each profile
+        const usersWithData = await Promise.all(
+          profiles.map(async (profile) => {
+            // Get user roles
+            const { data: userRoles } = await supabase
+              .from('user_roles')
+              .select('role')
+              .eq('user_id', profile.id);
+
+            // Get subscription info
+            const { data: subscription } = await supabase
+              .from('subscribers')
+              .select('subscription_tier')
+              .eq('user_id', profile.id)
+              .single();
+
+            // Get user email from auth (we'll simulate this for now)
+            const email = `user${profile.id.slice(0, 8)}@example.com`;
+
+            return {
+              id: profile.id,
+              full_name: profile.full_name,
+              username: profile.username,
+              email: email,
+              roles: userRoles?.map(r => r.role) || ['disciple'],
+              subscription_tier: subscription?.subscription_tier || null,
+              created_at: new Date().toISOString()
+            };
+          })
+        );
+
+        setUsers(usersWithData);
+      } catch (error) {
+        console.error('Error fetching users:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUsers();
+  }, []);
 
   // Filter users based on search query
-  const filteredUsers = mockUsers.filter(user => 
-    user.fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    user.email.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredUsers = users.filter(user => 
+    user.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    user.username?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   // Status badge colors
-  const getStatusColor = (status: 'active' | 'suspended' | 'pending') => {
-    switch (status) {
-      case 'active': return 'bg-green-500';
-      case 'suspended': return 'bg-red-500';
-      case 'pending': return 'bg-yellow-500';
-      default: return 'bg-gray-500';
+  const getRoleBadge = (roles: string[]) => {
+    if (roles.includes('admin')) {
+      return <Badge variant="outline" className="bg-primary/10 text-primary">Admin</Badge>;
+    } else if (roles.includes('mentor')) {
+      return <Badge variant="outline" className="bg-blue-500/10 text-blue-500">Mentor</Badge>;
+    } else {
+      return <Badge variant="outline" className="bg-secondary text-secondary-foreground">Disciple</Badge>;
     }
   };
+
+  if (loading) {
+    return (
+      <div className="p-6 space-y-6">
+        <div className="flex justify-between items-center">
+          <h1 className="text-3xl font-bold">Users Management</h1>
+        </div>
+        <div className="flex justify-center py-12">
+          <p>Loading users...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6 space-y-6">
@@ -126,7 +158,6 @@ const UsersManagement = () => {
                 <TableRow>
                   <TableHead>User</TableHead>
                   <TableHead>Role</TableHead>
-                  <TableHead>Status</TableHead>
                   <TableHead>Plan</TableHead>
                   <TableHead>Joined</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
@@ -136,42 +167,23 @@ const UsersManagement = () => {
                 {filteredUsers.map((user) => (
                   <TableRow key={user.id}>
                     <TableCell>
-                      <div className="font-medium">{user.fullName}</div>
+                      <div className="font-medium">{user.full_name || user.username || 'Unknown'}</div>
                       <div className="text-sm text-muted-foreground">{user.email}</div>
                     </TableCell>
                     <TableCell>
-                      {user.role.includes('admin') ? (
-                        <Badge variant="outline" className="bg-primary/10 text-primary">
-                          Admin
-                        </Badge>
-                      ) : user.role.includes('mentor') ? (
-                        <Badge variant="outline" className="bg-blue-500/10 text-blue-500">
-                          Mentor
-                        </Badge>
-                      ) : (
-                        <Badge variant="outline" className="bg-secondary text-secondary-foreground">
-                          Disciple
-                        </Badge>
-                      )}
+                      {getRoleBadge(user.roles)}
                     </TableCell>
                     <TableCell>
-                      <Badge 
-                        className={`${getStatusColor(user.status)} text-white`}
-                      >
-                        {user.status.charAt(0).toUpperCase() + user.status.slice(1)}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      {user.planType ? (
+                      {user.subscription_tier ? (
                         <Badge variant="outline">
-                          {user.planType}
+                          {user.subscription_tier}
                         </Badge>
                       ) : (
                         <span className="text-muted-foreground text-sm">None</span>
                       )}
                     </TableCell>
                     <TableCell>
-                      {new Date(user.joinDate).toLocaleDateString()}
+                      {new Date(user.created_at).toLocaleDateString()}
                     </TableCell>
                     <TableCell className="text-right">
                       <DropdownMenu>
@@ -189,15 +201,7 @@ const UsersManagement = () => {
                             Edit User
                           </DropdownMenuItem>
                           <DropdownMenuItem>Change Plan</DropdownMenuItem>
-                          {user.status === 'active' ? (
-                            <DropdownMenuItem className="text-yellow-600">
-                              Suspend Account
-                            </DropdownMenuItem>
-                          ) : user.status === 'suspended' ? (
-                            <DropdownMenuItem className="text-green-600">
-                              Reactivate Account
-                            </DropdownMenuItem>
-                          ) : null}
+                          <DropdownMenuItem>Change Role</DropdownMenuItem>
                           <DropdownMenuSeparator />
                           <DropdownMenuItem className="text-destructive">
                             Delete Account
@@ -209,7 +213,7 @@ const UsersManagement = () => {
                 ))}
                 {filteredUsers.length === 0 && (
                   <TableRow>
-                    <TableCell colSpan={6} className="text-center py-6 text-muted-foreground">
+                    <TableCell colSpan={5} className="text-center py-6 text-muted-foreground">
                       No users found
                     </TableCell>
                   </TableRow>

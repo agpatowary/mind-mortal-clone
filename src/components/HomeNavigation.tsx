@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Sun, Moon } from 'lucide-react';
@@ -20,12 +19,10 @@ const HomeNavigation: React.FC<HomeNavigationProps> = ({
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const { isAuthenticated, signOut } = useAuth();
-  const [isDarkMode, setIsDarkMode] = useState(true); // Default to dark mode
+  const [isDarkMode, setIsDarkMode] = useState(true);
   
   useEffect(() => {
-    // Check if dark mode is stored in localStorage
     const storedDarkMode = localStorage.getItem('darkMode');
-    // If it's not stored, default to true (dark mode), otherwise use the stored value
     const isDark = storedDarkMode === null ? true : storedDarkMode === 'true';
     setIsDarkMode(isDark);
     document.documentElement.classList.toggle('dark', isDark);
@@ -40,16 +37,15 @@ const HomeNavigation: React.FC<HomeNavigationProps> = ({
   
   const sections = ['Home', 'Features', 'Experts', 'Case Studies', 'Join Us'];
 
-  // Handle sign out with manual navigation
   const handleSignOut = async () => {
     try {
-      await signOut(); // This now handles the navigation inside useAuth
+      await signOut();
+      navigate('/');
     } catch (error) {
       console.error('Error signing out:', error);
     }
   };
   
-  // For mobile, show a more compact navigation
   if (isMobile) {
     return (
       <motion.div 
