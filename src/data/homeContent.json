@@ -16,13 +16,13 @@
     "title": "Features",
     "items": [
       {
-        "title": "Legacy Vault",
+        "title": "Legacy",
         "description": "Store memories, lessons, and stories to be passed down to future generations.",
         "icon": "archive",
         "link": "/features/legacy-vault"
       },
       {
-        "title": "Idea Vault",
+        "title": "Idea",
         "description": "Document, collaborate, and potentially receive funding for your innovative ideas.",
         "icon": "lightbulb",
         "link": "/features/idea-vault"
