@@ -1,4 +1,5 @@
-import React, { useRef, useEffect } from 'react';
+
+import React, { useRef, useEffect, useState } from 'react';
 import { motion, useMotionValue, useTransform } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import BlobLogo from '../BlobLogo';
@@ -19,6 +20,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ data }) => {
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   
   // Transform mouse position to rotation values
   const rotateX = useTransform(mouseY, [0, window.innerHeight], [5, -5]);
@@ -51,6 +53,18 @@ const HeroSection: React.FC<HeroSectionProps> = ({ data }) => {
       window.removeEventListener('wheel', handleScroll);
     };
   }, []);
+
+  // Track mouse movement for interactive objects
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      setMousePosition({ x: e.clientX, y: e.clientY });
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+    };
+  }, []);
   
   // Handle mouse move
   const handleMouseMove = (e: React.MouseEvent) => {
@@ -71,7 +85,15 @@ const HeroSection: React.FC<HeroSectionProps> = ({ data }) => {
     { id: 3, shape: 'triangle', size: 70, x: 75, y: 75, color: '#F97316' },
     { id: 4, shape: 'square', size: 50, x: 20, y: 70, color: '#F97316' },
     { id: 5, shape: 'circle', size: 40, x: 50, y: 30, color: '#F97316' },
+    { id: 6, shape: 'circle', size: 35, x: 30, y: 40, color: '#CCFF00' },
+    { id: 7, shape: 'square', size: 45, x: 70, y: 50, color: '#CCFF00' },
+    { id: 8, shape: 'triangle', size: 55, x: 60, y: 20, color: '#33C3F0' },
   ];
+
+  // Calculate distance between two points
+  const getDistance = (x1: number, y1: number, x2: number, y2: number) => {
+    return Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+  };
   
   return (
     <div 
@@ -105,53 +127,54 @@ const HeroSection: React.FC<HeroSectionProps> = ({ data }) => {
       {/* Tech grid overlay */}
       <div className="absolute inset-0 z-0 bg-[url('/lovable-uploads/4dc712f6-a086-4f5f-bd6b-3231b62037bb.png')] bg-cover bg-center opacity-10"></div>
       
-      {/* Floating elements */}
+      {/* Interactive floating elements */}
       {floatingElements.map((el) => {
+        // Calculate position in pixels
+        const elementX = (el.x / 100) * window.innerWidth;
+        const elementY = (el.y / 100) * window.innerHeight;
+        
+        // Calculate distance from mouse
+        const distance = getDistance(mousePosition.x, mousePosition.y, elementX, elementY);
+        const maxDistance = 150;
+        const isNear = distance < maxDistance;
+        
         // Shape class based on shape type
         const shapeClass = 
           el.shape === 'circle' ? 'rounded-full' :
           el.shape === 'square' ? 'rounded-md' :
-          el.shape === 'triangle' ? 'triangle' :
-          el.shape === 'hexagon' ? 'hexagon' : 'rounded-full';
+          el.shape === 'triangle' ? 'clip-path-triangle' :
+          el.shape === 'hexagon' ? 'clip-path-hexagon' : 'rounded-full';
         
         return (
           <motion.div
             key={el.id}
-            className={`absolute ${shapeClass} backdrop-blur-md border`}
+            className={`absolute ${shapeClass} backdrop-blur-md border pointer-events-none`}
             style={{ 
               width: el.size, 
               height: el.size,
               left: `${el.x}%`, 
               top: `${el.y}%`,
-              backgroundColor: `${el.color}10`,
-              borderColor: `${el.color}20`
+              backgroundColor: `${el.color}15`,
+              borderColor: `${el.color}30`
             }}
             initial={{ opacity: 0 }}
             animate={{
-              opacity: [0.2, 0.4, 0.2],
-              x: [0, 20, 0],
-              y: [0, -20, 0],
+              opacity: isNear ? [0.4, 0.8, 0.4] : [0.2, 0.4, 0.2],
+              x: isNear ? [0, (mousePosition.x - elementX) * -0.1, 0] : [0, 20, 0],
+              y: isNear ? [0, (mousePosition.y - elementY) * -0.1, 0] : [0, -20, 0],
               rotate: [0, 10, 0],
-              scale: [1, 1.05, 1],
+              scale: isNear ? [1, 1.3, 1] : [1, 1.05, 1],
             }}
             transition={{
-              duration: 8 + el.id,
+              duration: isNear ? 1.5 : 8 + el.id,
               repeat: Infinity,
               ease: "easeInOut",
             }}
             whileHover={{
-              scale: 1.2,
-              opacity: 0.8,
-              boxShadow: `0 0 20px 5px ${el.color}33`,
+              scale: 1.4,
+              opacity: 0.9,
+              boxShadow: `0 0 25px 5px ${el.color}50`,
             }}
-            drag
-            dragConstraints={{
-              top: -100,
-              right: 100,
-              bottom: 100,
-              left: -100,
-            }}
-            dragElastic={0.3}
           />
         );
       })}
