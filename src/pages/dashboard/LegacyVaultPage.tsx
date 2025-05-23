@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
@@ -87,14 +86,14 @@ const LegacyVaultPage: React.FC = () => {
   };
 
   return (
-    <div className="container mx-auto max-w-6xl">
+    <div className="w-full max-w-6xl mx-auto">
       <motion.div
         className="mb-8"
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <div className="flex justify-between items-center">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
             <h1 className="text-3xl font-bold">Legacy Vault</h1>
             <p className="text-muted-foreground mt-2">
@@ -127,7 +126,7 @@ const LegacyVaultPage: React.FC = () => {
               variants={containerVariants}
               initial="hidden"
               animate="visible"
-              className="grid grid-cols-1 gap-6"
+              className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6"
             >
               {posts.filter(post => post.subcategory === "public-gallery").map(post => (
                 <motion.div 
@@ -136,7 +135,7 @@ const LegacyVaultPage: React.FC = () => {
                   whileHover={{ scale: 1.01 }}
                   transition={{ type: "spring", stiffness: 300 }}
                 >
-                  <Card className="hover:shadow-lg transition-all duration-300">
+                  <Card className="hover:shadow-lg transition-all duration-300 h-full flex flex-col">
                     <CardHeader>
                       <CardTitle>{post.title}</CardTitle>
                       <CardDescription>
@@ -146,7 +145,7 @@ const LegacyVaultPage: React.FC = () => {
                         )}
                       </CardDescription>
                     </CardHeader>
-                    <CardContent>
+                    <CardContent className="flex-1">
                       {renderContent(post.content)}
                     </CardContent>
                     <CardFooter className="flex flex-col items-stretch">
@@ -170,7 +169,7 @@ const LegacyVaultPage: React.FC = () => {
               ))}
 
               {posts.filter(post => post.subcategory === "public-gallery").length === 0 && (
-                <motion.div variants={itemVariants}>
+                <motion.div variants={itemVariants} className="col-span-full">
                   <Card className="border-dashed">
                     <CardContent className="flex flex-col items-center justify-center py-12">
                       <MessageSquare className="h-12 w-12 mb-4 text-muted-foreground" />
@@ -199,7 +198,7 @@ const LegacyVaultPage: React.FC = () => {
               variants={containerVariants}
               initial="hidden"
               animate="visible"
-              className="grid grid-cols-1 gap-6"
+              className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6"
             >
               {posts.filter(post => post.subcategory === "time-capsule").map(post => (
                 <motion.div 
@@ -208,7 +207,7 @@ const LegacyVaultPage: React.FC = () => {
                   whileHover={{ scale: 1.01 }}
                   transition={{ type: "spring", stiffness: 300 }}
                 >
-                  <Card className="hover:shadow-lg transition-all duration-300">
+                  <Card className="hover:shadow-lg transition-all duration-300 h-full flex flex-col">
                     <CardHeader>
                       <CardTitle className="flex items-center gap-2">
                         <Clock className="h-5 w-5 text-primary" />
@@ -218,7 +217,7 @@ const LegacyVaultPage: React.FC = () => {
                         Created on {new Date(post.created_at).toLocaleDateString()}
                       </CardDescription>
                     </CardHeader>
-                    <CardContent>
+                    <CardContent className="flex-1">
                       <div className="bg-secondary/50 p-4 rounded-md mb-4">
                         <p className="font-medium">
                           Will be revealed on: {post.release_date 
@@ -249,7 +248,7 @@ const LegacyVaultPage: React.FC = () => {
               ))}
 
               {posts.filter(post => post.subcategory === "time-capsule").length === 0 && (
-                <motion.div variants={itemVariants}>
+                <motion.div variants={itemVariants} className="col-span-full">
                   <Card className="border-dashed">
                     <CardContent className="flex flex-col items-center justify-center py-12">
                       <Clock className="h-12 w-12 mb-4 text-muted-foreground" />

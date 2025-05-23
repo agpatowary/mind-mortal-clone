@@ -97,7 +97,7 @@ const IdeaVaultPage: React.FC = () => {
 
   if (error) {
     return (
-      <div className="container mx-auto max-w-6xl">
+      <div className="w-full max-w-6xl mx-auto">
         <div className="flex flex-col items-center justify-center py-12">
           <AlertCircle className="h-12 w-12 text-destructive mb-4" />
           <h2 className="text-xl font-semibold mb-2">Something went wrong</h2>
@@ -109,14 +109,14 @@ const IdeaVaultPage: React.FC = () => {
   }
 
   return (
-    <div className="container mx-auto max-w-6xl">
+    <div className="w-full max-w-6xl mx-auto">
       <motion.div
         className="mb-8"
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <div className="flex justify-between items-center">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
             <h1 className="text-3xl font-bold">Idea Vault</h1>
             <p className="text-muted-foreground mt-2">
@@ -142,7 +142,7 @@ const IdeaVaultPage: React.FC = () => {
           variants={containerVariants}
           initial="hidden"
           animate="visible"
-          className="grid grid-cols-1 gap-6"
+          className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6"
         >
           {ideas.map(idea => (
             <motion.div 
@@ -151,7 +151,7 @@ const IdeaVaultPage: React.FC = () => {
               whileHover={{ scale: 1.01 }}
               transition={{ type: "spring", stiffness: 300 }}
             >
-              <Card className="hover:shadow-lg transition-all duration-300">
+              <Card className="hover:shadow-lg transition-all duration-300 h-full flex flex-col">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Lightbulb className="h-5 w-5 text-primary" />
@@ -163,7 +163,7 @@ const IdeaVaultPage: React.FC = () => {
                       </Badge>
                     )}
                   </CardTitle>
-                  <CardDescription className="flex items-center gap-4">
+                  <CardDescription className="flex flex-wrap items-center gap-4">
                     <span>Created on {new Date(idea.created_at).toLocaleDateString()}</span>
                     {idea.boost_count > 0 && (
                       <span className="flex items-center gap-1">
@@ -179,7 +179,7 @@ const IdeaVaultPage: React.FC = () => {
                     )}
                   </CardDescription>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="flex-1">
                   {idea.description && (
                     <p className="text-muted-foreground mb-3">{idea.description}</p>
                   )}
@@ -215,7 +215,7 @@ const IdeaVaultPage: React.FC = () => {
           ))}
 
           {ideas.length === 0 && !loading && (
-            <motion.div variants={itemVariants}>
+            <motion.div variants={itemVariants} className="col-span-full">
               <Card className="border-dashed">
                 <CardContent className="flex flex-col items-center justify-center py-12">
                   <Lightbulb className="h-12 w-12 mb-4 text-muted-foreground" />
