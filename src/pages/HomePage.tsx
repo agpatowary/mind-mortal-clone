@@ -6,22 +6,15 @@ import FeaturesSection from '@/components/home/FeaturesSection';
 import FeaturedMentorsSection from '@/components/home/FeaturedMentorsSection';
 import CaseStudiesSection from '@/components/home/CaseStudiesSection';
 import CtaSection from '@/components/home/CtaSection';
+import homeContent from '@/data/homeContent.json';
 
 const HomePage: React.FC = () => {
   const [currentSection, setCurrentSection] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
 
-  // Dummy data for HeroSection
-  const heroData = {
-    title: "Your Story. Your Legacy. Forever.",
-    subtitle: "Preserve your wisdom. Share your ideas. Connect with the future.",
-    primaryButtonText: "Start Your Journey",
-    secondaryButtonText: "Explore Features"
-  };
-
   const sections = [
-    { component: () => <HeroSection data={heroData} />, name: 'hero' },
-    { component: FeaturesSection, name: 'features' },
+    { component: () => <HeroSection data={homeContent.hero} />, name: 'hero' },
+    { component: () => <FeaturesSection data={homeContent.features} />, name: 'features' },
     { component: FeaturedMentorsSection, name: 'mentors' },
     { component: CaseStudiesSection, name: 'case-studies' },
     { component: CtaSection, name: 'cta' }

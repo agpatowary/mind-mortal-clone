@@ -19,7 +19,8 @@ import PricingPage from '@/pages/pricing';
 import NotFoundPage from '@/pages/NotFound';
 
 import DashboardLayout from '@/components/DashboardLayout';
-import { AuthProvider, useAuth } from '@/hooks/useAuth';
+import AuthGuard from '@/components/auth/AuthGuard';
+import { AuthProvider } from '@/hooks/useAuth';
 
 import LegacyPostCreate from '@/pages/dashboard/CreateContentPage';
 import LegacyPostEdit from '@/pages/dashboard/legacy-vault/CreateLegacyPost';
@@ -29,17 +30,6 @@ import MentorshipResourceCreate from '@/pages/dashboard/mentorship/CreateWisdomR
 import BecomeMentorPage from '@/pages/dashboard/BecomeMentorPage';
 
 const queryClient = new QueryClient();
-
-// AuthGuard component
-const AuthGuard: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { isAuthenticated, isLoading } = useAuth();
-
-  if (isLoading) {
-    return <div>Loading...</div>; // Show a loading indicator
-  }
-
-  return isAuthenticated() ? <>{children}</> : <Navigate to="/signin" />;
-};
 
 function App() {
   return (
