@@ -49,7 +49,7 @@ const SignIn = () => {
   };
 
   return (
-    <AuthGuard requireAuth={false} redirectTo="/dashboard">
+    <AuthGuard requireAuth={false}>
       <div className="flex min-h-screen items-center justify-center bg-background py-12 px-4 sm:px-6 lg:px-8 relative">
         <Button
           variant="ghost"

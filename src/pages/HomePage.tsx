@@ -6,6 +6,7 @@ import FeaturesSection from '@/components/home/FeaturesSection';
 import FeaturedMentorsSection from '@/components/home/FeaturedMentorsSection';
 import CaseStudiesSection from '@/components/home/CaseStudiesSection';
 import CtaSection from '@/components/home/CtaSection';
+import HomeNavigation from '@/components/HomeNavigation';
 import homeContent from '@/data/homeContent.json';
 
 const HomePage: React.FC = () => {
@@ -145,6 +146,14 @@ const HomePage: React.FC = () => {
 
   return (
     <div className="h-screen overflow-hidden relative">
+      {/* Home Navigation - Fixed overlay */}
+      <div className="fixed bottom-8 left-1/2 transform -translate-x-1/2 z-50">
+        <HomeNavigation 
+          currentSection={currentSection} 
+          onNavigate={goToSection} 
+        />
+      </div>
+
       <AnimatePresence mode="wait">
         <motion.div
           key={currentSection}

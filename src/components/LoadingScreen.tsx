@@ -4,10 +4,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import BlobLogo from './BlobLogo';
 
 interface LoadingScreenProps {
-  isLoading: boolean;
+  isLoading?: boolean;
 }
 
-const LoadingScreen: React.FC<LoadingScreenProps> = ({ isLoading }) => {
+const LoadingScreen: React.FC<LoadingScreenProps> = ({ isLoading = true }) => {
   return (
     <AnimatePresence>
       {isLoading && (

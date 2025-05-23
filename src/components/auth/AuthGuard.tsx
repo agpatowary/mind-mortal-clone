@@ -6,17 +6,29 @@ import LoadingScreen from '@/components/LoadingScreen';
 
 interface AuthGuardProps {
   children: React.ReactNode;
+  requireAuth?: boolean;
+  redirectTo?: string;
 }
 
-const AuthGuard: React.FC<AuthGuardProps> = ({ children }) => {
-  const { user, loading } = useAuth();
+const AuthGuard: React.FC<AuthGuardProps> = ({ 
+  children, 
+  requireAuth = true, 
+  redirectTo = '/signin' 
+}) => {
+  const { user, isLoading } = useAuth();
 
-  if (loading) {
-    return <LoadingScreen />;
+  if (isLoading) {
+    return <LoadingScreen isLoading={true} />;
   }
 
-  if (!user) {
-    return <Navigate to="/signin" replace />;
+  // If authentication is required but user is not authenticated
+  if (requireAuth && !user) {
+    return <Navigate to={redirectTo} replace />;
+  }
+
+  // If no authentication is required but user is authenticated (for sign-in/sign-up pages)
+  if (!requireAuth && user) {
+    return <Navigate to="/dashboard" replace />;
   }
 
   return <>{children}</>;
