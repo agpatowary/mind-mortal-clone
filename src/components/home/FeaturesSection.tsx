@@ -41,7 +41,7 @@ const FeaturesSection: React.FC<FeaturesSectionProps> = ({ data }) => {
       updatedFeature.description = 'Guidance from experience to ignite your growth.';
       updatedFeature.link = '/features/mentorship';
       updatedFeature.cta = 'Find a Mentor';
-    } else if (feature.title === 'Legacy Vault') {
+    } else if (feature.title === 'Legacy') {
       updatedFeature.description = 'Preserve your legacy for future generations.';
       updatedFeature.link = '/features/legacy-vault';
       updatedFeature.cta = 'Create Your Legacy';
@@ -49,7 +49,7 @@ const FeaturesSection: React.FC<FeaturesSectionProps> = ({ data }) => {
       updatedFeature.description = 'Leave a message that lasts forever.';
       updatedFeature.link = '/features/timeless-messages';
       updatedFeature.cta = 'Create a Timeless Message';
-    } else if (feature.title === 'Idea Vault') {
+    } else if (feature.title === 'Idea') {
       updatedFeature.description = 'Refine, share, and fund your ideas.';
       updatedFeature.link = '/features/idea-vault';
       updatedFeature.cta = 'Start Your Idea';
