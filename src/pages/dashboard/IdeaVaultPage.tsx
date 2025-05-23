@@ -3,31 +3,38 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Lightbulb, Plus, TrendingUp, Users, Clock } from 'lucide-react';
+import { Lightbulb, Plus, TrendingUp, Users, Clock, AlertCircle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import PostInteractions from '@/components/social/PostInteractions';
 import PostDetailsModal from '@/components/modals/PostDetailsModal';
 import { Badge } from "@/components/ui/badge";
+import { useToast } from '@/hooks/use-toast';
 
 const IdeaVaultPage: React.FC = () => {
   const [ideas, setIdeas] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [selectedIdea, setSelectedIdea] = useState<any>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   useEffect(() => {
     if (user) {
       fetchIdeas();
+    } else {
+      setLoading(false);
     }
   }, [user]);
 
   const fetchIdeas = async () => {
     try {
       setLoading(true);
+      setError(null);
+      
       const { data, error } = await supabase
         .from('idea_posts')
         .select('*')
@@ -35,11 +42,23 @@ const IdeaVaultPage: React.FC = () => {
 
       if (error) {
         console.error('Error fetching ideas:', error);
+        setError('Failed to load ideas. Please try again.');
+        toast({
+          title: "Error loading ideas",
+          description: "There was a problem loading your ideas.",
+          variant: "destructive"
+        });
       } else {
         setIdeas(data || []);
       }
     } catch (err) {
       console.error('Error in fetch operation:', err);
+      setError('An unexpected error occurred.');
+      toast({
+        title: "Unexpected error",
+        description: "Please refresh the page and try again.",
+        variant: "destructive"
+      });
     } finally {
       setLoading(false);
     }
@@ -76,6 +95,19 @@ const IdeaVaultPage: React.FC = () => {
       }
     }
   };
+
+  if (error) {
+    return (
+      <div className="container mx-auto max-w-6xl">
+        <div className="flex flex-col items-center justify-center py-12">
+          <AlertCircle className="h-12 w-12 text-destructive mb-4" />
+          <h2 className="text-xl font-semibold mb-2">Something went wrong</h2>
+          <p className="text-muted-foreground mb-4">{error}</p>
+          <Button onClick={fetchIdeas}>Try Again</Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto max-w-6xl">
@@ -183,7 +215,7 @@ const IdeaVaultPage: React.FC = () => {
             </motion.div>
           ))}
 
-          {ideas.length === 0 && (
+          {ideas.length === 0 && !loading && (
             <motion.div variants={itemVariants}>
               <Card className="border-dashed">
                 <CardContent className="flex flex-col items-center justify-center py-12">

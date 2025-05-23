@@ -1,33 +1,46 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Plus, FileText, Lightbulb, Clock, BookOpen, Users, Heart, MessageSquare } from 'lucide-react';
+import { Plus, FileText, Lightbulb, Clock, BookOpen, Users, Heart, MessageSquare, AlertCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 
 const DashboardHome: React.FC = () => {
   const navigate = useNavigate();
-  const { profile } = useAuth();
+  const { profile, user, isLoading } = useAuth();
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Clear any errors when user changes
+    if (user) {
+      setError(null);
+    }
+  }, [user]);
 
   const handleCreateClick = (type: string) => {
-    switch (type) {
-      case 'legacy':
-        navigate('/dashboard/legacy-vault/create');
-        break;
-      case 'idea':
-        navigate('/dashboard/idea-vault/create');
-        break;
-      case 'message':
-        navigate('/dashboard/timeless-messages/create');
-        break;
-      case 'resource':
-        navigate('/dashboard/mentorship/create');
-        break;
-      default:
-        break;
+    try {
+      switch (type) {
+        case 'legacy':
+          navigate('/dashboard/legacy-vault/create');
+          break;
+        case 'idea':
+          navigate('/dashboard/idea-vault/create');
+          break;
+        case 'message':
+          navigate('/dashboard/timeless-messages/create');
+          break;
+        case 'resource':
+          navigate('/dashboard/mentorship/create');
+          break;
+        default:
+          break;
+      }
+    } catch (error) {
+      console.error('Navigation error:', error);
+      setError('Navigation failed. Please try again.');
     }
   };
 
@@ -53,6 +66,29 @@ const DashboardHome: React.FC = () => {
       }
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="container mx-auto max-w-6xl">
+        <div className="flex justify-center py-12">
+          <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full"></div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="container mx-auto max-w-6xl">
+        <div className="flex flex-col items-center justify-center py-12">
+          <AlertCircle className="h-12 w-12 text-destructive mb-4" />
+          <h2 className="text-xl font-semibold mb-2">Something went wrong</h2>
+          <p className="text-muted-foreground mb-4">{error}</p>
+          <Button onClick={() => setError(null)}>Try Again</Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto max-w-6xl">
