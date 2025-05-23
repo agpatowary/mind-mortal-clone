@@ -1,70 +1,64 @@
 
 import React, { useState, useEffect } from 'react';
-import { Heart, MessageCircle, Share2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { useAuth } from '@/hooks/useAuth';
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Heart, MessageCircle, Send } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface PostInteractionsProps {
   postId: string;
   postType: string;
-  likesCount?: number;
-  userLiked?: boolean;
-  onLikeToggle?: () => void;
   onUpdate?: () => void;
-  initialLikesCount?: number;
-  initialCommentsCount?: number;
+}
+
+interface Comment {
+  id: string;
+  content: string;
+  created_at: string;
+  user_id: string;
+  profiles?: {
+    full_name: string;
+    avatar_url: string;
+  };
 }
 
 const PostInteractions: React.FC<PostInteractionsProps> = ({
   postId,
   postType,
-  likesCount: propLikesCount,
-  userLiked: propUserLiked,
-  onLikeToggle,
-  onUpdate,
-  initialLikesCount,
-  initialCommentsCount
+  onUpdate
 }) => {
-  const [likesCount, setLikesCount] = useState(propLikesCount || initialLikesCount || 0);
-  const [userLiked, setUserLiked] = useState(propUserLiked || false);
-  const [comments, setComments] = useState<any[]>([]);
+  const [likes, setLikes] = useState<any[]>([]);
+  const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState('');
+  const [isLiked, setIsLiked] = useState(false);
   const [showComments, setShowComments] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [loading, setLoading] = useState(false);
   const { user } = useAuth();
   const { toast } = useToast();
 
   useEffect(() => {
-    fetchLikes();
-    fetchComments();
-  }, [postId, postType]);
+    if (postId) {
+      fetchLikes();
+      fetchComments();
+    }
+  }, [postId]);
 
   const fetchLikes = async () => {
     try {
-      // Get likes count
-      const { count } = await supabase
+      const { data, error } = await supabase
         .from('post_likes')
-        .select('*', { count: 'exact' })
+        .select('*')
         .eq('post_id', postId)
         .eq('post_type', postType);
-      
-      setLikesCount(count || 0);
 
-      // Check if user liked this post
-      if (user) {
-        const { data } = await supabase
-          .from('post_likes')
-          .select('id')
-          .eq('post_id', postId)
-          .eq('post_type', postType)
-          .eq('user_id', user.id)
-          .maybeSingle();
-        
-        setUserLiked(!!data);
-      }
+      if (error) throw error;
+
+      setLikes(data || []);
+      setIsLiked(data?.some(like => like.user_id === user?.id) || false);
     } catch (error) {
       console.error('Error fetching likes:', error);
     }
@@ -76,7 +70,7 @@ const PostInteractions: React.FC<PostInteractionsProps> = ({
         .from('post_comments')
         .select(`
           *,
-          profiles:user_id (
+          profiles (
             full_name,
             avatar_url
           )
@@ -86,6 +80,7 @@ const PostInteractions: React.FC<PostInteractionsProps> = ({
         .order('created_at', { ascending: true });
 
       if (error) throw error;
+
       setComments(data || []);
     } catch (error) {
       console.error('Error fetching comments:', error);
@@ -95,7 +90,7 @@ const PostInteractions: React.FC<PostInteractionsProps> = ({
   const handleLike = async () => {
     if (!user) {
       toast({
-        title: "Authentication Required",
+        title: "Authentication required",
         description: "Please sign in to like posts.",
         variant: "destructive"
       });
@@ -103,50 +98,62 @@ const PostInteractions: React.FC<PostInteractionsProps> = ({
     }
 
     try {
-      if (userLiked) {
+      if (isLiked) {
         // Unlike
-        await supabase
+        const { error } = await supabase
           .from('post_likes')
           .delete()
           .eq('post_id', postId)
           .eq('post_type', postType)
           .eq('user_id', user.id);
-        
-        setLikesCount(prev => prev - 1);
-        setUserLiked(false);
+
+        if (error) throw error;
       } else {
         // Like
-        await supabase
+        const { error } = await supabase
           .from('post_likes')
           .insert({
             post_id: postId,
             post_type: postType,
             user_id: user.id
           });
-        
-        setLikesCount(prev => prev + 1);
-        setUserLiked(true);
+
+        if (error) throw error;
       }
 
-      // Call external like toggle handler if provided
-      if (onLikeToggle) {
-        onLikeToggle();
-      }
-    } catch (error) {
+      await fetchLikes();
+      if (onUpdate) onUpdate();
+    } catch (error: any) {
       console.error('Error toggling like:', error);
       toast({
         title: "Error",
-        description: "Failed to update like status.",
+        description: error.message || "Failed to update like status.",
         variant: "destructive"
       });
     }
   };
 
   const handleComment = async () => {
-    if (!user || !newComment.trim()) return;
+    if (!user) {
+      toast({
+        title: "Authentication required",
+        description: "Please sign in to comment on posts.",
+        variant: "destructive"
+      });
+      return;
+    }
 
-    setIsSubmitting(true);
+    if (!newComment.trim()) {
+      toast({
+        title: "Comment required",
+        description: "Please enter a comment before posting.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     try {
+      setLoading(true);
       const { error } = await supabase
         .from('post_comments')
         .insert({
@@ -160,73 +167,68 @@ const PostInteractions: React.FC<PostInteractionsProps> = ({
 
       setNewComment('');
       await fetchComments();
-      
-      if (onUpdate) {
-        onUpdate();
-      }
+      if (onUpdate) onUpdate();
 
       toast({
-        title: "Comment Added",
+        title: "Comment posted",
         description: "Your comment has been posted successfully.",
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error posting comment:', error);
       toast({
         title: "Error",
-        description: "Failed to post comment.",
+        description: error.message || "Failed to post comment.",
         variant: "destructive"
       });
     } finally {
-      setIsSubmitting(false);
+      setLoading(false);
     }
   };
 
   return (
     <div className="space-y-4">
+      {/* Interaction buttons */}
       <div className="flex items-center gap-4">
         <Button
           variant="ghost"
           size="sm"
-          className={`flex items-center gap-2 ${userLiked ? 'text-red-500' : ''}`}
           onClick={handleLike}
+          className={`flex items-center gap-1 ${isLiked ? 'text-red-500' : ''}`}
         >
-          <Heart className={`h-4 w-4 ${userLiked ? 'fill-current' : ''}`} />
-          <span>{likesCount}</span>
+          <Heart className={`h-4 w-4 ${isLiked ? 'fill-current' : ''}`} />
+          <span>{likes.length}</span>
         </Button>
-        
+
         <Button
           variant="ghost"
           size="sm"
-          className="flex items-center gap-2"
           onClick={() => setShowComments(!showComments)}
+          className="flex items-center gap-1"
         >
           <MessageCircle className="h-4 w-4" />
           <span>{comments.length}</span>
         </Button>
-        
-        <Button variant="ghost" size="sm" className="flex items-center gap-2">
-          <Share2 className="h-4 w-4" />
-          <span>Share</span>
-        </Button>
       </div>
 
+      {/* Comments section */}
       {showComments && (
-        <div className="space-y-4">
-          {/* Comment input */}
+        <div className="space-y-4 border-t pt-4">
+          {/* Add comment input */}
           {user && (
             <div className="flex gap-2">
               <Input
                 placeholder="Write a comment..."
                 value={newComment}
                 onChange={(e) => setNewComment(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && handleComment()}
+                onKeyPress={(e) => e.key === 'Enter' && !loading && handleComment()}
+                disabled={loading}
               />
-              <Button 
-                onClick={handleComment} 
-                disabled={!newComment.trim() || isSubmitting}
+              <Button
+                onClick={handleComment}
+                disabled={loading || !newComment.trim()}
                 size="sm"
               >
-                {isSubmitting ? 'Posting...' : 'Post'}
+                <Send className="h-4 w-4" />
               </Button>
             </div>
           )}
@@ -235,22 +237,31 @@ const PostInteractions: React.FC<PostInteractionsProps> = ({
           <div className="space-y-3">
             {comments.map((comment) => (
               <div key={comment.id} className="flex gap-3">
-                <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-sm">
-                  {comment.profiles?.full_name?.[0] || 'U'}
-                </div>
-                <div className="flex-1">
-                  <div className="bg-muted rounded-lg p-3">
-                    <p className="font-medium text-sm">
+                <Avatar className="h-8 w-8">
+                  <AvatarImage src={comment.profiles?.avatar_url || ""} />
+                  <AvatarFallback>
+                    {comment.profiles?.full_name?.charAt(0) || 'U'}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex-1 space-y-1">
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium text-sm">
                       {comment.profiles?.full_name || 'Unknown User'}
-                    </p>
-                    <p className="text-sm">{comment.content}</p>
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      {new Date(comment.created_at).toLocaleDateString()}
+                    </span>
                   </div>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {new Date(comment.created_at).toLocaleDateString()}
-                  </p>
+                  <p className="text-sm">{comment.content}</p>
                 </div>
               </div>
             ))}
+
+            {comments.length === 0 && (
+              <p className="text-sm text-muted-foreground text-center py-4">
+                No comments yet. Be the first to comment!
+              </p>
+            )}
           </div>
         </div>
       )}

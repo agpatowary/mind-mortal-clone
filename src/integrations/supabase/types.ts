@@ -640,6 +640,7 @@ export type Database = {
           bio: string | null
           full_name: string | null
           id: string
+          is_mentor: boolean | null
           location: string | null
           phone: string | null
           profile_completion: string[] | null
@@ -651,6 +652,7 @@ export type Database = {
           bio?: string | null
           full_name?: string | null
           id: string
+          is_mentor?: boolean | null
           location?: string | null
           phone?: string | null
           profile_completion?: string[] | null
@@ -662,6 +664,7 @@ export type Database = {
           bio?: string | null
           full_name?: string | null
           id?: string
+          is_mentor?: boolean | null
           location?: string | null
           phone?: string | null
           profile_completion?: string[] | null

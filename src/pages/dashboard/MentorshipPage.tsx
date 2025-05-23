@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
@@ -17,7 +16,7 @@ const MentorshipPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [selectedResource, setSelectedResource] = useState<any>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -48,6 +47,11 @@ const MentorshipPage: React.FC = () => {
 
   const handleCreateResource = () => {
     navigate('/dashboard/mentorship/create');
+  };
+
+  const handleBecomeMentor = () => {
+    // Navigate to mentor application form
+    navigate('/dashboard/become-mentor');
   };
 
   const handleViewDetails = (resource: any) => {
@@ -102,18 +106,28 @@ const MentorshipPage: React.FC = () => {
         >
           <div className="flex justify-between items-center">
             <div>
-              <h1 className="text-3xl font-bold">Mentorship & Wisdom</h1>
+              <h1 className="text-3xl font-bold">Mentorship</h1>
               <p className="text-muted-foreground mt-2">
                 Share your knowledge and learn from others in the community
               </p>
             </div>
-            <Button 
-              className="flex items-center gap-2"
-              onClick={handleCreateResource}
-            >
-              <Plus className="h-4 w-4" />
-              Share Wisdom
-            </Button>
+            {profile?.is_mentor ? (
+              <Button 
+                className="flex items-center gap-2"
+                onClick={handleCreateResource}
+              >
+                <Plus className="h-4 w-4" />
+                Create Resource
+              </Button>
+            ) : (
+              <Button 
+                className="flex items-center gap-2"
+                onClick={handleBecomeMentor}
+              >
+                <Users className="h-4 w-4" />
+                Become a Mentor
+              </Button>
+            )}
           </div>
         </motion.div>
 
@@ -202,13 +216,19 @@ const MentorshipPage: React.FC = () => {
                 <Card className="border-dashed">
                   <CardContent className="flex flex-col items-center justify-center py-12">
                     <Users className="h-12 w-12 mb-4 text-muted-foreground" />
-                    <h3 className="text-xl font-medium mb-2">No wisdom resources yet</h3>
+                    <h3 className="text-xl font-medium mb-2">No resources yet</h3>
                     <p className="text-muted-foreground mb-6 text-center max-w-md">
-                      Start sharing your knowledge and wisdom with the community
+                      Start sharing your knowledge and experience with the community
                     </p>
-                    <Button onClick={handleCreateResource}>
-                      <Plus className="h-4 w-4 mr-2" /> Share Your First Resource
-                    </Button>
+                    {profile?.is_mentor ? (
+                      <Button onClick={handleCreateResource}>
+                        <Plus className="h-4 w-4 mr-2" /> Share Your First Resource
+                      </Button>
+                    ) : (
+                      <Button onClick={handleBecomeMentor}>
+                        <Users className="h-4 w-4 mr-2" /> Become a Mentor
+                      </Button>
+                    )}
                   </CardContent>
                 </Card>
               </motion.div>
