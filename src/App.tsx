@@ -18,6 +18,19 @@ import SignupPage from '@/pages/SignUp';
 import PricingPage from '@/pages/pricing';
 import NotFoundPage from '@/pages/NotFound';
 
+// Feature pages
+import FeatureLegacyVaultPage from '@/pages/features/LegacyVaultPage';
+import FeatureIdeaVaultPage from '@/pages/features/IdeaVaultPage';
+import FeatureMentorshipPage from '@/pages/features/MentorshipPage';
+import FeatureTimelessMessagesPage from '@/pages/features/TimelessMessagesPage';
+
+// Admin pages
+import AdminDashboard from '@/pages/admin/AdminDashboard';
+import AdminOverview from '@/pages/admin/AdminOverview';
+import UsersManagement from '@/pages/admin/UsersManagement';
+import MentorApplications from '@/pages/admin/MentorApplications';
+import SubscriptionPlans from '@/pages/admin/SubscriptionPlans';
+
 import DashboardLayout from '@/components/DashboardLayout';
 import AuthGuard from '@/components/auth/AuthGuard';
 import { AuthProvider } from '@/hooks/useAuth';
@@ -42,6 +55,54 @@ function App() {
             <Route path="/pricing" element={<PricingPage />} />
             <Route path="/signin" element={<SigninPage />} />
             <Route path="/signup" element={<SignupPage />} />
+
+            {/* Feature Pages */}
+            <Route path="/features/legacy-vault" element={<FeatureLegacyVaultPage />} />
+            <Route path="/features/idea-vault" element={<FeatureIdeaVaultPage />} />
+            <Route path="/features/mentorship" element={<FeatureMentorshipPage />} />
+            <Route path="/features/timeless-messages" element={<FeatureTimelessMessagesPage />} />
+
+            {/* Admin Routes */}
+            <Route
+              path="/admin"
+              element={
+                <AuthGuard>
+                  <AdminDashboard />
+                </AuthGuard>
+              }
+            />
+            <Route
+              path="/admin/overview"
+              element={
+                <AuthGuard>
+                  <AdminOverview />
+                </AuthGuard>
+              }
+            />
+            <Route
+              path="/admin/users"
+              element={
+                <AuthGuard>
+                  <UsersManagement />
+                </AuthGuard>
+              }
+            />
+            <Route
+              path="/admin/mentor-applications"
+              element={
+                <AuthGuard>
+                  <MentorApplications />
+                </AuthGuard>
+              }
+            />
+            <Route
+              path="/admin/subscription-plans"
+              element={
+                <AuthGuard>
+                  <SubscriptionPlans />
+                </AuthGuard>
+              }
+            />
 
             {/* Dashboard Routes */}
             <Route
