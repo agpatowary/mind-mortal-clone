@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { TooltipProvider } from "@/components/ui/tooltip"
 import { Toaster } from "@/components/ui/toaster"
@@ -36,152 +36,150 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <Toaster />
-        <BrowserRouter>
-          <AuthProvider>
-            <Routes>
-              <Route path="/" element={<HomePage />} />
-              <Route path="/pricing" element={<PricingPage />} />
-              <Route path="/signin" element={<SigninPage />} />
-              <Route path="/signup" element={<SignupPage />} />
+        <AuthProvider>
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/pricing" element={<PricingPage />} />
+            <Route path="/signin" element={<SigninPage />} />
+            <Route path="/signup" element={<SignupPage />} />
 
-              {/* Dashboard Routes */}
-              <Route
-                path="/dashboard"
-                element={
-                  <AuthGuard>
-                    <DashboardLayout>
-                      <DashboardHome />
-                    </DashboardLayout>
-                  </AuthGuard>
-                }
-              />
-              <Route
-                path="/dashboard/legacy-vault"
-                element={
-                  <AuthGuard>
-                    <DashboardLayout>
-                      <LegacyVaultPage />
-                    </DashboardLayout>
-                  </AuthGuard>
-                }
-              />
-              <Route
-                path="/dashboard/legacy-vault/create"
-                element={
-                  <AuthGuard>
-                    <DashboardLayout>
-                      <LegacyPostCreate />
-                    </DashboardLayout>
-                  </AuthGuard>
-                }
-              />
-              <Route
-                path="/dashboard/legacy-vault/edit/:postId"
-                element={
-                  <AuthGuard>
-                    <DashboardLayout>
-                      <LegacyPostEdit />
-                    </DashboardLayout>
-                  </AuthGuard>
-                }
-              />
-              <Route
-                path="/dashboard/idea-vault"
-                element={
-                  <AuthGuard>
-                    <DashboardLayout>
-                      <IdeaVaultPage />
-                    </DashboardLayout>
-                  </AuthGuard>
-                }
-              />
-              <Route
-                path="/dashboard/idea-vault/create"
-                element={
-                  <AuthGuard>
-                    <DashboardLayout>
-                      <IdeaPostCreate />
-                    </DashboardLayout>
-                  </AuthGuard>
-                }
-              />
-              <Route
-                path="/dashboard/mentorship"
-                element={
-                  <AuthGuard>
-                    <DashboardLayout>
-                      <MentorshipPage />
-                    </DashboardLayout>
-                  </AuthGuard>
-                }
-              />
-              <Route
-                path="/dashboard/mentorship/create"
-                element={
-                  <AuthGuard>
-                    <DashboardLayout>
-                      <MentorshipResourceCreate />
-                    </DashboardLayout>
-                  </AuthGuard>
-                }
-              />
-              <Route
-                path="/dashboard/timeless-messages"
-                element={
-                  <AuthGuard>
-                    <DashboardLayout>
-                      <TimelessMessagesPage />
-                    </DashboardLayout>
-                  </AuthGuard>
-                }
-              />
-              <Route
-                path="/dashboard/timeless-messages/create"
-                element={
-                  <AuthGuard>
-                    <DashboardLayout>
-                      <TimelessMessageCreate />
-                    </DashboardLayout>
-                  </AuthGuard>
-                }
-              />
-              <Route
-                path="/dashboard/settings"
-                element={
-                  <AuthGuard>
-                    <DashboardLayout>
-                      <SettingsPage />
-                    </DashboardLayout>
-                  </AuthGuard>
-                }
-              />
-              <Route
-                path="/dashboard/profile"
-                element={
-                  <AuthGuard>
-                    <DashboardLayout>
-                      <ProfilePage />
-                    </DashboardLayout>
-                  </AuthGuard>
-                }
-              />
-              
-              <Route
-                path="/dashboard/become-mentor"
-                element={
-                  <AuthGuard>
-                    <DashboardLayout>
-                      <BecomeMentorPage />
-                    </DashboardLayout>
-                  </AuthGuard>
-                }
-              />
-              
-              {/* Catch-all route for 404 Not Found */}
-              <Route path="*" element={<NotFoundPage />} />
-            </Routes>
-          </AuthProvider>
-        </BrowserRouter>
+            {/* Dashboard Routes */}
+            <Route
+              path="/dashboard"
+              element={
+                <AuthGuard>
+                  <DashboardLayout>
+                    <DashboardHome />
+                  </DashboardLayout>
+                </AuthGuard>
+              }
+            />
+            <Route
+              path="/dashboard/legacy-vault"
+              element={
+                <AuthGuard>
+                  <DashboardLayout>
+                    <LegacyVaultPage />
+                  </DashboardLayout>
+                </AuthGuard>
+              }
+            />
+            <Route
+              path="/dashboard/legacy-vault/create"
+              element={
+                <AuthGuard>
+                  <DashboardLayout>
+                    <LegacyPostCreate />
+                  </DashboardLayout>
+                </AuthGuard>
+              }
+            />
+            <Route
+              path="/dashboard/legacy-vault/edit/:postId"
+              element={
+                <AuthGuard>
+                  <DashboardLayout>
+                    <LegacyPostEdit />
+                  </DashboardLayout>
+                </AuthGuard>
+              }
+            />
+            <Route
+              path="/dashboard/idea-vault"
+              element={
+                <AuthGuard>
+                  <DashboardLayout>
+                    <IdeaVaultPage />
+                  </DashboardLayout>
+                </AuthGuard>
+              }
+            />
+            <Route
+              path="/dashboard/idea-vault/create"
+              element={
+                <AuthGuard>
+                  <DashboardLayout>
+                    <IdeaPostCreate />
+                  </DashboardLayout>
+                </AuthGuard>
+              }
+            />
+            <Route
+              path="/dashboard/mentorship"
+              element={
+                <AuthGuard>
+                  <DashboardLayout>
+                    <MentorshipPage />
+                  </DashboardLayout>
+                </AuthGuard>
+              }
+            />
+            <Route
+              path="/dashboard/mentorship/create"
+              element={
+                <AuthGuard>
+                  <DashboardLayout>
+                    <MentorshipResourceCreate />
+                  </DashboardLayout>
+                </AuthGuard>
+              }
+            />
+            <Route
+              path="/dashboard/timeless-messages"
+              element={
+                <AuthGuard>
+                  <DashboardLayout>
+                    <TimelessMessagesPage />
+                  </DashboardLayout>
+                </AuthGuard>
+              }
+            />
+            <Route
+              path="/dashboard/timeless-messages/create"
+              element={
+                <AuthGuard>
+                  <DashboardLayout>
+                    <TimelessMessageCreate />
+                  </DashboardLayout>
+                </AuthGuard>
+              }
+            />
+            <Route
+              path="/dashboard/settings"
+              element={
+                <AuthGuard>
+                  <DashboardLayout>
+                    <SettingsPage />
+                  </DashboardLayout>
+                </AuthGuard>
+              }
+            />
+            <Route
+              path="/dashboard/profile"
+              element={
+                <AuthGuard>
+                  <DashboardLayout>
+                    <ProfilePage />
+                  </DashboardLayout>
+                </AuthGuard>
+              }
+            />
+            
+            <Route
+              path="/dashboard/become-mentor"
+              element={
+                <AuthGuard>
+                  <DashboardLayout>
+                    <BecomeMentorPage />
+                  </DashboardLayout>
+                </AuthGuard>
+              }
+            />
+            
+            {/* Catch-all route for 404 Not Found */}
+            <Route path="*" element={<NotFoundPage />} />
+          </Routes>
+        </AuthProvider>
       </TooltipProvider>
     </QueryClientProvider>
   );

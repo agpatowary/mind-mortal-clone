@@ -12,11 +12,41 @@ const HomePage: React.FC = () => {
   const [currentSection, setCurrentSection] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
 
+  // Transform homeContent.features to match the expected interface
+  const featuresData = {
+    title: homeContent.features.title,
+    items: homeContent.features.items.map(item => ({
+      title: item.title,
+      description: item.description,
+      icon: item.icon,
+      cta: item.link // Map 'link' to 'cta' to match the Feature interface
+    }))
+  };
+
+  // Create case studies data from homeContent
+  const caseStudiesData = {
+    title: "Case Studies",
+    studies: [
+      {
+        title: "Viktor Frankl's Purpose-Driven Legacy",
+        description: "Psychologist Viktor Frankl, in Man's Search for Meaning, found that purpose—not pleasure—is what sustains humans through suffering and fulfillment. MMortal gives users a concrete way to assign meaning to their life experiences by preserving them for future generations."
+      },
+      {
+        title: "Nelson Mandela's Legacy of Forgiveness", 
+        description: "Mandela didn't just fight apartheid—he documented his journey through prison, pain, and peace. His letters, preserved during incarceration, became timeless guidance for generations. If Mandela had MMortal, his story wouldn't just be found in books—it would live within an interactive vault, ready for all."
+      },
+      {
+        title: "Anne Frank's Hidden Genius",
+        description: "A teenage girl, hiding from genocide, wrote a diary that the world would later call genius. But at the time, it was simply a young girl trying to make sense of the world. MMortal exists to ensure no 'Anne' goes unheard again."
+      }
+    ]
+  };
+
   const sections = [
     { component: () => <HeroSection data={homeContent.hero} />, name: 'hero' },
-    { component: () => <FeaturesSection data={homeContent.features} />, name: 'features' },
+    { component: () => <FeaturesSection data={featuresData} />, name: 'features' },
     { component: FeaturedMentorsSection, name: 'mentors' },
-    { component: CaseStudiesSection, name: 'case-studies' },
+    { component: () => <CaseStudiesSection data={caseStudiesData} />, name: 'case-studies' },
     { component: CtaSection, name: 'cta' }
   ];
 
