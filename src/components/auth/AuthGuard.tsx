@@ -19,7 +19,7 @@ const AuthGuard: React.FC<AuthGuardProps> = ({
   requireAuth = true,
   redirectTo = '/signin'
 }) => {
-  const { isAuthenticated, roles, isLoading } = useAuth();
+  const { isAuthenticated, roles, isLoading, isAdmin, isMentor } = useAuth();
   const location = useLocation();
 
   // Improved loading spinner with better styling and centered position

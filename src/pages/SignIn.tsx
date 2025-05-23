@@ -1,89 +1,94 @@
 
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { motion } from 'framer-motion';
-import { useAuth } from '@/hooks/useAuth';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import Logo from '../components/Logo';
-import { Loader2 } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
+import { AlertCircle, ArrowLeft, Loader2 } from 'lucide-react';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import AuthGuard from '@/components/auth/AuthGuard';
+import BlobLogo from '@/components/BlobLogo';
 
-// Form validation schema
 const formSchema = z.object({
-  email: z.string().email({ message: "Please enter a valid email address" }),
-  password: z.string().min(6, { message: "Password must be at least 6 characters" }),
+  email: z.string().email({
+    message: 'Please enter a valid email address.',
+  }),
+  password: z.string().min(6, {
+    message: 'Password must be at least 6 characters.',
+  }),
 });
 
-type FormValues = z.infer<typeof formSchema>;
+type FormData = z.infer<typeof formSchema>;
 
-const SignIn: React.FC = () => {
+const SignIn = () => {
+  const [error, setError] = useState<string | null>(null);
   const { signIn, isLoading } = useAuth();
-  
-  const form = useForm<FormValues>({
+  const navigate = useNavigate();
+
+  const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      email: "",
-      password: "",
+      email: '',
+      password: '',
     },
   });
 
-  const onSubmit = async (values: FormValues) => {
-    await signIn(values.email, values.password);
-  };
-
-  // Animation variants
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1,
-      }
-    }
-  };
-
-  const itemVariants = {
-    hidden: { y: 20, opacity: 0 },
-    visible: {
-      y: 0,
-      opacity: 1,
-      transition: { 
-        type: "spring", 
-        stiffness: 100,
-        damping: 10
-      }
+  const onSubmit = async (values: FormData) => {
+    try {
+      setError(null);
+      await signIn(values.email, values.password);
+    } catch (err: any) {
+      setError(err.message || 'Failed to sign in');
+      console.error('Sign-in error:', err);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-muted/40">
-      <motion.div
-        variants={containerVariants}
-        initial="hidden"
-        animate="visible"
-        className="w-full max-w-md"
-      >
-        <Card className="border-2 border-primary/10 shadow-lg backdrop-blur-sm bg-background/80">
-          <CardHeader className="text-center">
-            <motion.div variants={itemVariants} className="flex justify-center mb-4">
-              <Logo className="h-12 w-12" />
-            </motion.div>
-            <motion.div variants={itemVariants}>
-              <CardTitle className="text-2xl">Welcome back</CardTitle>
+    <AuthGuard requireAuth={false} redirectTo="/dashboard">
+      <div className="flex min-h-screen items-center justify-center bg-background py-12 px-4 sm:px-6 lg:px-8 relative">
+        <Button
+          variant="ghost"
+          className="absolute top-4 left-4 flex items-center gap-2"
+          onClick={() => navigate('/')}
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back to Home
+        </Button>
+        
+        <div className="w-full max-w-md space-y-8">
+          <div className="flex flex-col items-center justify-center">
+            <BlobLogo size="md" className="mb-4" />
+            <h2 className="mt-6 text-center text-3xl font-bold tracking-tight">
+              Welcome Back
+            </h2>
+            <p className="mt-2 text-center text-sm text-muted-foreground">
+              Sign in to your MMortal account
+            </p>
+          </div>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-xl">Sign In</CardTitle>
               <CardDescription>
-                Sign in to access your legacy vault, mentorship connections, and timeless messages.
+                Enter your email and password to access your account
               </CardDescription>
-            </motion.div>
-          </CardHeader>
-          <CardContent>
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                <motion.div variants={itemVariants}>
+            </CardHeader>
+            <CardContent>
+              {error && (
+                <Alert variant="destructive" className="mb-6">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertTitle>Error</AlertTitle>
+                  <AlertDescription>{error}</AlertDescription>
+                </Alert>
+              )}
+
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                   <FormField
                     control={form.control}
                     name="email"
@@ -91,58 +96,71 @@ const SignIn: React.FC = () => {
                       <FormItem>
                         <FormLabel>Email</FormLabel>
                         <FormControl>
-                          <Input placeholder="m@example.com" {...field} />
+                          <Input 
+                            placeholder="youremail@example.com" 
+                            type="email" 
+                            autoComplete="email"
+                            {...field} 
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
-                </motion.div>
-                
-                <motion.div variants={itemVariants}>
+
                   <FormField
                     control={form.control}
                     name="password"
                     render={({ field }) => (
                       <FormItem>
-                        <div className="flex items-center justify-between">
-                          <FormLabel>Password</FormLabel>
-                          <Link to="/forgot-password" className="text-sm text-primary hover:underline">
-                            Forgot password?
-                          </Link>
-                        </div>
+                        <FormLabel>Password</FormLabel>
                         <FormControl>
-                          <Input type="password" placeholder="••••••••" {...field} />
+                          <Input 
+                            placeholder="••••••••" 
+                            type="password" 
+                            autoComplete="current-password"
+                            {...field} 
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
-                </motion.div>
-                
-                <motion.div variants={itemVariants}>
+
+                  <div className="flex items-center justify-between">
+                    <Link
+                      to="/forgot-password"
+                      className="text-sm font-medium text-primary hover:underline"
+                    >
+                      Forgot your password?
+                    </Link>
+                  </div>
+
                   <Button type="submit" className="w-full" disabled={isLoading}>
                     {isLoading ? (
-                      <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Signing in...</>
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" /> 
+                        Signing In...
+                      </>
                     ) : (
-                      "Sign In"
+                      'Sign In'
                     )}
                   </Button>
-                </motion.div>
-              </form>
-            </Form>
-          </CardContent>
-          <CardFooter className="flex flex-col items-center gap-4">
-            <motion.div variants={itemVariants} className="text-sm text-muted-foreground">
-              Don't have an account?{" "}
-              <Link to="/signup" className="text-primary hover:underline">
-                Sign up
-              </Link>
-            </motion.div>
-          </CardFooter>
-        </Card>
-      </motion.div>
-    </div>
+                </form>
+              </Form>
+            </CardContent>
+            <CardFooter className="flex flex-col space-y-4">
+              <div className="text-center text-sm">
+                Don't have an account?{' '}
+                <Link to="/signup" className="font-medium text-primary hover:underline">
+                  Sign Up
+                </Link>
+              </div>
+            </CardFooter>
+          </Card>
+        </div>
+      </div>
+    </AuthGuard>
   );
 };
 

@@ -1,156 +1,172 @@
 
-import React, { useState, useEffect } from 'react';
-import { Outlet, useNavigate, Link } from 'react-router-dom';
-import { useAuth } from '@/hooks/useAuth';
-import { Loader2, LogOut, User, Settings, ChevronDown } from 'lucide-react';
-import DashboardSidebar from './DashboardSidebar';
-import { Button } from './ui/button';
-import { useToast } from '@/hooks/use-toast';
-import { motion, AnimatePresence } from 'framer-motion';
-import DashboardAnimatedBackground from './dashboard/DashboardAnimatedBackground';
-import {
+import React, { useState } from 'react';
+import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
+import { 
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+} from '@/components/ui/dropdown-menu';
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from '@/components/ui/sheet';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { 
+  Home, 
+  Archive, 
+  MessageSquare, 
+  Menu, 
+  User, 
+  LogOut, 
+  Settings, 
+  Lightbulb,
+  Users,
+  ShieldCheck
+} from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
+import BlobLogo from './BlobLogo';
+import LoadingScreen from './LoadingScreen';
 
 const DashboardLayout: React.FC = () => {
-  const { signOut, isLoading, user, profile } = useAuth();
-  const { toast } = useToast();
-  const [isSigningOut, setIsSigningOut] = useState(false);
+  const { user, profile, isLoading, signOut, isAdmin } = useAuth();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
-
-  useEffect(() => {
-    // If there's no user and we're not loading, redirect to sign-in
-    if (!isLoading && !user) {
-      navigate('/signin');
-    }
-  }, [user, isLoading, navigate]);
+  const location = useLocation();
+  
+  const isActive = (path: string) => {
+    return location.pathname.startsWith(path) ? 'text-primary bg-primary/10' : '';
+  };
 
   const handleSignOut = async () => {
-    if (isSigningOut) return; // Prevent multiple clicks
-    
-    try {
-      setIsSigningOut(true);
-      await signOut();
-      // Navigation is handled in signOut function
-    } catch (error) {
-      console.error('Sign out error in layout:', error);
-      toast({
-        title: "Error signing out",
-        description: "There was a problem signing you out.",
-        variant: "destructive"
-      });
-    } finally {
-      setIsSigningOut(false);
-    }
+    await signOut();
   };
 
-  const getProfileInitials = (): string => {
-    if (!profile?.full_name) return 'U';
-    return profile.full_name
-      .split(' ')
-      .map((name: string) => name.charAt(0))
-      .join('')
-      .toUpperCase()
-      .substring(0, 2);
-  };
+  const navItems = [
+    { name: 'Home', path: '/dashboard', icon: <Home className="w-5 h-5" /> },
+    { name: 'Legacy Vault', path: '/dashboard/legacy-vault', icon: <Archive className="w-5 h-5" /> },
+    { name: 'Idea Vault', path: '/dashboard/idea-vault', icon: <Lightbulb className="w-5 h-5" /> },
+    { name: 'Mentorship', path: '/dashboard/mentorship', icon: <Users className="w-5 h-5" /> },
+    { name: 'Timeless Messages', path: '/dashboard/timeless-messages', icon: <MessageSquare className="w-5 h-5" /> },
+  ];
+
+  const closeMobileMenu = () => setIsMobileMenuOpen(false);
 
   if (isLoading) {
-    return (
-      <div className="h-screen w-full flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
+    return <LoadingScreen isLoading={isLoading} />;
   }
 
   return (
-    <DashboardAnimatedBackground objectCount={6}>
-      <div className="flex h-screen w-full bg-background/80 backdrop-blur-sm overflow-hidden">
-        <DashboardSidebar />
-        
-        <main className="flex-1 overflow-auto flex flex-col">
-          <motion.div 
-            className="flex justify-end p-4 border-b border-border"
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3 }}
-          >
-            <AnimatePresence>
-              <motion.div
-                initial={{ scale: 0.9, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{ delay: 0.2 }}
-              >
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="flex items-center gap-2 hover:bg-secondary/80 transition-colors">
-                      <Avatar className="h-8 w-8">
-                        <AvatarImage 
-                          src={profile?.avatar_url || ''} 
-                          alt={profile?.full_name || 'User'} 
-                        />
-                        <AvatarFallback>{getProfileInitials()}</AvatarFallback>
-                      </Avatar>
-                      <span className="hidden md:inline">{profile?.full_name || 'User'}</span>
-                      <ChevronDown size={16} />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-56">
-                    <DropdownMenuLabel>My Account</DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem asChild>
-                      <Link to="/dashboard/profile" className="flex items-center cursor-pointer">
-                        <User className="mr-2 h-4 w-4" />
-                        <span>Profile</span>
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link to="/dashboard/settings" className="flex items-center cursor-pointer">
-                        <Settings className="mr-2 h-4 w-4" />
-                        <span>Settings</span>
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem 
-                      className="flex items-center cursor-pointer text-destructive focus:text-destructive"
-                      disabled={isSigningOut}
-                      onClick={handleSignOut}
+    <div className="min-h-screen bg-background flex flex-col">
+      {/* Header / Top Bar */}
+      <header className="border-b sticky top-0 z-40 bg-background">
+        <div className="flex items-center justify-between h-16 px-4">
+          <div className="flex items-center gap-4">
+            <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
+              <SheetTrigger asChild className="md:hidden">
+                <Button variant="ghost" size="icon">
+                  <Menu className="w-5 h-5" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="left">
+                <SheetHeader>
+                  <SheetTitle>
+                    <div className="flex items-center gap-2">
+                      <BlobLogo size="sm" />
+                      <span>MMortal</span>
+                    </div>
+                  </SheetTitle>
+                </SheetHeader>
+                <div className="flex flex-col gap-1 mt-6">
+                  {navItems.map((item) => (
+                    <Link
+                      key={item.path}
+                      to={item.path}
+                      onClick={closeMobileMenu}
+                      className={`flex items-center gap-3 px-4 py-2 text-sm font-medium rounded-md transition-colors hover:bg-muted ${isActive(item.path)}`}
                     >
-                      {isSigningOut ? (
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      ) : (
-                        <LogOut className="mr-2 h-4 w-4" />
-                      )}
-                      <span>{isSigningOut ? "Signing Out..." : "Sign Out"}</span>
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </motion.div>
-            </AnimatePresence>
-          </motion.div>
-          
-          <div className="p-6 flex-1 overflow-auto">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={window.location.pathname}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.3 }}
-                className="h-full"
-              >
-                <Outlet />
-              </motion.div>
-            </AnimatePresence>
+                      {item.icon}
+                      {item.name}
+                    </Link>
+                  ))}
+                </div>
+              </SheetContent>
+            </Sheet>
+            <div className="hidden md:flex items-center gap-2">
+              <BlobLogo size="sm" />
+              <span className="font-semibold text-lg">MMortal</span>
+            </div>
           </div>
-        </main>
-      </div>
-    </DashboardAnimatedBackground>
+
+          <nav className="hidden md:flex items-center gap-6 mx-6 flex-1">
+            {navItems.map((item) => (
+              <Link
+                key={item.path}
+                to={item.path}
+                className={`flex items-center gap-2 text-sm font-medium px-3 py-2 rounded-md transition-colors hover:bg-muted ${isActive(item.path)}`}
+              >
+                {item.icon}
+                {item.name}
+              </Link>
+            ))}
+          </nav>
+
+          <div className="flex items-center gap-4">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="relative h-10 w-10 rounded-full">
+                  <Avatar>
+                    <AvatarImage src={profile?.avatar_url || undefined} />
+                    <AvatarFallback>{profile?.full_name?.charAt(0) || user?.email?.charAt(0)}</AvatarFallback>
+                  </Avatar>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuLabel>
+                  <div className="flex flex-col gap-1">
+                    <p className="font-medium">{profile?.full_name || 'User'}</p>
+                    <p className="text-xs text-muted-foreground">{user?.email}</p>
+                  </div>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => navigate('/dashboard/profile')}>
+                  <User className="mr-2 h-4 w-4" />
+                  Profile
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate('/dashboard/settings')}>
+                  <Settings className="mr-2 h-4 w-4" />
+                  Settings
+                </DropdownMenuItem>
+                
+                {isAdmin() && (
+                  <DropdownMenuItem onClick={() => navigate('/admin')}>
+                    <ShieldCheck className="mr-2 h-4 w-4" />
+                    Admin Dashboard
+                  </DropdownMenuItem>
+                )}
+                
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={handleSignOut}>
+                  <LogOut className="mr-2 h-4 w-4" />
+                  Sign Out
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        </div>
+      </header>
+
+      {/* Main Content Area */}
+      <main className="flex-1 p-4 md:p-6 bg-muted/30">
+        <Outlet />
+      </main>
+    </div>
   );
 };
 

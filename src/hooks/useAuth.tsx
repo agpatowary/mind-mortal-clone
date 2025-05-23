@@ -141,11 +141,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (!user) return;
     
     try {
-      // Call the RPC function to refresh profile data
-      await supabase.rpc('refresh_profile_data');
-      
       // Re-fetch the profile
       await fetchUserProfile(user.id);
+      // Re-fetch roles
+      await fetchUserRoles(user.id);
       
       return;
     } catch (error) {

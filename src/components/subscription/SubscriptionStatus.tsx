@@ -1,221 +1,166 @@
 
-import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Loader2, CheckCircle2 } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
-import { motion } from 'framer-motion';
+import { useSubscription } from '@/hooks/useSubscription';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Check, Loader2 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
-type SubscriptionInfo = {
-  subscribed: boolean;
-  subscription_tier?: string;
-  subscription_end?: string;
-};
+interface SubscriptionStatusProps {
+  showPlans?: boolean;
+}
 
-const SubscriptionStatus = () => {
+const SubscriptionStatus: React.FC<SubscriptionStatusProps> = ({ showPlans = false }) => {
   const { user } = useAuth();
-  const { toast } = useToast();
-  const [loading, setLoading] = useState(true);
-  const [checking, setChecking] = useState(false);
-  const [subscriptionInfo, setSubscriptionInfo] = useState<SubscriptionInfo | null>(null);
+  const { subscription, isLoading, error } = useSubscription();
+  const [plans, setPlans] = useState<any[]>([]);
+  const [loadingPlans, setLoadingPlans] = useState(false);
+  const navigate = useNavigate();
 
-  // Fetch the subscription status when the component mounts
+  // Fetch available plans if showPlans is true
   useEffect(() => {
-    if (user) {
-      checkSubscription();
+    if (showPlans) {
+      const fetchPlans = async () => {
+        setLoadingPlans(true);
+        try {
+          const { data, error } = await supabase
+            .rpc('get_public_plan_configurations');
+            
+          if (error) throw error;
+          
+          setPlans(data || []);
+        } catch (error) {
+          console.error('Error fetching plans:', error);
+        } finally {
+          setLoadingPlans(false);
+        }
+      };
+      
+      fetchPlans();
     }
-  }, [user]);
+  }, [showPlans]);
 
-  // Function to check the subscription status
-  const checkSubscription = async () => {
-    if (!user) return;
-    
-    setChecking(true);
-    try {
-      const { data, error } = await supabase.functions.invoke('check-subscription');
-      
-      if (error) throw error;
-      
-      setSubscriptionInfo(data);
-      setLoading(false);
-    } catch (error) {
-      console.error('Error checking subscription:', error);
-      toast({
-        title: "Failed to check subscription",
-        description: "There was an error checking your subscription status.",
-        variant: "destructive"
-      });
-    } finally {
-      setChecking(false);
-    }
-  };
-
-  // Function to create a checkout session
-  const handleSubscribe = async (plan: string) => {
-    if (!user) {
-      toast({
-        title: "Authentication required",
-        description: "Please sign in to subscribe.",
-        variant: "destructive"
-      });
-      return;
-    }
-    
-    setLoading(true);
-    try {
-      const { data, error } = await supabase.functions.invoke('create-checkout', {
-        body: { plan }
-      });
-      
-      if (error) throw error;
-      
-      if (data?.url) {
-        // Open Stripe checkout in a new tab
-        window.open(data.url, '_blank');
-      }
-    } catch (error) {
-      console.error('Error creating checkout session:', error);
-      toast({
-        title: "Checkout failed",
-        description: "There was an error creating a checkout session.",
-        variant: "destructive"
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Function to open customer portal for subscription management
-  const handleManageSubscription = async () => {
-    if (!user) return;
-    
-    setLoading(true);
-    try {
-      const { data, error } = await supabase.functions.invoke('customer-portal');
-      
-      if (error) throw error;
-      
-      if (data?.url) {
-        // Open Stripe customer portal in a new tab
-        window.open(data.url, '_blank');
-      }
-    } catch (error) {
-      console.error('Error opening customer portal:', error);
-      toast({
-        title: "Portal access failed",
-        description: "There was an error accessing the subscription management portal.",
-        variant: "destructive"
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  if (loading) {
+  if (isLoading) {
     return (
-      <Card className="w-full">
-        <CardHeader>
-          <CardTitle>Subscription Status</CardTitle>
-          <CardDescription>Loading your subscription information...</CardDescription>
-        </CardHeader>
-        <CardContent className="flex justify-center py-8">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        </CardContent>
-      </Card>
+      <div className="bg-muted/20 rounded-md p-6 flex items-center justify-center">
+        <div className="flex flex-col items-center">
+          <Loader2 className="h-6 w-6 animate-spin text-primary mb-2" />
+          <p className="text-sm text-muted-foreground">Loading your subscription information...</p>
+        </div>
+      </div>
     );
   }
 
-  return (
-    <Card className="w-full">
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <div>
-            <CardTitle>Subscription Status</CardTitle>
-            <CardDescription>
-              {subscriptionInfo?.subscribed 
-                ? `You are subscribed to the ${subscriptionInfo.subscription_tier} plan` 
-                : "You don't have an active subscription"}
-            </CardDescription>
+  if (error) {
+    return (
+      <div className="bg-destructive/10 rounded-md p-6">
+        <p className="text-destructive font-medium">Error loading subscription</p>
+        <p className="text-sm text-muted-foreground mt-1">Please try again later</p>
+      </div>
+    );
+  }
+
+  // Current subscription display
+  const subscriptionDisplay = (
+    <div className="bg-muted/20 rounded-md p-6">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+          <div className="flex items-center gap-2 mb-1">
+            <h3 className="font-semibold text-lg">{subscription?.tier || "Free Plan"}</h3>
+            {subscription?.active && (
+              <Badge variant="outline" className="bg-green-500/10 text-green-600 border-green-500/20">
+                Active
+              </Badge>
+            )}
+            {!subscription?.active && subscription?.tier && (
+              <Badge variant="outline" className="bg-amber-500/10 text-amber-600 border-amber-500/20">
+                Expired
+              </Badge>
+            )}
           </div>
-          {checking && <Loader2 className="h-4 w-4 animate-spin text-primary ml-2" />}
-        </div>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-4">
-          {subscriptionInfo?.subscribed ? (
-            <div className="space-y-4">
-              <div className="bg-primary/10 p-4 rounded-lg flex items-start gap-3">
-                <CheckCircle2 className="h-5 w-5 text-primary mt-0.5" />
-                <div>
-                  <h3 className="font-medium">{subscriptionInfo.subscription_tier} Plan</h3>
-                  {subscriptionInfo.subscription_end && (
-                    <p className="text-sm text-muted-foreground">
-                      Valid until: {new Date(subscriptionInfo.subscription_end).toLocaleDateString()}
-                    </p>
-                  )}
-                </div>
-              </div>
-              
-              <Button onClick={handleManageSubscription} variant="outline" className="w-full">
-                Manage Subscription
-              </Button>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              <p className="text-muted-foreground mb-4">
-                Choose a subscription plan to unlock all features and secure your legacy for future generations.
-              </p>
-              
-              <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-3">
-                <motion.div whileHover={{ y: -5 }} transition={{ duration: 0.2 }}>
-                  <Card className="border-primary/20 hover:border-primary cursor-pointer" onClick={() => handleSubscribe('Monthly')}>
-                    <CardHeader className="pb-3">
-                      <CardTitle className="text-lg">The First Step</CardTitle>
-                      <CardDescription>Monthly subscription</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <p className="text-3xl font-bold mb-2">$3.99<span className="text-sm font-normal text-muted-foreground">/month</span></p>
-                      <Button variant="outline" className="w-full mt-2">Subscribe</Button>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-                
-                <motion.div whileHover={{ y: -5 }} transition={{ duration: 0.2 }}>
-                  <Card className="border-primary/20 hover:border-primary cursor-pointer relative overflow-hidden" onClick={() => handleSubscribe('Yearly')}>
-                    <div className="absolute top-0 right-0 bg-primary text-primary-foreground px-2 py-1 text-xs font-medium">
-                      Popular
-                    </div>
-                    <CardHeader className="pb-3">
-                      <CardTitle className="text-lg">Moment of Impact</CardTitle>
-                      <CardDescription>Annual subscription</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <p className="text-3xl font-bold mb-2">$29.99<span className="text-sm font-normal text-muted-foreground">/year</span></p>
-                      <Button className="w-full mt-2">Subscribe</Button>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-                
-                <motion.div whileHover={{ y: -5 }} transition={{ duration: 0.2 }}>
-                  <Card className="border-primary/20 hover:border-primary cursor-pointer" onClick={() => handleSubscribe('Lifetime')}>
-                    <CardHeader className="pb-3">
-                      <CardTitle className="text-lg">Immortal</CardTitle>
-                      <CardDescription>Lifetime access</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <p className="text-3xl font-bold mb-2">$89<span className="text-sm font-normal text-muted-foreground">/lifetime</span></p>
-                      <Button variant="outline" className="w-full mt-2">Purchase</Button>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              </div>
-            </div>
+          <p className="text-sm text-muted-foreground">
+            {subscription?.tier 
+              ? `Your subscription ${subscription.active ? "is active" : "has expired"}`
+              : "You are currently on the free plan"}
+          </p>
+          {subscription?.endDate && (
+            <p className="text-xs text-muted-foreground mt-1">
+              {subscription.active
+                ? `Renews on ${new Date(subscription.endDate).toLocaleDateString()}`
+                : `Expired on ${new Date(subscription.endDate).toLocaleDateString()}`}
+            </p>
           )}
         </div>
-      </CardContent>
-    </Card>
+        {showPlans && (
+          <Button
+            variant="outline"
+            onClick={() => navigate('/pricing')}
+          >
+            {subscription?.tier ? "Change Plan" : "Upgrade"}
+          </Button>
+        )}
+      </div>
+    </div>
+  );
+
+  // Show only current subscription if not showing plans
+  if (!showPlans) {
+    return subscriptionDisplay;
+  }
+
+  // Show current subscription and available plans
+  return (
+    <div className="space-y-6">
+      {subscriptionDisplay}
+      
+      <h3 className="text-xl font-semibold mt-6">Available Plans</h3>
+      
+      {loadingPlans ? (
+        <div className="flex justify-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      ) : (
+        <div className="grid md:grid-cols-3 gap-4 mt-4">
+          {plans.map((plan) => (
+            <Card key={plan.id} className={plan.is_popular ? "border-primary" : ""}>
+              {plan.is_popular && (
+                <Badge className="absolute -top-2 right-4">Popular</Badge>
+              )}
+              <CardHeader>
+                <CardTitle>{plan.name}</CardTitle>
+                <CardDescription>{plan.description}</CardDescription>
+                <div className="mt-2">
+                  <span className="text-3xl font-bold">
+                    ${plan.monthly_price}
+                  </span>
+                  <span className="text-muted-foreground">/month</span>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <ul className="space-y-2 mb-6">
+                  {plan.features.map((feature: string, i: number) => (
+                    <li key={i} className="flex items-center gap-2">
+                      <Check className="h-4 w-4 text-primary" />
+                      <span className="text-sm">{feature}</span>
+                    </li>
+                  ))}
+                </ul>
+                <Button 
+                  className="w-full" 
+                  variant={subscription?.plan_id === plan.plan_id ? "outline" : "default"}
+                  disabled={subscription?.plan_id === plan.plan_id}
+                >
+                  {subscription?.plan_id === plan.plan_id ? "Current Plan" : "Select Plan"}
+                </Button>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
+    </div>
   );
 };
 

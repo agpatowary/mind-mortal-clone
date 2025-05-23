@@ -12,6 +12,7 @@ import IdeaVaultPage from './pages/dashboard/IdeaVaultPage';
 import MentorshipPage from './pages/dashboard/MentorshipPage';
 import TimelessMessagesPage from './pages/dashboard/TimelessMessagesPage';
 import ProfilePage from './pages/dashboard/ProfilePage';
+import SettingsPage from './pages/dashboard/SettingsPage';
 import PricingPage from './pages/pricing/index';
 import TermsOfUsePage from './pages/legal/TermsOfUsePage';
 import PrivacyPolicyPage from './pages/legal/PrivacyPolicyPage';
@@ -36,6 +37,8 @@ import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminOverview from './pages/admin/AdminOverview';
 import UsersManagement from './pages/admin/UsersManagement';
 import SubscriptionPlans from './pages/admin/SubscriptionPlans';
+import MentorApplications from './pages/admin/MentorApplications';
+import AdminSetup from './pages/admin/AdminSetup';
 
 function App() {
   return (
@@ -44,8 +47,9 @@ function App() {
       <Route path="/signin" element={<SignIn />} />
       <Route path="/signup" element={<SignUp />} />
       <Route path="/unauthorized" element={<UnauthorizedPage />} />
+      <Route path="/admin-setup" element={<AdminSetup />} />
       
-      {/* Add admin routes */}
+      {/* Admin routes */}
       <Route path="/admin" element={
         <AuthGuard allowedRoles={['admin']}>
           <AdminDashboard />
@@ -53,6 +57,7 @@ function App() {
       }>
         <Route index element={<AdminOverview />} />
         <Route path="users" element={<UsersManagement />} />
+        <Route path="mentor-applications" element={<MentorApplications />} />
         <Route path="subscriptions" element={<SubscriptionPlans />} />
         <Route path="settings" element={<div>Admin Settings</div>} />
       </Route>
@@ -79,7 +84,7 @@ function App() {
         <Route path="timeless-messages" element={<TimelessMessagesPage />} />
         <Route path="timeless-messages/create" element={<CreateTimelessMessage />} />
         <Route path="profile" element={<ProfilePage />} />
-        <Route path="settings" element={<div>Settings</div>} />
+        <Route path="settings" element={<SettingsPage />} />
       </Route>
       
       {/* Pricing */}

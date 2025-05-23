@@ -12,7 +12,8 @@ import {
   CreditCard,
   Settings,
   BarChart,
-  LogOut
+  LogOut,
+  Award
 } from "lucide-react";
 
 const AdminDashboard = () => {
@@ -41,6 +42,11 @@ const AdminDashboard = () => {
       title: 'Users',
       href: '/admin/users',
       icon: Users
+    },
+    {
+      title: 'Mentor Applications',
+      href: '/admin/mentor-applications',
+      icon: Award
     },
     {
       title: 'Subscriptions',
