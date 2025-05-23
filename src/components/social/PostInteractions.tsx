@@ -1,109 +1,74 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Heart, MessageCircle, Share2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { usePostLikes } from '@/hooks/usePostLikes';
-import { cn } from '@/lib/utils';
 
 export interface PostInteractionsProps {
   postId: string;
-  postType: 'legacy_post' | 'timeless_message' | 'wisdom_resource' | 'idea';
-  userLiked?: boolean;
+  postType: string;
   likesCount?: number;
+  userLiked?: boolean;
   commentsCount?: number;
-  onLikeToggle?: () => Promise<void>;
-  onCommentClick?: () => void;
-  onShareClick?: () => void;
-  onUpdate?: () => Promise<void>;
-  variant?: 'default' | 'minimal';
-  className?: string;
+  sharesCount?: number;
+  initialLikesCount?: number;
+  initialCommentsCount?: number;
+  onLikeToggle?: () => void;
+  onComment?: () => void;
+  onShare?: () => void;
+  onUpdate?: () => Promise<void> | void;
 }
 
 const PostInteractions: React.FC<PostInteractionsProps> = ({
   postId,
   postType,
-  userLiked = false,
   likesCount = 0,
+  userLiked = false,
   commentsCount = 0,
+  sharesCount = 0,
+  initialLikesCount,
+  initialCommentsCount,
   onLikeToggle,
-  onCommentClick,
-  onShareClick,
-  onUpdate,
-  variant = 'default',
-  className
+  onComment,
+  onShare,
+  onUpdate
 }) => {
-  const [isLiked, setIsLiked] = useState(userLiked);
-  const [currentLikesCount, setCurrentLikesCount] = useState(likesCount);
-  const { toggleLike, isProcessing } = usePostLikes();
+  // Use initialLikesCount/initialCommentsCount if provided, otherwise use likesCount/commentsCount
+  const displayLikesCount = initialLikesCount !== undefined ? initialLikesCount : likesCount;
+  const displayCommentsCount = initialCommentsCount !== undefined ? initialCommentsCount : commentsCount;
   
-  const handleLikeToggle = async () => {
-    if (onLikeToggle) {
-      await onLikeToggle();
-      return;
-    }
-
-    if (isProcessing) return;
-
-    const newLikedState = await toggleLike(postId, postType, isLiked);
-    if (newLikedState !== isLiked) {
-      setIsLiked(newLikedState);
-      setCurrentLikesCount(prev => newLikedState ? prev + 1 : prev - 1);
-      if (onUpdate) {
-        await onUpdate();
-      }
-    }
-  };
-
-  const isMinimal = variant === 'minimal';
-
   return (
-    <div className={cn("flex items-center gap-4", className)}>
-      <div className="flex items-center">
+    <div className="flex items-center gap-4">
+      <Button
+        variant="ghost"
+        size="sm"
+        className={`flex items-center gap-1 ${userLiked ? 'text-red-500' : ''}`}
+        onClick={onLikeToggle}
+      >
+        <Heart className={`h-4 w-4 ${userLiked ? 'fill-current' : ''}`} />
+        <span>{displayLikesCount}</span>
+      </Button>
+      
+      {onComment && (
         <Button
           variant="ghost"
-          size={isMinimal ? "sm" : "default"}
-          className={cn(
-            "px-2 hover:bg-background", 
-            isLiked && "text-red-500 hover:text-red-600"
-          )}
-          onClick={handleLikeToggle}
-          disabled={isProcessing}
+          size="sm"
+          className="flex items-center gap-1"
+          onClick={onComment}
         >
-          <Heart className={cn(
-            "mr-1",
-            isMinimal ? "h-4 w-4" : "h-5 w-5",
-            isLiked && "fill-current"
-          )} />
-          {!isMinimal && <span>{currentLikesCount}</span>}
+          <MessageCircle className="h-4 w-4" />
+          <span>{displayCommentsCount}</span>
         </Button>
-        {isMinimal && currentLikesCount > 0 && (
-          <span className="text-sm text-muted-foreground">{currentLikesCount}</span>
-        )}
-      </div>
-
-      <div className="flex items-center">
+      )}
+      
+      {onShare && (
         <Button
           variant="ghost"
-          size={isMinimal ? "sm" : "default"}
-          className="px-2 hover:bg-background"
-          onClick={onCommentClick}
+          size="sm"
+          className="flex items-center gap-1"
+          onClick={onShare}
         >
-          <MessageCircle className={isMinimal ? "h-4 w-4 mr-1" : "h-5 w-5 mr-1"} />
-          {!isMinimal && <span>{commentsCount}</span>}
-        </Button>
-        {isMinimal && commentsCount > 0 && (
-          <span className="text-sm text-muted-foreground">{commentsCount}</span>
-        )}
-      </div>
-
-      {onShareClick && (
-        <Button
-          variant="ghost"
-          size={isMinimal ? "sm" : "default"}
-          className="px-2 hover:bg-background"
-          onClick={onShareClick}
-        >
-          <Share2 className={isMinimal ? "h-4 w-4" : "h-5 w-5"} />
+          <Share2 className="h-4 w-4" />
+          <span>{sharesCount}</span>
         </Button>
       )}
     </div>

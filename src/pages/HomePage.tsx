@@ -1,151 +1,286 @@
 
-import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { motion } from 'framer-motion';
-import HomeNavigation from '@/components/HomeNavigation';
+import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Button } from '@/components/ui/button';
+import { ChevronUp, ChevronDown } from 'lucide-react';
+
 import HeroSection from '@/components/home/HeroSection';
 import FeaturesSection from '@/components/home/FeaturesSection';
-import CaseStudiesSection from '@/components/home/CaseStudiesSection';
 import StoriesSection from '@/components/home/StoriesSection';
-import FeaturedMentorsSection from '@/components/home/FeaturedMentorsSection';
 import CtaSection from '@/components/home/CtaSection';
-import Footer from '@/components/Footer';
+import HomeNavigation from '@/components/HomeNavigation';
 import AnimatedBackground from '@/components/AnimatedBackground';
-import { usePerformanceMode } from '@/hooks/usePerformanceMode';
-import { useCallback as useCallbackStable } from 'react';
-import homeContent from '@/data/homeContent.json';
+import FeaturedMentorsSection from '@/components/home/FeaturedMentorsSection';
 
-interface Feature {
-  title: string;
-  description: string;
-  icon: string;
-  link: string;
-  cta?: string;
-}
+// Import JSON data
+import homeContent from '@/data/homeContent.json';
+import { Feature, CaseStudy } from '@/types';
+
+// Add default CTA text to features items if missing
+const enhancedFeatures = {
+  title: homeContent.features.title,
+  items: homeContent.features.items.map((item: any) => ({
+    ...item,
+    cta: item.cta || "Learn More"
+  })) as Feature[]
+};
+
+// Format case studies for type compatibility
+const formatCaseStudies = (caseStudies: any): CaseStudy[] => {
+  return caseStudies.items.map((study: any) => ({
+    ...study,
+    description: study.content || study.description || "",
+  }));
+};
 
 const HomePage = () => {
-  const [activeSection, setActiveSection] = useState(0);
+  const navigate = useNavigate();
+  
+  // State for current slide
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [isScrolling, setIsScrolling] = useState(false);
-  const lastScrollTime = useRef(Date.now());
-  const { reducedMotion } = usePerformanceMode();
+  const scrollTimeoutRef = useRef<number | null>(null);
+  const touchStartY = useRef<number | null>(null);
   
-  const sections = [
-    'hero',
-    'features',
-    'case-studies',
-    'stories',
-    'mentors',
-    'cta'
-  ];
+  // Total number of slides
+  const totalSlides = 5;
   
-  const scrollToSection = useCallbackStable((index: number) => {
-    if (index >= 0 && index < sections.length) {
-      setActiveSection(index);
-      const element = document.getElementById(sections[index]);
-      if (element) {
-        element.scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth' });
-      }
-    }
-  }, [sections, reducedMotion]);
-
-  const handleScroll = useCallbackStable((e: WheelEvent) => {
-    e.preventDefault();
+  // Update isMobile state on window resize
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
     
-    const now = Date.now();
-    if (isScrolling || now - lastScrollTime.current < 800) return;
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+  
+  // Prevent scroll events from triggering multiple slide changes
+  const handleScrollDebounced = (direction: number) => {
+    if (isScrolling) return;
     
     setIsScrolling(true);
-    lastScrollTime.current = now;
     
-    if (e.deltaY > 0) {
-      // Scroll down
-      scrollToSection(activeSection + 1);
+    if (direction > 0) {
+      nextSlide();
     } else {
-      // Scroll up
-      scrollToSection(activeSection - 1);
+      prevSlide();
     }
     
-    setTimeout(() => {
-      setIsScrolling(false);
-    }, 800);
-  }, [activeSection, isScrolling, scrollToSection]);
-  
-  useEffect(() => {
-    const wheelHandler = (e: WheelEvent) => handleScroll(e);
+    // Clear any existing timeout
+    if (scrollTimeoutRef.current) {
+      window.clearTimeout(scrollTimeoutRef.current);
+    }
     
-    window.addEventListener('wheel', wheelHandler, { passive: false } as AddEventListenerOptions);
+    // Set a new timeout
+    scrollTimeoutRef.current = window.setTimeout(() => {
+      setIsScrolling(false);
+      scrollTimeoutRef.current = null;
+    }, 800); // Wait for slide animation to complete
+  };
+  
+  // Fixed wheel event handler to properly prevent default and handle scrolling
+  useEffect(() => {
+    const handleWheel = (e: WheelEvent) => {
+      e.preventDefault();
+      
+      // Determine scroll direction
+      const direction = Math.sign(e.deltaY);
+      handleScrollDebounced(direction);
+    };
+    
+    // Add event listener with proper options and ensure it's attached to document
+    document.addEventListener('wheel', handleWheel, { passive: false });
     
     return () => {
-      window.removeEventListener('wheel', wheelHandler, { passive: false } as AddEventListenerOptions);
-    };
-  }, [handleScroll]);
-  
-  const handleNavigation = useCallback((sectionIndex: number) => {
-    scrollToSection(sectionIndex);
-  }, [scrollToSection]);
-
-  // Add missing cta property to features
-  const featuresWithCta = {
-    ...homeContent.features,
-    items: homeContent.features.items.map(item => ({
-      ...item,
-      cta: `Explore ${item.title}`
-    }))
-  };
-
-  // Default stories data if needed
-  const storiesData = {
-    items: [
-      {
-        title: "Young Innovator",
-        description: "My ideas sat in notebooks for years. Now, they're in a vault. One just got feedback from a mentor I admire."
-      },
-      {
-        title: "Grieving Daughter",
-        description: "My mother's voice lives on. On my birthday, I received a message she recorded before she passed. MMortal gave me more than memory—it gave me presence."
-      },
-      {
-        title: "Retired Professional",
-        description: "After 40 years in the field, I thought my knowledge would die with me. Now it teaches others. That's peace."
+      document.removeEventListener('wheel', handleWheel, { passive: false });
+      
+      // Clear any pending timeouts when component unmounts
+      if (scrollTimeoutRef.current) {
+        window.clearTimeout(scrollTimeoutRef.current);
       }
-    ]
+    };
+  }, [isScrolling, currentSlide]); // Add currentSlide to dependencies
+  
+  // Handle touch events for mobile scrolling - improved implementation
+  useEffect(() => {
+    const handleTouchStart = (e: TouchEvent) => {
+      touchStartY.current = e.touches[0].clientY;
+    };
+    
+    const handleTouchMove = (e: TouchEvent) => {
+      if (touchStartY.current === null) return;
+      e.preventDefault(); // Prevent default to stop browser scrolling
+      
+      const touchY = e.touches[0].clientY;
+      const diff = touchStartY.current - touchY;
+      
+      // Only trigger if the user has moved their finger significantly
+      if (Math.abs(diff) > 50) {
+        handleScrollDebounced(diff > 0 ? 1 : -1);
+        touchStartY.current = null; // Reset to prevent multiple triggers
+      }
+    };
+    
+    const handleTouchEnd = () => {
+      touchStartY.current = null;
+    };
+    
+    document.addEventListener('touchstart', handleTouchStart, { passive: false });
+    document.addEventListener('touchmove', handleTouchMove, { passive: false });
+    document.addEventListener('touchend', handleTouchEnd);
+    
+    return () => {
+      document.removeEventListener('touchstart', handleTouchStart);
+      document.removeEventListener('touchmove', handleTouchMove);
+      document.removeEventListener('touchend', handleTouchEnd);
+    };
+  }, [isScrolling, currentSlide]); // Add currentSlide to dependencies
+  
+  // Navigate to next slide
+  const nextSlide = () => {
+    if (currentSlide < totalSlides - 1) {
+      setDirection(1);
+      setCurrentSlide(currentSlide + 1);
+    }
   };
-
+  
+  // Navigate to previous slide
+  const prevSlide = () => {
+    if (currentSlide > 0) {
+      setDirection(-1);
+      setCurrentSlide(currentSlide - 1);
+    }
+  };
+  
+  // Handle keyboard navigation
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowDown') {
+        nextSlide();
+      } else if (e.key === 'ArrowUp') {
+        prevSlide();
+      }
+    };
+    
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [currentSlide]);
+  
+  // Slide components array
+  const slides = [
+    <HeroSection key="hero" data={homeContent.hero} />,
+    <FeaturesSection key="features" data={enhancedFeatures} />,
+    <FeaturedMentorsSection key="mentors" />,
+    <StoriesSection key="stories" data={formatCaseStudies(homeContent.caseStudies)} />,
+    <CtaSection key="cta" data={homeContent.cta} />
+  ];
+  
+  const slideVariants = {
+    enter: (direction: number) => ({
+      y: direction > 0 ? '100%' : '-100%',
+      opacity: 0
+    }),
+    center: {
+      y: 0,
+      opacity: 1
+    },
+    exit: (direction: number) => ({
+      y: direction > 0 ? '-100%' : '100%',
+      opacity: 0
+    })
+  };
+  
+  // Track slide direction for animations
+  const [direction, setDirection] = useState(0);
+  
+  const handleNavigate = (index: number) => {
+    setDirection(index > currentSlide ? 1 : -1);
+    setCurrentSlide(index);
+  };
+  
+  // Listen for custom navigation events
+  useEffect(() => {
+    const handleCustomNavigation = (e: CustomEvent) => {
+      const { index } = (e as CustomEvent<{ index: number }>).detail;
+      handleNavigate(index);
+    };
+    
+    document.addEventListener('navigateToSlide', handleCustomNavigation as EventListener);
+    return () => {
+      document.removeEventListener('navigateToSlide', handleCustomNavigation as EventListener);
+    };
+  }, [currentSlide]);
+  
   return (
-    <div className="flex flex-col min-h-screen bg-background overflow-x-hidden">
-      {!reducedMotion && <AnimatedBackground />}
-      
-      <HomeNavigation 
-        currentSection={activeSection} 
-        onNavigate={handleNavigation} 
-      />
-      
-      <main className="flex-grow">
-        <section id="hero" className="min-h-screen flex items-center">
-          <HeroSection data={homeContent.hero} />
-        </section>
-        
-        <section id="features" className="min-h-screen flex items-center">
-          <FeaturesSection data={featuresWithCta} />
-        </section>
-        
-        <section id="case-studies" className="min-h-screen flex items-center">
-          <CaseStudiesSection data={homeContent.caseStudies} />
-        </section>
-        
-        <section id="stories" className="min-h-screen flex items-center">
-          <StoriesSection data={storiesData} />
-        </section>
-        
-        <section id="mentors" className="min-h-screen flex items-center">
-          <FeaturedMentorsSection />
-        </section>
-        
-        <section id="cta" className="min-h-screen flex items-center">
-          <CtaSection data={homeContent.cta} />
-        </section>
-      </main>
-      
-      <Footer />
+    <div className="min-h-screen bg-background antialiased overflow-hidden">
+      <AnimatedBackground objectCount={isMobile ? 5 : 10}>
+        <div className="relative h-screen w-full">
+          {/* Slide container */}
+          <div className="h-screen w-full overflow-hidden">
+            <AnimatePresence custom={direction} mode="wait">
+              <motion.div
+                key={currentSlide}
+                custom={direction}
+                variants={slideVariants}
+                initial="enter"
+                animate="center"
+                exit="exit"
+                transition={{
+                  type: "tween",
+                  ease: "easeInOut",
+                  duration: 0.5
+                }}
+                className="absolute inset-0 w-full h-full"
+              >
+                {slides[currentSlide]}
+              </motion.div>
+            </AnimatePresence>
+          </div>
+          
+          {/* Slide Navigation - moved below the slides */}
+          <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-50">
+            <HomeNavigation currentSection={currentSlide} onNavigate={handleNavigate} />
+          </div>
+          
+          {/* Slide navigation arrows - Changed to up/down arrows */}
+          <div className="absolute bottom-1/2 right-4 transform translate-y-1/2 z-50">
+            <Button
+              variant="ghost"
+              size="icon"
+              className={`rounded-full bg-background/40 backdrop-blur-sm mb-2 ${currentSlide === 0 ? 'opacity-30 cursor-not-allowed' : 'opacity-100'}`}
+              onClick={prevSlide}
+              disabled={currentSlide === 0}
+            >
+              <ChevronUp className="h-6 w-6" />
+            </Button>
+            
+            <Button
+              variant="ghost"
+              size="icon"
+              className={`rounded-full bg-background/40 backdrop-blur-sm ${currentSlide === totalSlides - 1 ? 'opacity-30 cursor-not-allowed' : 'opacity-100'}`}
+              onClick={nextSlide}
+              disabled={currentSlide === totalSlides - 1}
+            >
+              <ChevronDown className="h-6 w-6" />
+            </Button>
+          </div>
+          
+          {/* Slide indicators */}
+          <div className="absolute right-6 top-1/2 transform -translate-y-1/2 z-50 flex flex-col space-y-2">
+            {Array.from({ length: totalSlides }).map((_, index) => (
+              <button
+                key={index}
+                onClick={() => handleNavigate(index)}
+                className={`w-2 transition-all ${currentSlide === index ? 'h-8 bg-primary' : 'h-2 bg-muted-foreground/40'} rounded-full`}
+                aria-label={`Go to slide ${index + 1}`}
+              />
+            ))}
+          </div>
+        </div>
+      </AnimatedBackground>
     </div>
   );
 };

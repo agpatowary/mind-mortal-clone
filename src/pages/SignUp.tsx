@@ -1,39 +1,35 @@
 
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { z } from 'zod';
+import React from 'react';
+import { Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { z } from 'zod';
+import { motion } from 'framer-motion';
 import { useAuth } from '@/hooks/useAuth';
-import { Loader2, ArrowLeft } from 'lucide-react';
-import BlobLogo from '@/components/BlobLogo';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import Logo from '../components/Logo';
+import { Loader2 } from 'lucide-react';
 
+// Form validation schema
 const formSchema = z.object({
-  fullName: z.string().min(2, {
-    message: "Full name must be at least 2 characters.",
-  }),
-  email: z.string().email({
-    message: "Please enter a valid email address.",
-  }),
-  password: z.string().min(6, {
-    message: "Password must be at least 6 characters.",
-  }),
-  confirmPassword: z.string(),
+  fullName: z.string().min(2, { message: "Full name must be at least 2 characters" }),
+  email: z.string().email({ message: "Please enter a valid email address" }),
+  password: z.string().min(6, { message: "Password must be at least 6 characters" }),
+  confirmPassword: z.string().min(6, { message: "Password must be at least 6 characters" }),
 }).refine((data) => data.password === data.confirmPassword, {
-  message: "Passwords don't match",
+  message: "Passwords do not match",
   path: ["confirmPassword"],
 });
 
-const SignUp = () => {
-  const { signUp, isLoading } = useAuth();
-  const [error, setError] = useState<string | null>(null);
-  const navigate = useNavigate();
+type FormValues = z.infer<typeof formSchema>;
 
-  const form = useForm<z.infer<typeof formSchema>>({
+const SignUp: React.FC = () => {
+  const { signUp, isLoading } = useAuth();
+  
+  const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       fullName: "",
@@ -43,130 +39,143 @@ const SignUp = () => {
     },
   });
 
-  const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    try {
-      setError(null);
-      await signUp(values.email, values.password, values.fullName);
-      // Navigate is handled in the auth hook after successful signup
-    } catch (err: any) {
-      console.error("Sign up error:", err);
-      setError(err.message || "Failed to sign up. Please try again.");
+  const onSubmit = async (values: FormValues) => {
+    await signUp(values.email, values.password, values.fullName);
+  };
+
+  // Animation variants
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: {
+      y: 0,
+      opacity: 1,
+      transition: { 
+        type: "spring", 
+        stiffness: 100,
+        damping: 10
+      }
     }
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-4 bg-background">
-      <div className="w-full max-w-md">
-        <div className="absolute top-4 left-4">
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            onClick={() => navigate('/')}
-            className="flex items-center gap-1"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back to Home
-          </Button>
-        </div>
-        
-        <div className="mb-8 flex justify-center">
-          <BlobLogo className="h-16 w-16" />
-        </div>
-        
-        <Card>
-          <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl font-bold text-center">Create an account</CardTitle>
-            <CardDescription className="text-center">
-              Enter your details to create your account
-            </CardDescription>
+    <div className="min-h-screen flex items-center justify-center p-4 bg-muted/40">
+      <motion.div
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+        className="w-full max-w-md"
+      >
+        <Card className="border-2 border-primary/10 shadow-lg backdrop-blur-sm bg-background/80">
+          <CardHeader className="text-center">
+            <motion.div variants={itemVariants} className="flex justify-center mb-4">
+              <Logo className="h-12 w-12" />
+            </motion.div>
+            <motion.div variants={itemVariants}>
+              <CardTitle className="text-2xl">Create an account</CardTitle>
+              <CardDescription>
+                Start preserving your legacy, sharing knowledge, and sending timeless messages.
+              </CardDescription>
+            </motion.div>
           </CardHeader>
           <CardContent>
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                {error && (
-                  <div className="p-3 text-sm rounded bg-destructive/15 text-destructive">
-                    {error}
-                  </div>
-                )}
+                <motion.div variants={itemVariants}>
+                  <FormField
+                    control={form.control}
+                    name="fullName"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Full Name</FormLabel>
+                        <FormControl>
+                          <Input placeholder="John Doe" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </motion.div>
                 
-                <FormField
-                  control={form.control}
-                  name="fullName"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Full Name</FormLabel>
-                      <FormControl>
-                        <Input placeholder="John Doe" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                <motion.div variants={itemVariants}>
+                  <FormField
+                    control={form.control}
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Email</FormLabel>
+                        <FormControl>
+                          <Input placeholder="m@example.com" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </motion.div>
                 
-                <FormField
-                  control={form.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Email</FormLabel>
-                      <FormControl>
-                        <Input placeholder="you@example.com" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                <motion.div variants={itemVariants}>
+                  <FormField
+                    control={form.control}
+                    name="password"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Password</FormLabel>
+                        <FormControl>
+                          <Input type="password" placeholder="••••••••" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </motion.div>
                 
-                <FormField
-                  control={form.control}
-                  name="password"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Password</FormLabel>
-                      <FormControl>
-                        <Input type="password" placeholder="••••••••" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                <motion.div variants={itemVariants}>
+                  <FormField
+                    control={form.control}
+                    name="confirmPassword"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Confirm Password</FormLabel>
+                        <FormControl>
+                          <Input type="password" placeholder="••••••••" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </motion.div>
                 
-                <FormField
-                  control={form.control}
-                  name="confirmPassword"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Confirm Password</FormLabel>
-                      <FormControl>
-                        <Input type="password" placeholder="••••••••" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <Button type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Creating account...
-                    </>
-                  ) : (
-                    "Sign up"
-                  )}
-                </Button>
-                
-                <div className="text-center text-sm">
-                  Already have an account?{" "}
-                  <Link to="/signin" className="font-medium text-primary hover:underline">
-                    Sign in
-                  </Link>
-                </div>
+                <motion.div variants={itemVariants}>
+                  <Button type="submit" className="w-full" disabled={isLoading}>
+                    {isLoading ? (
+                      <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Creating account...</>
+                    ) : (
+                      "Sign Up"
+                    )}
+                  </Button>
+                </motion.div>
               </form>
             </Form>
           </CardContent>
+          <CardFooter className="flex flex-col items-center gap-4">
+            <motion.div variants={itemVariants} className="text-sm text-muted-foreground">
+              Already have an account?{" "}
+              <Link to="/signin" className="text-primary hover:underline">
+                Sign in
+              </Link>
+            </motion.div>
+          </CardFooter>
         </Card>
-      </div>
+      </motion.div>
     </div>
   );
 };

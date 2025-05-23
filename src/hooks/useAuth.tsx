@@ -21,7 +21,6 @@ interface AuthContextType {
   isMentor: () => boolean;
   isDisciple: () => boolean;
   isAuthenticated: () => boolean;
-  setSession: (session: Session | null) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -271,8 +270,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     isAdmin,
     isMentor,
     isDisciple,
-    isAuthenticated,
-    setSession
+    isAuthenticated
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

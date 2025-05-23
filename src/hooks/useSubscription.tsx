@@ -1,139 +1,144 @@
 
-import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/hooks/useAuth';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
-interface Subscription {
-  id: string;
-  status: 'active' | 'trialing' | 'canceled' | 'incomplete' | 'expired';
-  tier: 'Monthly' | 'Yearly' | 'Lifetime' | 'Free';
-  created_at: string;
-  expires_at: string | null;
-  cancel_at_period_end: boolean;
-}
+export type SubscriptionTier = null | 'Monthly' | 'Yearly' | 'Lifetime';
 
-interface UseSubscription {
-  subscription: Subscription | null;
+export interface SubscriptionData {
+  subscribed: boolean;
+  subscription_tier: SubscriptionTier;
+  subscription_end: string | null;
   isLoading: boolean;
-  error: string;
-  checkSubscription: () => Promise<void>;
-  createCheckout: (plan: 'Monthly' | 'Yearly' | 'Lifetime') => Promise<void>;
-  openCustomerPortal: () => Promise<void>;
-  subscription_tier?: string; // Added for backward compatibility
+  error: string | null;
 }
 
-export const useSubscription = (): UseSubscription => {
-  const [subscription, setSubscription] = useState<Subscription | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState('');
-  const { user } = useAuth();
+export const useSubscription = () => {
   const { toast } = useToast();
-
-  useEffect(() => {
-    if (user) {
-      checkSubscription();
-    } else {
-      setSubscription(null);
-      setIsLoading(false);
-    }
-  }, [user]);
+  const { user, isAuthenticated } = useAuth();
+  const [subscriptionData, setSubscriptionData] = useState<SubscriptionData>({
+    subscribed: false,
+    subscription_tier: null,
+    subscription_end: null,
+    isLoading: true,
+    error: null,
+  });
 
   const checkSubscription = async () => {
-    try {
-      setIsLoading(true);
-      setError('');
+    if (!isAuthenticated()) {
+      setSubscriptionData({
+        subscribed: false,
+        subscription_tier: null,
+        subscription_end: null,
+        isLoading: false,
+        error: null,
+      });
+      return;
+    }
 
-      // For demo/development purposes, simulate a subscription
-      // In a real app, you would call your Supabase Edge Function
-      const demoSubscription: Subscription = {
-        id: 'sub_demo',
-        status: 'active',
-        tier: 'Monthly',
-        created_at: new Date().toISOString(),
-        expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-        cancel_at_period_end: false
-      };
+    try {
+      setSubscriptionData(prev => ({ ...prev, isLoading: true, error: null }));
       
-      setSubscription(demoSubscription);
-    } catch (err: any) {
-      console.error('Error checking subscription:', err);
-      setError(err.message || 'Failed to check subscription');
-      setSubscription(null);
-    } finally {
-      setIsLoading(false);
+      const { data, error } = await supabase.functions.invoke('check-subscription');
+      
+      if (error) {
+        throw new Error(error.message);
+      }
+      
+      setSubscriptionData({
+        subscribed: data.subscribed,
+        subscription_tier: data.subscription_tier,
+        subscription_end: data.subscription_end,
+        isLoading: false,
+        error: null,
+      });
+    } catch (error) {
+      console.error("Error checking subscription:", error);
+      setSubscriptionData(prev => ({
+        ...prev,
+        isLoading: false,
+        error: error instanceof Error ? error.message : "Failed to check subscription status"
+      }));
     }
   };
 
   const createCheckout = async (plan: 'Monthly' | 'Yearly' | 'Lifetime') => {
-    try {
-      setIsLoading(true);
-      setError('');
-
-      // In a real app, you would call your Supabase Edge Function to create a checkout
+    if (!isAuthenticated()) {
       toast({
-        title: 'Subscription',
-        description: `Creating checkout for ${plan} plan...`,
+        title: "Authentication required",
+        description: "Please sign in to subscribe",
+        variant: "destructive",
       });
+      return;
+    }
 
-      // Simulate a checkout process
-      setTimeout(() => {
-        toast({
-          title: 'Subscription Demo',
-          description: 'In a real app, this would redirect to a payment page.',
-        });
-        setIsLoading(false);
-      }, 1500);
-    } catch (err: any) {
-      console.error('Error creating checkout:', err);
-      setError(err.message || 'Failed to create checkout');
-      setIsLoading(false);
+    try {
+      const { data, error } = await supabase.functions.invoke('create-checkout', {
+        body: { plan }
+      });
+      
+      if (error) {
+        throw new Error(error.message);
+      }
+      
+      // Open Stripe checkout in a new tab
+      window.open(data.url, '_blank');
+    } catch (error) {
+      console.error("Error creating checkout:", error);
       toast({
-        title: 'Error',
-        description: 'Failed to create checkout session',
-        variant: 'destructive',
+        title: "Checkout Error",
+        description: error instanceof Error ? error.message : "Failed to start checkout process",
+        variant: "destructive",
       });
     }
   };
 
   const openCustomerPortal = async () => {
-    try {
-      setIsLoading(true);
-      setError('');
-
-      // In a real app, you would call your Supabase Edge Function to open the customer portal
+    if (!isAuthenticated()) {
       toast({
-        title: 'Subscription',
-        description: 'Opening customer portal...',
+        title: "Authentication required",
+        description: "Please sign in to manage your subscription",
+        variant: "destructive",
       });
+      return;
+    }
 
-      // Simulate opening a customer portal
-      setTimeout(() => {
-        toast({
-          title: 'Subscription Demo',
-          description: 'In a real app, this would redirect to the customer portal.',
-        });
-        setIsLoading(false);
-      }, 1500);
-    } catch (err: any) {
-      console.error('Error opening customer portal:', err);
-      setError(err.message || 'Failed to open customer portal');
-      setIsLoading(false);
+    try {
+      const { data, error } = await supabase.functions.invoke('customer-portal');
+      
+      if (error) {
+        throw new Error(error.message);
+      }
+      
+      // Open Stripe customer portal in a new tab
+      window.open(data.url, '_blank');
+    } catch (error) {
+      console.error("Error opening customer portal:", error);
       toast({
-        title: 'Error',
-        description: 'Failed to open customer portal',
-        variant: 'destructive',
+        title: "Portal Error",
+        description: error instanceof Error ? error.message : "Failed to open subscription management portal",
+        variant: "destructive",
       });
     }
   };
 
+  // Check subscription status on auth change and periodically
+  useEffect(() => {
+    if (isAuthenticated()) {
+      checkSubscription();
+      
+      // Set up periodic refresh
+      const intervalId = setInterval(checkSubscription, 60000); // Check every minute
+      
+      return () => clearInterval(intervalId);
+    }
+  }, [user?.id]);
+
   return {
-    subscription,
-    isLoading,
-    error,
+    ...subscriptionData,
     checkSubscription,
     createCheckout,
     openCustomerPortal,
-    subscription_tier: subscription?.tier, // Added for backward compatibility
   };
 };
