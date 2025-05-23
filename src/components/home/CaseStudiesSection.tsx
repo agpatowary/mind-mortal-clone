@@ -9,7 +9,10 @@ interface CaseStudy {
 }
 
 interface CaseStudiesSectionProps {
-  data: CaseStudy[];
+  data: {
+    title: string;
+    studies: CaseStudy[];
+  };
 }
 
 const CaseStudiesSection: React.FC<CaseStudiesSectionProps> = ({ data }) => {
@@ -35,42 +38,46 @@ const CaseStudiesSection: React.FC<CaseStudiesSectionProps> = ({ data }) => {
   };
 
   return (
-    <div className="py-16 md:py-24 bg-gray-50 dark:bg-gray-900/50">
-      <div className="container mx-auto px-4">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          viewport={{ once: true }}
-          className="text-center mb-12"
-        >
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">Case Studies</h2>
-          <div className="h-1 w-20 bg-primary mx-auto"></div>
-          <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
-            Civilizations used monuments. We use memory. From pyramids in Egypt to cave drawings in France, 
-            humans have always tried to etch memory into permanence.
-          </p>
-        </motion.div>
+    <div className="min-h-screen flex flex-col justify-center items-center py-16 md:py-20 px-4 bg-muted/30">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        viewport={{ once: true }}
+        className="text-center mb-6 md:mb-12"
+      >
+        <h2 className="text-3xl md:text-5xl font-bold mb-4 md:mb-6">{data.title}</h2>
+        <div className="h-1 w-20 bg-primary mx-auto"></div>
+        <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
+          Civilizations used monuments. We use memory. From pyramids in Egypt to cave drawings in France, 
+          humans have always tried to etch memory into permanence.
+        </p>
+      </motion.div>
 
-        <motion.div 
-          variants={containerVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, amount: 0.2 }}
-          className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-5xl mx-auto"
-        >
-          {data.map((study, index) => (
-            <motion.div key={index} variants={itemVariants}>
-              <Card className="h-full border-primary/10 hover:border-primary/20 transition-colors">
-                <CardContent className="p-6">
-                  <h3 className="text-xl font-bold mb-3 text-primary">{study.title}</h3>
-                  <p className="text-muted-foreground">{study.description}</p>
-                </CardContent>
-              </Card>
-            </motion.div>
-          ))}
-        </motion.div>
-      </div>
+      <motion.div 
+        variants={containerVariants}
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, amount: 0.2 }}
+        className="max-w-5xl mx-auto w-full"
+      >
+        {data.studies.map((study, index) => (
+          <motion.div
+            key={index}
+            variants={itemVariants}
+            className="mb-3 md:mb-6 max-w-[85vw] mx-auto md:max-w-none"
+          >
+            <Card className="backdrop-blur-sm bg-background/80 shadow-lg">
+              <CardContent className="pt-6 pb-6 px-6">
+                <div className="flex flex-col">
+                  <h3 className="text-lg md:text-xl font-bold mb-2 text-primary">{study.title}</h3>
+                  <p className="text-xs md:text-base mb-1 md:mb-3">{study.description}</p>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        ))}
+      </motion.div>
     </div>
   );
 };

@@ -19,7 +19,8 @@ const HomePage: React.FC = () => {
       title: item.title,
       description: item.description,
       icon: item.icon,
-      cta: item.link // Map 'link' to 'cta' to match the Feature interface
+      cta: item.link, // Map 'link' to 'cta' to match the Feature interface
+      link: item.link // Also include the link property
     }))
   };
 
@@ -38,8 +39,23 @@ const HomePage: React.FC = () => {
       {
         title: "Anne Frank's Hidden Genius",
         description: "A teenage girl, hiding from genocide, wrote a diary that the world would later call genius. But at the time, it was simply a young girl trying to make sense of the world. MMortal exists to ensure no 'Anne' goes unheard again."
+      },
+      {
+        title: "The Lost Wisdom of Jamir",
+        description: "Jamir, a 78-year-old carpenter in Bangladesh, had no formal education but built homes for three generations. When asked what he was most proud of, he said: 'Knowing how to fix what others thought was broken.' He never wrote anything down. After he passed, his grandkids only knew he 'worked with wood.' His philosophy, techniques, and way of looking at life—all lost."
       }
     ]
+  };
+
+  // Create CTA data from homeContent
+  const ctaData = {
+    title: homeContent.cta.title,
+    description: homeContent.cta.description,
+    buttonText: homeContent.cta.buttonText,
+    metrics: homeContent.cta.goals.map(goal => ({
+      label: goal.title,
+      value: goal.target
+    }))
   };
 
   const sections = [
@@ -47,7 +63,7 @@ const HomePage: React.FC = () => {
     { component: () => <FeaturesSection data={featuresData} />, name: 'features' },
     { component: FeaturedMentorsSection, name: 'mentors' },
     { component: () => <CaseStudiesSection data={caseStudiesData} />, name: 'case-studies' },
-    { component: CtaSection, name: 'cta' }
+    { component: () => <CtaSection data={ctaData} />, name: 'cta' }
   ];
 
   const goToSection = useCallback((sectionIndex: number) => {
