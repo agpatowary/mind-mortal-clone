@@ -3,20 +3,18 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Lightbulb, Plus, Search, Eye, EyeOff, TrendingUp } from 'lucide-react';
+import { Lightbulb, Plus, TrendingUp, Users, Clock } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import PostInteractions from '@/components/social/PostInteractions';
 import PostDetailsModal from '@/components/modals/PostDetailsModal';
+import { Badge } from "@/components/ui/badge";
 import DashboardAnimatedBackground from '@/components/dashboard/DashboardAnimatedBackground';
 
 const IdeaVaultPage: React.FC = () => {
   const [ideas, setIdeas] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
   const [selectedIdea, setSelectedIdea] = useState<any>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { user } = useAuth();
@@ -57,12 +55,6 @@ const IdeaVaultPage: React.FC = () => {
     setIsModalOpen(true);
   };
 
-  const filteredIdeas = ideas.filter(idea =>
-    idea.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    idea.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    idea.tags?.some((tag: string) => tag.toLowerCase().includes(searchTerm.toLowerCase()))
-  );
-
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -87,7 +79,7 @@ const IdeaVaultPage: React.FC = () => {
   };
 
   return (
-    <DashboardAnimatedBackground objectCount={8}>
+    <DashboardAnimatedBackground objectCount={7}>
       <div className="container mx-auto max-w-6xl">
         <motion.div
           className="mb-8"
@@ -95,14 +87,11 @@ const IdeaVaultPage: React.FC = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <div className="flex justify-between items-center mb-6">
+          <div className="flex justify-between items-center">
             <div>
-              <h1 className="text-3xl font-bold flex items-center gap-2">
-                <Lightbulb className="h-8 w-8 text-primary" />
-                Idea Vault
-              </h1>
+              <h1 className="text-3xl font-bold">Idea Vault</h1>
               <p className="text-muted-foreground mt-2">
-                Discover, share, and develop innovative ideas
+                Refine, share, and fund your ideas. Turn your dreams into reality.
               </p>
             </div>
             <Button 
@@ -112,16 +101,6 @@ const IdeaVaultPage: React.FC = () => {
               <Plus className="h-4 w-4" />
               Create Idea
             </Button>
-          </div>
-
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-            <Input
-              placeholder="Search ideas by title, description, or tags..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
-            />
           </div>
         </motion.div>
 
@@ -134,59 +113,58 @@ const IdeaVaultPage: React.FC = () => {
             variants={containerVariants}
             initial="hidden"
             animate="visible"
-            className="grid grid-cols-1 md:grid-cols-2 gap-6"
+            className="grid grid-cols-1 gap-6"
           >
-            {filteredIdeas.map(idea => (
+            {ideas.map(idea => (
               <motion.div 
                 key={idea.id} 
                 variants={itemVariants}
-                whileHover={{ scale: 1.02 }}
+                whileHover={{ scale: 1.01 }}
                 transition={{ type: "spring", stiffness: 300 }}
               >
-                <Card className="hover:shadow-lg transition-all duration-300 h-full flex flex-col">
+                <Card className="hover:shadow-lg transition-all duration-300">
                   <CardHeader>
-                    <div className="flex justify-between items-start">
-                      <CardTitle className="flex items-center gap-2">
-                        <Lightbulb className="h-5 w-5 text-primary" />
-                        {idea.title}
-                      </CardTitle>
-                      <div className="flex items-center gap-2">
-                        {idea.is_public ? (
-                          <Eye className="h-4 w-4 text-green-500" title="Public" />
-                        ) : (
-                          <EyeOff className="h-4 w-4 text-muted-foreground" title="Private" />
-                        )}
-                        {idea.is_featured && (
-                          <TrendingUp className="h-4 w-4 text-orange-500" title="Featured" />
-                        )}
-                      </div>
-                    </div>
-                    <CardDescription className="mt-2">
-                      {new Date(idea.created_at).toLocaleDateString()}
+                    <CardTitle className="flex items-center gap-2">
+                      <Lightbulb className="h-5 w-5 text-primary" />
+                      {idea.title}
+                      {idea.is_featured && (
+                        <Badge variant="secondary" className="ml-2">
+                          <TrendingUp className="h-3 w-3 mr-1" />
+                          Featured
+                        </Badge>
+                      )}
+                    </CardTitle>
+                    <CardDescription className="flex items-center gap-4">
+                      <span>Created on {new Date(idea.created_at).toLocaleDateString()}</span>
+                      {idea.boost_count > 0 && (
+                        <span className="flex items-center gap-1">
+                          <Users className="h-4 w-4" />
+                          {idea.boost_count} boosts
+                        </span>
+                      )}
+                      {idea.boost_until && (
+                        <span className="flex items-center gap-1">
+                          <Clock className="h-4 w-4" />
+                          Boosted until {new Date(idea.boost_until).toLocaleDateString()}
+                        </span>
+                      )}
                     </CardDescription>
                   </CardHeader>
-                  
-                  <CardContent className="flex-1">
+                  <CardContent>
                     {idea.description && (
-                      <p className="text-sm mb-4 line-clamp-3">{idea.description}</p>
+                      <p className="text-muted-foreground mb-3">{idea.description}</p>
                     )}
-                    
+                    <p className="line-clamp-3">{idea.content}</p>
                     {idea.tags && idea.tags.length > 0 && (
-                      <div className="flex flex-wrap gap-2 mb-4">
-                        {idea.tags.slice(0, 3).map((tag: string, index: number) => (
-                          <Badge key={index} variant="secondary" className="text-xs">
+                      <div className="flex flex-wrap gap-2 mt-3">
+                        {idea.tags.map((tag: string, index: number) => (
+                          <Badge key={index} variant="outline">
                             {tag}
                           </Badge>
                         ))}
-                        {idea.tags.length > 3 && (
-                          <Badge variant="outline" className="text-xs">
-                            +{idea.tags.length - 3} more
-                          </Badge>
-                        )}
                       </div>
                     )}
                   </CardContent>
-
                   <CardFooter className="flex flex-col items-stretch">
                     <PostInteractions 
                       postId={idea.id} 
@@ -207,25 +185,18 @@ const IdeaVaultPage: React.FC = () => {
               </motion.div>
             ))}
 
-            {filteredIdeas.length === 0 && !loading && (
-              <motion.div variants={itemVariants} className="col-span-full">
+            {ideas.length === 0 && (
+              <motion.div variants={itemVariants}>
                 <Card className="border-dashed">
                   <CardContent className="flex flex-col items-center justify-center py-12">
                     <Lightbulb className="h-12 w-12 mb-4 text-muted-foreground" />
-                    <h3 className="text-xl font-medium mb-2">
-                      {searchTerm ? 'No ideas found' : 'No ideas yet'}
-                    </h3>
+                    <h3 className="text-xl font-medium mb-2">No ideas yet</h3>
                     <p className="text-muted-foreground mb-6 text-center max-w-md">
-                      {searchTerm 
-                        ? 'Try adjusting your search terms to find what you\'re looking for.'
-                        : 'Share your first innovative idea with the community and get feedback from other creators.'
-                      }
+                      Start documenting your ideas and turn them into reality
                     </p>
-                    {!searchTerm && (
-                      <Button onClick={handleCreateIdea}>
-                        <Plus className="h-4 w-4 mr-2" /> Create Your First Idea
-                      </Button>
-                    )}
+                    <Button onClick={handleCreateIdea}>
+                      <Plus className="h-4 w-4 mr-2" /> Create Your First Idea
+                    </Button>
                   </CardContent>
                 </Card>
               </motion.div>

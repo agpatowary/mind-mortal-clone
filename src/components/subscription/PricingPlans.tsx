@@ -28,10 +28,11 @@ const PricingPlan = ({
   disabled = false,
   current = false
 }: PricingPlanProps) => {
-  const { createCheckout, subscriptionData, isLoading } = useSubscription();
+  const { subscription, isLoading } = useSubscription();
 
   const handleSubscribe = () => {
-    createCheckout(planType);
+    console.log(`Subscribing to ${planType} plan`);
+    // TODO: Implement actual subscription logic
   };
 
   return (
@@ -88,7 +89,12 @@ const PricingPlan = ({
 };
 
 const PricingPlans = () => {
-  const { subscriptionData, isLoading, openCustomerPortal } = useSubscription();
+  const { subscription, isLoading } = useSubscription();
+
+  const handleManageSubscription = () => {
+    console.log('Managing subscription');
+    // TODO: Implement customer portal
+  };
 
   return (
     <div className="container mx-auto py-12">
@@ -97,11 +103,11 @@ const PricingPlans = () => {
         <p className="text-muted-foreground max-w-2xl mx-auto">
           Choose the plan that works best for you and your legacy needs.
         </p>
-        {subscriptionData.subscription_tier && (
+        {subscription?.tier && (
           <Button 
             variant="outline" 
             className="mt-4"
-            onClick={openCustomerPortal}
+            onClick={handleManageSubscription}
           >
             Manage Current Subscription
           </Button>
@@ -115,7 +121,7 @@ const PricingPlans = () => {
           description="The first step"
           planType="Monthly"
           buttonText="Subscribe Monthly"
-          current={subscriptionData.subscription_tier === 'Monthly'}
+          current={subscription?.tier === 'Monthly'}
           disabled={isLoading}
           features={[
             "Access to Legacy Vault",
@@ -131,7 +137,7 @@ const PricingPlans = () => {
           planType="Yearly"
           buttonText="Subscribe Yearly"
           popular={true}
-          current={subscriptionData.subscription_tier === 'Yearly'}
+          current={subscription?.tier === 'Yearly'}
           disabled={isLoading}
           features={[
             "Advanced Legacy Vault",
@@ -146,7 +152,7 @@ const PricingPlans = () => {
           description="Immortal"
           planType="Lifetime"
           buttonText="Get Lifetime Access"
-          current={subscriptionData.subscription_tier === 'Lifetime'}
+          current={subscription?.tier === 'Lifetime'}
           disabled={isLoading}
           features={[
             "Unlimited Legacy Vault storage",

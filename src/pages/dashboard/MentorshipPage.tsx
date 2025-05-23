@@ -1,269 +1,230 @@
 
-import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Plus, Users, BookOpen, Calendar } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Users, Plus, BookOpen, Star, Award } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { useToast } from '@/hooks/use-toast';
+import { useNavigate } from 'react-router-dom';
+import PostInteractions from '@/components/social/PostInteractions';
+import PostDetailsModal from '@/components/modals/PostDetailsModal';
+import { Badge } from "@/components/ui/badge";
+import DashboardAnimatedBackground from '@/components/dashboard/DashboardAnimatedBackground';
 
-interface MentorResource {
-  id: string;
-  title: string;
-  description: string;
-  resourcesCount: number;
-  createdAt: string;
-}
-
-interface Mentor {
-  id: string;
-  fullName: string;
-  specialty: string;
-  experience: string;
-  description: string;
-}
-
-const MentorshipPage = () => {
-  const navigate = useNavigate();
-  const { user, isMentor } = useAuth();
-  const { toast } = useToast();
-  const [resources, setResources] = useState<MentorResource[]>([]);
-  const [mentors, setMentors] = useState<Mentor[]>([]);
+const MentorshipPage: React.FC = () => {
+  const [resources, setResources] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedResource, setSelectedResource] = useState<any>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const { user } = useAuth();
+  const navigate = useNavigate();
 
-  // Fetch resources and mentors data
   useEffect(() => {
-    const fetchData = async () => {
+    if (user) {
+      fetchResources();
+    }
+  }, [user]);
+
+  const fetchResources = async () => {
+    try {
       setLoading(true);
-      try {
-        // Fetch resources
-        const { data: resourcesData, error: resourcesError } = await supabase
-          .from('wisdom_resources')
-          .select('*')
-          .eq('is_public', true)
-          .order('created_at', { ascending: false });
-        
-        if (resourcesError) throw resourcesError;
-        
-        // Fetch mentors with proper join
-        const { data: mentorsData, error: mentorsError } = await supabase
-          .from('profiles')
-          .select(`
-            id, 
-            full_name, 
-            bio,
-            mentor_profiles (
-              expertise,
-              experience_years,
-              industries
-            )
-          `)
-          .not('mentor_profiles', 'is', null);
-        
-        if (mentorsError) {
-          console.error('Mentors query error:', mentorsError);
-          // Set empty array if there's an error
-          setMentors([]);
-        } else {
-          // Format mentors data
-          const formattedMentors = mentorsData?.map(item => ({
-            id: item.id,
-            fullName: item.full_name || 'Anonymous',
-            specialty: item.mentor_profiles?.[0]?.expertise?.[0] || 'General Mentorship',
-            experience: `${item.mentor_profiles?.[0]?.experience_years || 0} yrs`,
-            description: item.bio || 'Experienced mentor ready to help with your growth journey.'
-          })) || [];
-          setMentors(formattedMentors);
-        }
-        
-        // Format resources data
-        const formattedResources = resourcesData?.map(item => ({
-          id: item.id,
-          title: item.title || 'Untitled Resource',
-          description: item.description || 'No description available',
-          resourcesCount: 3, // Placeholder for now
-          createdAt: item.created_at ? new Date(item.created_at).toLocaleDateString() : 'Unknown date'
-        })) || [];
+      const { data, error } = await supabase
+        .from('wisdom_resources')
+        .select('*')
+        .order('created_at', { ascending: false });
 
-        setResources(formattedResources);
-      } catch (error) {
-        console.error('Error fetching mentorship data:', error);
-        toast({
-          title: 'Failed to load data',
-          description: 'There was a problem loading the mentorship data.',
-          variant: 'destructive',
-        });
-      } finally {
-        setLoading(false);
+      if (error) {
+        console.error('Error fetching resources:', error);
+      } else {
+        setResources(data || []);
       }
-    };
+    } catch (err) {
+      console.error('Error in fetch operation:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    fetchData();
-  }, [toast]);
+  const handleCreateResource = () => {
+    navigate('/dashboard/mentorship/create');
+  };
 
-  const handleCreateOrBecomeAction = () => {
-    if (isMentor()) {
-      navigate('/dashboard/mentorship/create');
-    } else {
-      navigate('/dashboard/become-mentor');
+  const handleViewDetails = (resource: any) => {
+    setSelectedResource(resource);
+    setIsModalOpen(true);
+  };
+
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: {
+      y: 0,
+      opacity: 1,
+      transition: {
+        type: "spring",
+        stiffness: 100,
+        damping: 10
+      }
+    }
+  };
+
+  const getResourceTypeIcon = (type: string) => {
+    switch (type) {
+      case 'article':
+        return <BookOpen className="h-5 w-5 text-blue-500" />;
+      case 'video':
+        return <Users className="h-5 w-5 text-green-500" />;
+      case 'course':
+        return <Award className="h-5 w-5 text-purple-500" />;
+      default:
+        return <BookOpen className="h-5 w-5 text-primary" />;
     }
   };
 
   return (
-    <div className="container mx-auto space-y-6">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Mentorship</h1>
-          <p className="text-muted-foreground mt-1">Exchange wisdom, find mentors, grow together</p>
-        </div>
-        <Button onClick={handleCreateOrBecomeAction} className="whitespace-nowrap">
-          <Plus className="mr-2 h-4 w-4" /> 
-          {isMentor() ? 'Create Resource' : 'Become a Mentor'}
-        </Button>
-      </div>
-
-      <Tabs defaultValue="resources" className="w-full">
-        <TabsList className="mb-4">
-          <TabsTrigger value="resources">Resources</TabsTrigger>
-          <TabsTrigger value="mentors">Mentors</TabsTrigger>
-        </TabsList>
-        
-        <TabsContent value="resources">
-          {loading ? (
-            <div className="flex justify-center py-12">
-              <div className="flex flex-col items-center">
-                <div className="h-12 w-12 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
-                <p className="mt-4 text-muted-foreground">Loading resources...</p>
-              </div>
+    <DashboardAnimatedBackground objectCount={6}>
+      <div className="container mx-auto max-w-6xl">
+        <motion.div
+          className="mb-8"
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <div className="flex justify-between items-center">
+            <div>
+              <h1 className="text-3xl font-bold">Mentorship & Wisdom</h1>
+              <p className="text-muted-foreground mt-2">
+                Share your knowledge and learn from others in the community
+              </p>
             </div>
-          ) : resources.length > 0 ? (
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {resources.map((resource) => (
-                <Card key={resource.id} className="overflow-hidden">
-                  <CardHeader className="pb-3">
-                    <CardTitle>{resource.title}</CardTitle>
-                    <CardDescription>{resource.description}</CardDescription>
+            <Button 
+              className="flex items-center gap-2"
+              onClick={handleCreateResource}
+            >
+              <Plus className="h-4 w-4" />
+              Share Wisdom
+            </Button>
+          </div>
+        </motion.div>
+
+        {loading ? (
+          <div className="flex justify-center py-12">
+            <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full"></div>
+          </div>
+        ) : (
+          <motion.div
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            className="grid grid-cols-1 gap-6"
+          >
+            {resources.map(resource => (
+              <motion.div 
+                key={resource.id} 
+                variants={itemVariants}
+                whileHover={{ scale: 1.01 }}
+                transition={{ type: "spring", stiffness: 300 }}
+              >
+                <Card className="hover:shadow-lg transition-all duration-300">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      {getResourceTypeIcon(resource.resource_type)}
+                      {resource.title}
+                      {resource.is_featured && (
+                        <Badge variant="secondary" className="ml-2">
+                          <Star className="h-3 w-3 mr-1" />
+                          Featured
+                        </Badge>
+                      )}
+                      {resource.approved && (
+                        <Badge variant="default" className="ml-2">
+                          Approved
+                        </Badge>
+                      )}
+                    </CardTitle>
+                    <CardDescription className="flex items-center gap-4">
+                      <span>Created on {new Date(resource.created_at).toLocaleDateString()}</span>
+                      <span className="flex items-center gap-1">
+                        <Users className="h-4 w-4" />
+                        {resource.views_count || 0} views
+                      </span>
+                      <Badge variant="outline">
+                        {resource.resource_type}
+                      </Badge>
+                    </CardDescription>
                   </CardHeader>
-                  <CardContent className="space-y-2">
-                    <div className="flex items-center text-sm">
-                      <BookOpen className="mr-2 h-4 w-4 text-muted-foreground" />
-                      <span>Shared resources: {resource.resourcesCount}</span>
-                    </div>
-                    <div className="flex items-center text-sm">
-                      <Calendar className="mr-2 h-4 w-4 text-muted-foreground" />
-                      <span>Created: {resource.createdAt}</span>
-                    </div>
+                  <CardContent>
+                    {resource.description && (
+                      <p className="text-muted-foreground mb-3">{resource.description}</p>
+                    )}
+                    {resource.tags && resource.tags.length > 0 && (
+                      <div className="flex flex-wrap gap-2 mt-3">
+                        {resource.tags.map((tag: string, index: number) => (
+                          <Badge key={index} variant="outline">
+                            {tag}
+                          </Badge>
+                        ))}
+                      </div>
+                    )}
                   </CardContent>
-                  <CardFooter className="border-t bg-muted/50 px-6 py-3">
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      className="ml-auto"
-                      onClick={() => navigate(`/dashboard/mentorship/resource/${resource.id}`)}
-                    >
-                      View Details
-                    </Button>
+                  <CardFooter className="flex flex-col items-stretch">
+                    <PostInteractions 
+                      postId={resource.id} 
+                      postType="wisdom_resource"
+                      onUpdate={fetchResources}
+                    />
+                    <div className="flex justify-end mt-4">
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => handleViewDetails(resource)}
+                      >
+                        View Details
+                      </Button>
+                    </div>
                   </CardFooter>
                 </Card>
-              ))}
-            </div>
-          ) : (
-            <Card className="bg-muted/50">
-              <CardContent className="flex flex-col items-center justify-center py-12 text-center">
-                <BookOpen className="h-12 w-12 text-muted-foreground mb-4" />
-                <h3 className="text-lg font-semibold mb-2">No resources found</h3>
-                <p className="text-muted-foreground mb-6">
-                  {isMentor() ? 
-                    "You haven't created any resources yet. Create your first resource to share your knowledge." : 
-                    "Connect with mentors to access their resources and expand your knowledge."}
-                </p>
-                {isMentor() && (
-                  <Button onClick={() => navigate('/dashboard/mentorship/create')}>
-                    <Plus className="mr-2 h-4 w-4" /> Create Resource
-                  </Button>
-                )}
-              </CardContent>
-            </Card>
-          )}
-        </TabsContent>
-        
-        <TabsContent value="mentors">
-          <Tabs defaultValue="find" className="w-full">
-            <TabsList className="mb-4">
-              <TabsTrigger value="find">Find Mentors</TabsTrigger>
-              <TabsTrigger value="connected">Connected Mentors</TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="find">
-              {loading ? (
-                <div className="flex justify-center py-12">
-                  <div className="flex flex-col items-center">
-                    <div className="h-12 w-12 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
-                    <p className="mt-4 text-muted-foreground">Finding mentors...</p>
-                  </div>
-                </div>
-              ) : mentors.length > 0 ? (
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {mentors.map((mentor) => (
-                    <Card key={mentor.id}>
-                      <CardHeader>
-                        <div className="flex items-center gap-4">
-                          <div className="h-16 w-16 rounded-full bg-muted flex items-center justify-center">
-                            <Users className="h-8 w-8 text-muted-foreground" />
-                          </div>
-                          <div>
-                            <CardTitle>{mentor.fullName}</CardTitle>
-                            <CardDescription>{mentor.specialty} • {mentor.experience}</CardDescription>
-                          </div>
-                        </div>
-                      </CardHeader>
-                      <CardContent>
-                        <p className="text-sm">{mentor.description}</p>
-                      </CardContent>
-                      <CardFooter className="flex justify-between">
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          onClick={() => navigate(`/dashboard/mentorship/mentor/${mentor.id}`)}
-                        >
-                          View Profile
-                        </Button>
-                        <Button 
-                          size="sm"
-                          onClick={() => navigate(`/dashboard/mentorship/connect/${mentor.id}`)}
-                        >
-                          Connect
-                        </Button>
-                      </CardFooter>
-                    </Card>
-                  ))}
-                </div>
-              ) : (
-                <Card className="bg-muted/50">
-                  <CardContent className="flex flex-col items-center justify-center py-12 text-center">
-                    <Users className="h-12 w-12 text-muted-foreground mb-4" />
-                    <h3 className="text-lg font-semibold mb-2">No mentors found</h3>
-                    <p className="text-muted-foreground">We're still growing our mentor community. Check back soon!</p>
+              </motion.div>
+            ))}
+
+            {resources.length === 0 && (
+              <motion.div variants={itemVariants}>
+                <Card className="border-dashed">
+                  <CardContent className="flex flex-col items-center justify-center py-12">
+                    <Users className="h-12 w-12 mb-4 text-muted-foreground" />
+                    <h3 className="text-xl font-medium mb-2">No wisdom resources yet</h3>
+                    <p className="text-muted-foreground mb-6 text-center max-w-md">
+                      Start sharing your knowledge and wisdom with the community
+                    </p>
+                    <Button onClick={handleCreateResource}>
+                      <Plus className="h-4 w-4 mr-2" /> Share Your First Resource
+                    </Button>
                   </CardContent>
                 </Card>
-              )}
-            </TabsContent>
-            
-            <TabsContent value="connected">
-              <Card className="bg-muted/50">
-                <CardContent className="flex flex-col items-center justify-center py-12 text-center">
-                  <Users className="h-12 w-12 text-muted-foreground mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">No connected mentors yet</h3>
-                  <p className="text-muted-foreground">Connect with mentors to start your learning journey!</p>
-                </CardContent>
-              </Card>
-            </TabsContent>
-          </Tabs>
-        </TabsContent>
-      </Tabs>
-    </div>
+              </motion.div>
+            )}
+          </motion.div>
+        )}
+
+        <PostDetailsModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          post={selectedResource}
+          postType="wisdom_resource"
+          onUpdate={fetchResources}
+        />
+      </div>
+    </DashboardAnimatedBackground>
   );
 };
 
