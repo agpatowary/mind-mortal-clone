@@ -31,8 +31,78 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [profile, setProfile] = useState<any | null>(null);
   const [roles, setRoles] = useState<UserRole[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [authSubscription, setAuthSubscription] = useState<any>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  // Initialize auth state from supabase session
+  useEffect(() => {
+    // Set up auth state change listener
+    const { data } = supabase.auth.onAuthStateChange(
+      async (event, newSession) => {
+        console.log('Auth state change:', event, newSession ? 'session exists' : 'no session');
+        
+        if (event === 'SIGNED_OUT') {
+          // Clear all user data immediately on sign out
+          setSession(null);
+          setUser(null);
+          setProfile(null);
+          setRoles(['guest']);
+          return;
+        }
+        
+        // Handle other session changes
+        setSession(newSession);
+        setUser(newSession?.user ?? null);
+        
+        // If session exists, fetch profile and roles
+        if (newSession?.user) {
+          await fetchUserProfile(newSession.user.id);
+          await fetchUserRoles(newSession.user.id);
+        }
+      }
+    );
+
+    // Store subscription to clean up later
+    setAuthSubscription(data);
+
+    // THEN check for existing session
+    const initializeAuth = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (session?.user) {
+          setSession(session);
+          setUser(session.user);
+          await fetchUserProfile(session.user.id);
+          await fetchUserRoles(session.user.id);
+        } else {
+          setUser(null);
+          setSession(null);
+          setProfile(null);
+          setRoles(['guest']);
+        }
+      } catch (error) {
+        console.error('Error initializing auth:', error);
+        toast({
+          title: "Authentication Error",
+          description: "There was a problem with authentication.",
+          variant: "destructive"
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    initializeAuth();
+
+    // Cleanup subscription on unmount
+    return () => {
+      if (authSubscription) {
+        authSubscription.unsubscribe();
+      }
+    };
+  }, []);
 
   const fetchUserProfile = async (userId: string) => {
     try {
@@ -67,82 +137,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  // Initialize auth state from supabase session
-  useEffect(() => {
-    // Set up auth state change listener
-    const { data } = supabase.auth.onAuthStateChange(
-      (event, newSession) => {
-        console.log('Auth state change:', event, newSession ? 'session exists' : 'no session');
-        
-        // Update session and user state synchronously
-        setSession(newSession);
-        setUser(newSession?.user ?? null);
-        
-        if (event === 'SIGNED_OUT') {
-          // Clear all user data immediately on sign out
-          setProfile(null);
-          setRoles(['guest']);
-          setIsLoading(false);
-          return;
-        }
-        
-        // For signed in users, defer async operations
-        if (newSession?.user) {
-          setTimeout(() => {
-            fetchUserProfile(newSession.user.id);
-            fetchUserRoles(newSession.user.id);
-            setIsLoading(false);
-          }, 0);
-        } else {
-          setProfile(null);
-          setRoles(['guest']);
-          setIsLoading(false);
-        }
-      }
-    );
-
-    // Check for existing session
-    const initializeAuth = async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        
-        if (session?.user) {
-          setSession(session);
-          setUser(session.user);
-          await fetchUserProfile(session.user.id);
-          await fetchUserRoles(session.user.id);
-        } else {
-          setUser(null);
-          setSession(null);
-          setProfile(null);
-          setRoles(['guest']);
-        }
-      } catch (error) {
-        console.error('Error initializing auth:', error);
-        toast({
-          title: "Authentication Error",
-          description: "There was a problem with authentication.",
-          variant: "destructive"
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    initializeAuth();
-
-    // Cleanup subscription on unmount
-    return () => {
-      data.subscription.unsubscribe();
-    };
-  }, []);
-
   const refreshProfile = async () => {
     if (!user) return;
     
     try {
+      // Re-fetch the profile
       await fetchUserProfile(user.id);
+      // Re-fetch roles
       await fetchUserRoles(user.id);
+      
+      return;
     } catch (error) {
       console.error('Error refreshing profile:', error);
       toast({
@@ -212,7 +216,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  // Fixed signOut implementation using React Router navigation
+  // Fixed signOut implementation to ensure proper cleanup and redirection
   const signOut = async () => {
     try {
       setIsLoading(true);
@@ -232,8 +236,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         description: "You have been signed out successfully.",
       });
       
-      // Use React Router navigation instead of window.location
-      navigate('/');
+      // Force navigation to home page
+      window.location.href = '/';
     } catch (error: any) {
       console.error('Sign out error:', error);
       toast({
