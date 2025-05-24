@@ -31,69 +31,67 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [profile, setProfile] = useState<any | null>(null);
   const [roles, setRoles] = useState<UserRole[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [authSubscription, setAuthSubscription] = useState<any>(null);
+  const [initialized, setInitialized] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
   useEffect(() => {
-    const { data } = supabase.auth.onAuthStateChange(
-      async (event, newSession) => {
-        console.log('Auth state change:', event, newSession ? 'session exists' : 'no session');
-        
-        if (event === 'SIGNED_OUT') {
-          setSession(null);
-          setUser(null);
-          setProfile(null);
-          setRoles(['guest']);
-          return;
-        }
-        
-        setSession(newSession);
-        setUser(newSession?.user ?? null);
-        
-        if (newSession?.user) {
-          await fetchUserProfile(newSession.user.id);
-          await fetchUserRoles(newSession.user.id);
-        }
-      }
-    );
-
-    setAuthSubscription(data);
-
     const initializeAuth = async () => {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
+        // Set up auth state listener first
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(
+          async (event, newSession) => {
+            console.log('Auth state change:', event, newSession ? 'session exists' : 'no session');
+            
+            setSession(newSession);
+            setUser(newSession?.user ?? null);
+            
+            if (event === 'SIGNED_OUT') {
+              setProfile(null);
+              setRoles(['guest']);
+              setIsLoading(false);
+              return;
+            }
+            
+            if (newSession?.user && initialized) {
+              // Only fetch profile data after initial load and when user changes
+              setTimeout(async () => {
+                await fetchUserProfile(newSession.user.id);
+                await fetchUserRoles(newSession.user.id);
+                setIsLoading(false);
+              }, 0);
+            }
+          }
+        );
+
+        // Get initial session
+        const { data: { session: initialSession } } = await supabase.auth.getSession();
         
-        if (session?.user) {
-          setSession(session);
-          setUser(session.user);
-          await fetchUserProfile(session.user.id);
-          await fetchUserRoles(session.user.id);
+        if (initialSession?.user) {
+          setSession(initialSession);
+          setUser(initialSession.user);
+          await fetchUserProfile(initialSession.user.id);
+          await fetchUserRoles(initialSession.user.id);
         } else {
           setUser(null);
           setSession(null);
           setProfile(null);
           setRoles(['guest']);
         }
+        
+        setInitialized(true);
+        setIsLoading(false);
+
+        return () => {
+          subscription.unsubscribe();
+        };
       } catch (error) {
         console.error('Error initializing auth:', error);
-        toast({
-          title: "Authentication Error",
-          description: "There was a problem with authentication.",
-          variant: "destructive"
-        });
-      } finally {
         setIsLoading(false);
       }
     };
 
     initializeAuth();
-
-    return () => {
-      if (authSubscription) {
-        authSubscription.unsubscribe();
-      }
-    };
   }, []);
 
   const fetchUserProfile = async (userId: string) => {
@@ -104,7 +102,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         .eq('id', userId)
         .single();
 
-      if (error) throw error;
+      if (error && error.code !== 'PGRST116') {
+        throw error;
+      }
       setProfile(data);
     } catch (error) {
       console.error('Error fetching user profile:', error);
@@ -135,8 +135,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       await fetchUserProfile(user.id);
       await fetchUserRoles(user.id);
-      
-      return;
     } catch (error) {
       console.error('Error refreshing profile:', error);
       toast({

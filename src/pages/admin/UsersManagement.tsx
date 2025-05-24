@@ -34,7 +34,16 @@ const UsersManagement = () => {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        // First, get all profiles
+        // Get user emails using the admin function
+        const { data: userEmails, error: emailError } = await supabase
+          .rpc('get_user_emails_for_admin');
+
+        if (emailError) throw emailError;
+
+        // Create a map of user_id to email
+        const emailMap = new Map(userEmails?.map(item => [item.user_id, item.email]) || []);
+
+        // Get all profiles
         const { data: profiles, error: profilesError } = await supabase
           .from('profiles')
           .select('id, full_name, username')
@@ -58,8 +67,8 @@ const UsersManagement = () => {
               .eq('user_id', profile.id)
               .single();
 
-            // Get user email from auth (we'll simulate this for now)
-            const email = `user${profile.id.slice(0, 8)}@example.com`;
+            // Get real email from the map
+            const email = emailMap.get(profile.id) || 'No email found';
 
             return {
               id: profile.id,

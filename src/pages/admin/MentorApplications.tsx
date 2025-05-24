@@ -51,36 +51,31 @@ const MentorApplications = () => {
   const fetchMentorApplications = async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase
-        .from('mentor_profiles')
-        .select(`
-          id,
-          expertise,
-          industries,
-          experience_years,
-          created_at,
-          profiles:id (
-            full_name,
-            avatar_url,
-            email
-          ),
-          admin_users:id (
-            role
-          )
-        `)
-        .is('admin_users.role->mentor', null);
+      // Use the new view to get mentor applications
+      const { data: mentorApps, error } = await supabase
+        .from('mentor_applications_view')
+        .select('*');
 
       if (error) throw error;
 
-      const formattedApplications: MentorApplication[] = (data || []).map(item => ({
-        id: item.id,
-        fullName: item.profiles?.full_name || 'Unknown',
-        email: item.profiles?.email || 'No email',
-        avatarUrl: item.profiles?.avatar_url || null,
-        expertise: item.expertise || [],
-        industries: item.industries || [],
-        experienceYears: item.experience_years || 0,
-        appliedAt: new Date(item.created_at).toLocaleDateString(),
+      // Get user emails for the applications
+      const { data: userEmails, error: emailError } = await supabase
+        .rpc('get_user_emails_for_admin');
+
+      if (emailError) throw emailError;
+
+      // Create email map
+      const emailMap = new Map(userEmails?.map(item => [item.user_id, item.email]) || []);
+
+      const formattedApplications: MentorApplication[] = (mentorApps || []).map(app => ({
+        id: app.id,
+        fullName: app.full_name || 'Unknown',
+        email: emailMap.get(app.id) || 'No email found',
+        avatarUrl: app.avatar_url || null,
+        expertise: app.expertise || [],
+        industries: app.industries || [],
+        experienceYears: app.experience_years || 0,
+        appliedAt: new Date(app.created_at).toLocaleDateString(),
       }));
 
       setApplications(formattedApplications);

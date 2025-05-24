@@ -1031,6 +1031,27 @@ export type Database = {
         }
         Relationships: []
       }
+      mentor_applications_view: {
+        Row: {
+          avatar_url: string | null
+          created_at: string | null
+          experience_years: number | null
+          expertise: string[] | null
+          full_name: string | null
+          id: string | null
+          industries: string[] | null
+          is_verified: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mentor_profiles_id_fkey"
+            columns: ["id"]
+            isOneToOne: true
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       mentor_verification_status: {
         Row: {
           avatar_url: string | null
@@ -1088,6 +1109,13 @@ export type Database = {
           stripe_price_id_lifetime: string | null
           stripe_price_id_monthly: string | null
           updated_at: string | null
+        }[]
+      }
+      get_user_emails_for_admin: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          user_id: string
+          email: string
         }[]
       }
       get_user_roles: {
