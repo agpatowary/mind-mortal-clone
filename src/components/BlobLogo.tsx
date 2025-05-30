@@ -74,7 +74,7 @@ const BlobLogo: React.FC<BlobLogoProps> = ({
       {/* Fixed logo with proper sizing and centered */}
       <div className="w-3/4 h-3/4 relative flex items-center justify-center">
         <img 
-          src="/lovable-uploads/Orange_icon.png"
+          src="/Assets/Orange_icon.png"
           alt="MMortal Logo"
           className="w-full h-full object-contain"
         />

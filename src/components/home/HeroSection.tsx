@@ -103,7 +103,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ data }) => {
       </div>
       
       {/* Tech grid overlay */}
-      <div className="absolute inset-0 z-0 bg-[url('/lovable-uploads/4dc712f6-a086-4f5f-bd6b-3231b62037bb.png')] bg-cover bg-center opacity-10"></div>
+      <div className="absolute inset-0 z-0 bg-[url('/Assets/4dc712f6-a086-4f5f-bd6b-3231b62037bb.png')] bg-cover bg-center opacity-10"></div>
       
       {/* Floating elements */}
       {floatingElements.map((el) => {

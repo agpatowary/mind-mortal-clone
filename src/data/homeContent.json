@@ -9,7 +9,7 @@
     ],
     "description": "Preserve your wisdom. Share your ideas. Connect with the future.",
     "backgroundImages": [
-      "/lovable-uploads/c7971a89-c468-49b1-ab5a-14b1d463c990.png"
+      "/Assets/c7971a89-c468-49b1-ab5a-14b1d463c990.png"
     ]
   },
   "features": {
@@ -47,22 +47,22 @@
       {
         "title": "The Legacy of Viktor Frankl",
         "content": "Psychologist Viktor Frankl, in Man's Search for Meaning, found that purpose—not pleasure—is what sustains humans through suffering and fulfillment. MMortal gives users a concrete way to assign meaning to their life experiences by preserving them for future generations.",
-        "image": "/lovable-uploads/placeholder.svg"
+        "image": "/Assets/placeholder.svg"
       },
       {
         "title": "Nelson Mandela's Letters",
         "content": "Mandela didn't just fight apartheid—he documented his journey through prison, pain, and peace. His letters, preserved during incarceration, became timeless guidance for generations. If Mandela had MMortal, his story wouldn't just be found in books—it would live within an interactive vault, ready for all.",
-        "image": "/lovable-uploads/placeholder.svg"
+        "image": "/Assets/placeholder.svg"
       },
       {
         "title": "Anne Frank's Hidden Genius",
         "content": "A teenage girl, hiding from genocide, wrote a diary that the world would later call genius. But at the time, it was simply a young girl trying to make sense of the world. MMortal exists to ensure no 'Anne' goes unheard again.",
-        "image": "/lovable-uploads/placeholder.svg"
+        "image": "/Assets/placeholder.svg"
       },
       {
         "title": "The Lost Wisdom of Jamir",
         "content": "Jamir, a 78-year-old carpenter in Bangladesh, had no formal education but built homes for three generations. When asked what he was most proud of, he said: 'Knowing how to fix what others thought was broken.' He never wrote anything down. After he passed, his grandkids only knew he 'worked with wood.' His philosophy, techniques, and way of looking at life—all lost.",
-        "image": "/lovable-uploads/placeholder.svg"
+        "image": "/Assets/placeholder.svg"
       }
     ]
   },
