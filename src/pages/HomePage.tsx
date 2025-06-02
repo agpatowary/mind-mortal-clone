@@ -1,13 +1,12 @@
-
-import React, { useState, useEffect, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import HeroSection from '@/components/home/HeroSection';
-import FeaturesSection from '@/components/home/FeaturesSection';
-import FeaturedMentorsSection from '@/components/home/FeaturedMentorsSection';
-import CaseStudiesSection from '@/components/home/CaseStudiesSection';
-import CtaSection from '@/components/home/CtaSection';
-import HomeNavigation from '@/components/HomeNavigation';
-import homeContent from '@/data/homeContent.json';
+import React, { useState, useEffect, useCallback } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import HeroSection from "@/components/home/HeroSection";
+import FeaturesSection from "@/components/home/FeaturesSection";
+import FeaturedMentorsSection from "@/components/home/FeaturedMentorsSection";
+import CaseStudiesSection from "@/components/home/CaseStudiesSection";
+import CtaSection from "@/components/home/CtaSection";
+import HomeNavigation from "@/components/HomeNavigation";
+import homeContent from "@/data/homeContent.json";
 
 const HomePage: React.FC = () => {
   const [currentSection, setCurrentSection] = useState(0);
@@ -16,13 +15,13 @@ const HomePage: React.FC = () => {
   // Transform homeContent.features to match the expected interface
   const featuresData = {
     title: homeContent.features.title,
-    items: homeContent.features.items.map(item => ({
+    items: homeContent.features.items.map((item) => ({
       title: item.title,
       description: item.description,
       icon: item.icon,
       cta: item.link, // Map 'link' to 'cta' to match the Feature interface
-      link: item.link // Also include the link property
-    }))
+      link: item.link, // Also include the link property
+    })),
   };
 
   // Create case studies data from homeContent
@@ -31,21 +30,25 @@ const HomePage: React.FC = () => {
     studies: [
       {
         title: "Viktor Frankl's Purpose-Driven Legacy",
-        description: "Psychologist Viktor Frankl, in Man's Search for Meaning, found that purpose—not pleasure—is what sustains humans through suffering and fulfillment. MMortal gives users a concrete way to assign meaning to their life experiences by preserving them for future generations."
+        description:
+          "Psychologist Viktor Frankl, in Man's Search for Meaning, found that purpose—not pleasure—is what sustains humans through suffering and fulfillment. MMortal gives users a concrete way to assign meaning to their life experiences by preserving them for future generations.",
       },
       {
-        title: "Nelson Mandela's Legacy of Forgiveness", 
-        description: "Mandela didn't just fight apartheid—he documented his journey through prison, pain, and peace. His letters, preserved during incarceration, became timeless guidance for generations. If Mandela had MMortal, his story wouldn't just be found in books—it would live within an interactive vault, ready for all."
+        title: "Nelson Mandela's Legacy of Forgiveness",
+        description:
+          "Mandela didn't just fight apartheid—he documented his journey through prison, pain, and peace. His letters, preserved during incarceration, became timeless guidance for generations. If Mandela had MMortal, his story wouldn't just be found in books—it would live within an interactive vault, ready for all.",
       },
       {
         title: "Anne Frank's Hidden Genius",
-        description: "A teenage girl, hiding from genocide, wrote a diary that the world would later call genius. But at the time, it was simply a young girl trying to make sense of the world. MMortal exists to ensure no 'Anne' goes unheard again."
+        description:
+          "A teenage girl, hiding from genocide, wrote a diary that the world would later call genius. But at the time, it was simply a young girl trying to make sense of the world. MMortal exists to ensure no 'Anne' goes unheard again.",
       },
       {
         title: "The Lost Wisdom of Jamir",
-        description: "Jamir, a 78-year-old carpenter in Bangladesh, had no formal education but built homes for three generations. When asked what he was most proud of, he said: 'Knowing how to fix what others thought was broken.' He never wrote anything down. After he passed, his grandkids only knew he 'worked with wood.' His philosophy, techniques, and way of looking at life—all lost."
-      }
-    ]
+        description:
+          "Jamir, a 78-year-old carpenter in Bangladesh, had no formal education but built homes for three generations. When asked what he was most proud of, he said: 'Knowing how to fix what others thought was broken.' He never wrote anything down. After he passed, his grandkids only knew he 'worked with wood.' His philosophy, techniques, and way of looking at life—all lost.",
+      },
+    ],
   };
 
   // Create CTA data from homeContent
@@ -53,27 +56,40 @@ const HomePage: React.FC = () => {
     title: homeContent.cta.title,
     description: homeContent.cta.description,
     buttonText: homeContent.cta.buttonText,
-    metrics: homeContent.cta.goals.map(goal => ({
+    metrics: homeContent.cta.goals.map((goal) => ({
       label: goal.title,
-      value: goal.target
-    }))
+      value: goal.target,
+    })),
   };
 
   const sections = [
-    { component: () => <HeroSection data={homeContent.hero} />, name: 'hero' },
-    { component: () => <FeaturesSection data={featuresData} />, name: 'features' },
-    { component: FeaturedMentorsSection, name: 'mentors' },
-    { component: () => <CaseStudiesSection data={caseStudiesData} />, name: 'case-studies' },
-    { component: () => <CtaSection data={ctaData} />, name: 'cta' }
+    { component: () => <HeroSection data={homeContent.hero} />, name: "hero" },
+    {
+      component: () => <FeaturesSection data={featuresData} />,
+      name: "features",
+    },
+    { component: FeaturedMentorsSection, name: "mentors" },
+    {
+      component: () => <CaseStudiesSection data={caseStudiesData} />,
+      name: "case-studies",
+    },
+    { component: () => <CtaSection data={ctaData} />, name: "cta" },
   ];
 
-  const goToSection = useCallback((sectionIndex: number) => {
-    if (sectionIndex >= 0 && sectionIndex < sections.length && !isTransitioning) {
-      setIsTransitioning(true);
-      setCurrentSection(sectionIndex);
-      setTimeout(() => setIsTransitioning(false), 800);
-    }
-  }, [sections.length, isTransitioning]);
+  const goToSection = useCallback(
+    (sectionIndex: number) => {
+      if (
+        sectionIndex >= 0 &&
+        sectionIndex < sections.length &&
+        !isTransitioning
+      ) {
+        setIsTransitioning(true);
+        setCurrentSection(sectionIndex);
+        setTimeout(() => setIsTransitioning(false), 800);
+      }
+    },
+    [sections.length, isTransitioning]
+  );
 
   const handleNext = useCallback(() => {
     if (currentSection < sections.length - 1) {
@@ -90,15 +106,15 @@ const HomePage: React.FC = () => {
   // Reset and reprogram mouse wheel event listener
   useEffect(() => {
     let wheelTimeout: NodeJS.Timeout;
-    
+
     const handleWheel = (e: WheelEvent) => {
       e.preventDefault();
-      
+
       if (isTransitioning) return;
-      
+
       // Clear existing timeout to debounce wheel events
       clearTimeout(wheelTimeout);
-      
+
       wheelTimeout = setTimeout(() => {
         if (e.deltaY > 0) {
           // Scrolling down
@@ -113,13 +129,13 @@ const HomePage: React.FC = () => {
     // Reset keyboard event listener
     const handleKeyDown = (e: KeyboardEvent) => {
       if (isTransitioning) return;
-      
+
       switch (e.key) {
-        case 'ArrowDown':
+        case "ArrowDown":
           e.preventDefault();
           handleNext();
           break;
-        case 'ArrowUp':
+        case "ArrowUp":
           e.preventDefault();
           handlePrevious();
           break;
@@ -127,18 +143,18 @@ const HomePage: React.FC = () => {
     };
 
     // Remove any existing event listeners first
-    window.removeEventListener('wheel', handleWheel);
-    window.removeEventListener('keydown', handleKeyDown);
+    window.removeEventListener("wheel", handleWheel);
+    window.removeEventListener("keydown", handleKeyDown);
 
     // Add fresh event listeners with passive: false to allow preventDefault
-    window.addEventListener('wheel', handleWheel, { passive: false });
-    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener("wheel", handleWheel, { passive: false });
+    window.addEventListener("keydown", handleKeyDown);
 
     // Cleanup function
     return () => {
       clearTimeout(wheelTimeout);
-      window.removeEventListener('wheel', handleWheel);
-      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener("wheel", handleWheel);
+      window.removeEventListener("keydown", handleKeyDown);
     };
   }, [handleNext, handlePrevious, isTransitioning]);
 
@@ -148,9 +164,9 @@ const HomePage: React.FC = () => {
     <div className="h-screen overflow-hidden relative">
       {/* Home Navigation - Fixed overlay */}
       <div className="fixed bottom-8 left-1/2 transform -translate-x-1/2 z-50">
-        <HomeNavigation 
-          currentSection={currentSection} 
-          onNavigate={goToSection} 
+        <HomeNavigation
+          currentSection={currentSection}
+          onNavigate={goToSection}
         />
       </div>
 
@@ -175,8 +191,8 @@ const HomePage: React.FC = () => {
             onClick={() => goToSection(index)}
             className={`w-3 h-3 rounded-full transition-all duration-300 ${
               currentSection === index
-                ? 'bg-white scale-125'
-                : 'bg-white/50 hover:bg-white/75'
+                ? "bg-white scale-125"
+                : "bg-white/50 hover:bg-white/75"
             }`}
             disabled={isTransitioning}
           />
