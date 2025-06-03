@@ -7,10 +7,12 @@ import CaseStudiesSection from "@/components/home/CaseStudiesSection";
 import CtaSection from "@/components/home/CtaSection";
 import HomeNavigation from "@/components/HomeNavigation";
 import homeContent from "@/data/homeContent.json";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const HomePage: React.FC = () => {
   const [currentSection, setCurrentSection] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
+  const isMobile = useIsMobile();
 
   // Transform homeContent.features to match the expected interface
   const featuresData = {
@@ -163,12 +165,21 @@ const HomePage: React.FC = () => {
   return (
     <div className="h-screen overflow-hidden relative">
       {/* Home Navigation - Fixed overlay */}
-      <div className="fixed bottom-8 left-1/2 transform -translate-x-1/2 z-50">
-        <HomeNavigation
-          currentSection={currentSection}
-          onNavigate={goToSection}
-        />
-      </div>
+      {isMobile ? (
+        <div className="fixed top-4 right-4 z-50">
+          <HomeNavigation
+            currentSection={currentSection}
+            onNavigate={goToSection}
+          />
+        </div>
+      ) : (
+        <div className="fixed bottom-8 left-1/2 transform -translate-x-1/2 z-50">
+          <HomeNavigation
+            currentSection={currentSection}
+            onNavigate={goToSection}
+          />
+        </div>
+      )}
 
       <AnimatePresence mode="wait">
         <motion.div
