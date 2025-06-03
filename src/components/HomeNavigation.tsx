@@ -60,7 +60,7 @@ const HomeNavigation: React.FC<HomeNavigationProps> = ({
     return (
       <>
         <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
-          <SheetTrigger>
+          <SheetTrigger aria-label="Open navigation menu">
             <Button size="icon">
               <Menu className="h-4 w-4" />
             </Button>
