@@ -8,4 +8,13 @@ const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiO
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
 
-export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, 
+    {
+    auth: {
+      persistSession: true,       // ← Keep the session in localStorage
+      autoRefreshToken: true,     // ← (optional) auto-refresh tokens before they expire
+      detectSessionInUrl: true,   // ← (optional) for OAuth redirect flows
+      storageKey: "sb-mmortal-auth", // ← (optional) customize where to store session in localStorage
+    }
+  }
+);
