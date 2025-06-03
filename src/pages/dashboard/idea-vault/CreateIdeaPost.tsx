@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -21,6 +20,8 @@ interface IdeaFormState {
   isPublic: boolean;
 }
 
+const STORAGE_KEY = 'create_idea_post_form';
+
 const CreateIdeaPost = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -34,6 +35,24 @@ const CreateIdeaPost = () => {
     tags: [],
     isPublic: true
   });
+
+  // Load cached form data on mount
+  useEffect(() => {
+    const cached = localStorage.getItem(STORAGE_KEY);
+    if (cached) {
+      try {
+        const parsed = JSON.parse(cached);
+        setFormState(parsed);
+      } catch {
+        // ignore JSON parse errors
+      }
+    }
+  }, []);
+
+  // Save form state to localStorage on every change
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(formState));
+  }, [formState]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -70,7 +89,7 @@ const CreateIdeaPost = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!user) {
       toast({
         title: "Authentication Required",
@@ -79,7 +98,7 @@ const CreateIdeaPost = () => {
       });
       return;
     }
-    
+
     if (!formState.title || !formState.description) {
       toast({
         title: "Missing Information",
@@ -88,9 +107,9 @@ const CreateIdeaPost = () => {
       });
       return;
     }
-    
+
     setIsSubmitting(true);
-    
+
     try {
       const { data, error } = await supabase
         .from('idea_posts')
@@ -103,14 +122,17 @@ const CreateIdeaPost = () => {
           is_public: formState.isPublic
         })
         .select();
-        
+
       if (error) throw error;
-      
+
       toast({
         title: "Idea Created",
         description: "Your idea has been created successfully!",
       });
-      
+
+      // Clear cached form data on success
+      localStorage.removeItem(STORAGE_KEY);
+
       navigate('/dashboard/idea-vault');
     } catch (error: any) {
       console.error('Error creating idea:', error);
@@ -151,7 +173,7 @@ const CreateIdeaPost = () => {
                 required
               />
             </div>
-            
+
             <div className="space-y-2">
               <Label htmlFor="description">Short Description</Label>
               <Textarea
@@ -164,7 +186,7 @@ const CreateIdeaPost = () => {
                 className="h-20"
               />
             </div>
-            
+
             <div className="space-y-2">
               <Label>Detailed Explanation</Label>
               <Textarea
@@ -176,7 +198,7 @@ const CreateIdeaPost = () => {
                 className="min-h-[300px]"
               />
             </div>
-            
+
             <div className="space-y-2">
               <Label htmlFor="tags">Tags</Label>
               <div className="flex gap-2">
@@ -187,22 +209,22 @@ const CreateIdeaPost = () => {
                   onChange={(e) => setCurrentTag(e.target.value)}
                   onKeyDown={handleTagKeyDown}
                 />
-                <Button 
-                  type="button" 
+                <Button
+                  type="button"
                   onClick={handleAddTag}
                   variant="outline"
                 >
                   <PlusCircle className="h-4 w-4" />
                 </Button>
               </div>
-              
+
               {formState.tags.length > 0 && (
                 <div className="flex flex-wrap gap-2 mt-2">
                   {formState.tags.map(tag => (
                     <Badge key={tag} className="flex items-center gap-1">
                       {tag}
-                      <XCircle 
-                        className="h-3 w-3 cursor-pointer" 
+                      <XCircle
+                        className="h-3 w-3 cursor-pointer"
                         onClick={() => handleRemoveTag(tag)}
                       />
                     </Badge>
@@ -210,7 +232,7 @@ const CreateIdeaPost = () => {
                 </div>
               )}
             </div>
-            
+
             <div className="flex items-center space-x-2">
               <Switch
                 id="visibility"
@@ -232,14 +254,14 @@ const CreateIdeaPost = () => {
                   )}
                 </Label>
                 <p className="text-xs text-muted-foreground">
-                  {formState.isPublic 
-                    ? "Your idea will be visible to everyone" 
+                  {formState.isPublic
+                    ? "Your idea will be visible to everyone"
                     : "Your idea will be visible only to you"}
                 </p>
               </div>
             </div>
           </CardContent>
-          
+
           <CardFooter className="flex justify-between">
             <Button
               type="button"
@@ -248,8 +270,8 @@ const CreateIdeaPost = () => {
             >
               Cancel
             </Button>
-            <Button 
-              type="submit" 
+            <Button
+              type="submit"
               disabled={isSubmitting}
             >
               {isSubmitting ? "Creating..." : "Create Idea"}
