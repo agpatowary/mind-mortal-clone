@@ -21,7 +21,7 @@ interface CaseStudiesSectionProps {
 
 const CaseStudiesSection: React.FC<CaseStudiesSectionProps> = ({ data }) => {
   return (
-    <div className="min-h-screen flex flex-col justify-center items-center py-16 md:py-20 px-4 bg-muted/30">
+    <div className="min-h-screen flex flex-col justify-center items-center py-12 md:py-16 px-4 bg-muted/30">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -39,7 +39,7 @@ const CaseStudiesSection: React.FC<CaseStudiesSectionProps> = ({ data }) => {
           permanence.
         </p>
       </motion.div>
-      {/* <p className="text-xs md:text-base mb-1 md:mb-3">{study.description}</p> */}
+
       <Accordion type="single" collapsible className="w-full max-w-2xl mx-auto">
         {data.studies.map((study, index) => (
           <AccordionItem value={"item-" + index} key={index}>
