@@ -61,10 +61,85 @@ const HomeNavigation: React.FC<HomeNavigationProps> = ({
           <DrawerTrigger>
             <Button>Open</Button>
           </DrawerTrigger>
-          <DrawerContent>
+          <DrawerContent side="left">
             <DrawerHeader>
               <DrawerTitle>Hello</DrawerTitle>
             </DrawerHeader>
+            {sections.map((section, index) => (
+              <motion.div
+                key={section}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <Button
+                  variant={currentSection === index ? "default" : "ghost"}
+                  size="sm"
+                  onClick={() => onNavigate(index)}
+                  className={`whitespace-nowrap ${
+                    currentSection === index ? "font-medium" : ""
+                  }`}
+                >
+                  {section}
+                </Button>
+              </motion.div>
+            ))}
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={toggleDarkMode}
+              title={
+                isDarkMode ? "Switch to light mode" : "Switch to dark mode"
+              }
+            >
+              {isDarkMode ? (
+                <Sun className="h-4 w-4" />
+              ) : (
+                <Moon className="h-4 w-4" />
+              )}
+            </Button>
+            {isAuthenticated() ? (
+              <>
+                <motion.div
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <Button size="sm" onClick={() => navigate("/dashboard")}>
+                    Dashboard
+                  </Button>
+                </motion.div>
+                <motion.div
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <Button variant="outline" size="sm" onClick={handleSignOut}>
+                    Sign Out
+                  </Button>
+                </motion.div>
+              </>
+            ) : (
+              <>
+                <motion.div
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => navigate("/signin")}
+                  >
+                    Sign In
+                  </Button>
+                </motion.div>
+                <motion.div
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <Button size="sm" onClick={() => navigate("/signup")}>
+                    Sign Up
+                  </Button>
+                </motion.div>
+              </>
+            )}
             <DrawerFooter>
               <DrawerTitle>Hello</DrawerTitle>
             </DrawerFooter>
