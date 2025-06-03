@@ -67,6 +67,7 @@ const HomeNavigation: React.FC<HomeNavigationProps> = ({
           </SheetTrigger>
 
           <SheetContent side="left" className="bg-background/30">
+            {/* Sections navigation buttons */}
             {sections.map((section, index) => (
               <motion.div
                 key={section}
@@ -89,6 +90,7 @@ const HomeNavigation: React.FC<HomeNavigationProps> = ({
               </motion.div>
             ))}
 
+            {/* Dark mode toggle button */}
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
               <Button
                 variant="ghost"
@@ -106,6 +108,7 @@ const HomeNavigation: React.FC<HomeNavigationProps> = ({
               </Button>
             </motion.div>
 
+            {/* Sign in, Sign up & Dashboard buttons */}
             {isAuthenticated() ? (
               <>
                 <motion.div
