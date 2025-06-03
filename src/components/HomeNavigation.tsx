@@ -6,14 +6,6 @@ import { Menu, Moon, Sun } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Logo from "./Logo";
-import {
-  DrawerContent,
-  DrawerFooter,
-  DrawerHeader,
-  DrawerTitle,
-  DrawerTrigger,
-} from "./ui/drawer";
-import { Drawer } from "./ui/drawer";
 import { Sheet, SheetContent, SheetTrigger } from "./ui/sheet";
 
 interface HomeNavigationProps {
