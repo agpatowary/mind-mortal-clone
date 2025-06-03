@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useAuth } from "@/hooks/useAuth";
 import { motion } from "framer-motion";
-import { Moon, Sun } from "lucide-react";
+import { Menu, Moon, Sun } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Logo from "./Logo";
@@ -14,6 +14,7 @@ import {
   DrawerTrigger,
 } from "./ui/drawer";
 import { Drawer } from "./ui/drawer";
+import { Sheet, SheetContent, SheetTrigger } from "./ui/sheet";
 
 interface HomeNavigationProps {
   currentSection: number;
@@ -28,6 +29,7 @@ const HomeNavigation: React.FC<HomeNavigationProps> = ({
   const isMobile = useIsMobile();
   const { isAuthenticated, signOut } = useAuth();
   const [isDarkMode, setIsDarkMode] = useState(true);
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
 
   useEffect(() => {
     const storedDarkMode = localStorage.getItem("darkMode");
@@ -57,14 +59,14 @@ const HomeNavigation: React.FC<HomeNavigationProps> = ({
   if (isMobile) {
     return (
       <>
-        <Drawer>
-          <DrawerTrigger>
-            <Button>Open</Button>
-          </DrawerTrigger>
-          <DrawerContent side="left">
-            <DrawerHeader>
-              <DrawerTitle>Hello</DrawerTitle>
-            </DrawerHeader>
+        <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+          <SheetTrigger>
+            <Button size="icon">
+              <Menu className="h-4 w-4" />
+            </Button>
+          </SheetTrigger>
+
+          <SheetContent side="left" className="bg-background/30">
             {sections.map((section, index) => (
               <motion.div
                 key={section}
@@ -74,7 +76,10 @@ const HomeNavigation: React.FC<HomeNavigationProps> = ({
                 <Button
                   variant={currentSection === index ? "default" : "ghost"}
                   size="sm"
-                  onClick={() => onNavigate(index)}
+                  onClick={() => {
+                    onNavigate(index);
+                    setIsSheetOpen(false);
+                  }}
                   className={`whitespace-nowrap ${
                     currentSection === index ? "font-medium" : ""
                   }`}
@@ -83,27 +88,38 @@ const HomeNavigation: React.FC<HomeNavigationProps> = ({
                 </Button>
               </motion.div>
             ))}
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={toggleDarkMode}
-              title={
-                isDarkMode ? "Switch to light mode" : "Switch to dark mode"
-              }
-            >
-              {isDarkMode ? (
-                <Sun className="h-4 w-4" />
-              ) : (
-                <Moon className="h-4 w-4" />
-              )}
-            </Button>
+
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={toggleDarkMode}
+                title={
+                  isDarkMode ? "Switch to light mode" : "Switch to dark mode"
+                }
+              >
+                {isDarkMode ? (
+                  <Sun className="h-4 w-4" />
+                ) : (
+                  <Moon className="h-4 w-4" />
+                )}
+              </Button>
+            </motion.div>
+
             {isAuthenticated() ? (
               <>
                 <motion.div
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                 >
-                  <Button size="sm" onClick={() => navigate("/dashboard")}>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      navigate("/dashboard");
+                      setIsSheetOpen(false);
+                    }}
+                  >
                     Dashboard
                   </Button>
                 </motion.div>
@@ -111,7 +127,7 @@ const HomeNavigation: React.FC<HomeNavigationProps> = ({
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                 >
-                  <Button variant="outline" size="sm" onClick={handleSignOut}>
+                  <Button variant="ghost" size="sm" onClick={handleSignOut}>
                     Sign Out
                   </Button>
                 </motion.div>
@@ -123,7 +139,7 @@ const HomeNavigation: React.FC<HomeNavigationProps> = ({
                   whileTap={{ scale: 0.95 }}
                 >
                   <Button
-                    variant="outline"
+                    variant="ghost"
                     size="sm"
                     onClick={() => navigate("/signin")}
                   >
@@ -134,17 +150,18 @@ const HomeNavigation: React.FC<HomeNavigationProps> = ({
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                 >
-                  <Button size="sm" onClick={() => navigate("/signup")}>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => navigate("/signup")}
+                  >
                     Sign Up
                   </Button>
                 </motion.div>
               </>
             )}
-            <DrawerFooter>
-              <DrawerTitle>Hello</DrawerTitle>
-            </DrawerFooter>
-          </DrawerContent>
-        </Drawer>
+          </SheetContent>
+        </Sheet>
       </>
     );
   }
