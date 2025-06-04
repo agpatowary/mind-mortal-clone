@@ -33,11 +33,6 @@ const CaseStudiesSection: React.FC<CaseStudiesSectionProps> = ({ data }) => {
           {data.title}
         </h2>
         <div className="h-1 w-20 bg-primary mx-auto"></div>
-        <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
-          Civilizations used monuments. We use memory. From pyramids in Egypt to
-          cave drawings in France, humans have always tried to etch memory into
-          permanence.
-        </p>
       </motion.div>
 
       <Accordion type="single" collapsible className="w-full max-w-2xl mx-auto">

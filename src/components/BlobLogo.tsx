@@ -28,7 +28,7 @@ const BlobLogo: React.FC<BlobLogoProps> = ({
   // Logo variants
   const colorVariants = {
     'default': {
-      bgGradient: "from-[#F97316] to-[#F97316]/80",
+      bgGradient: "from-white to-white/90",
       textColor: "text-white",
       logoColor: "#FFFFFF"
     },
@@ -38,7 +38,7 @@ const BlobLogo: React.FC<BlobLogoProps> = ({
       logoColor: "#F97316"
     },
     'dark': {
-      bgGradient: "from-[#F97316] to-[#F97316]/80",
+      bgGradient: "from-white to-white/90",
       textColor: "text-white",
       logoColor: "#FFFFFF"
     }

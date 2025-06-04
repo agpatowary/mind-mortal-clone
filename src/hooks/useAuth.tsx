@@ -36,65 +36,102 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const { toast } = useToast();
 
   useEffect(() => {
-    const { data } = supabase.auth.onAuthStateChange(
-      async (event, newSession) => {
-        console.log('Auth state change:', event, newSession ? 'session exists' : 'no session');
-        
-        if (event === 'SIGNED_OUT') {
-          setSession(null);
-          setUser(null);
-          setProfile(null);
-          setRoles(['guest']);
-          return;
-        }
-        
-        setSession(newSession);
-        setUser(newSession?.user ?? null);
-        
-        if (newSession?.user) {
-          await fetchUserProfile(newSession.user.id);
-          await fetchUserRoles(newSession.user.id);
-        }
+  // 1) Subscribe first, but bail early on INITIAL_SESSION / SIGNED_IN
+  const { data: subscription } = supabase.auth.onAuthStateChange(
+    async (event, newSession) => {
+      console.log('[onAuthStateChange] event:', event, newSession ? 'session exists' : 'no session');
+
+      // If the user just signed out, clear state & remain not-loading (we know there's no user)
+      if (event === 'SIGNED_OUT') {
+        setUser(null);
+        setSession(null);
+        setProfile(null);
+        setRoles(['guest']);
+        // We do not set isLoading here, because initializeAuth will already be done.
+        return;
       }
-    );
 
-    setAuthSubscription(data);
+      // If Supabase is replaying a saved session on page load, you typically get "INITIAL_SESSION"
+      // Or it may fire "SIGNED_IN" right after a cookie‐session is detected.
+      if ((event === 'INITIAL_SESSION' || event === 'SIGNED_IN') && newSession?.user) {
+        // Immediately populate user/session and turn off loading
+        setUser(newSession.user);
+        setSession(newSession);
+        setIsLoading(false);
 
-    const initializeAuth = async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        
-        if (session?.user) {
-          setSession(session);
-          setUser(session.user);
-          await fetchUserProfile(session.user.id);
-          await fetchUserRoles(session.user.id);
-        } else {
-          setUser(null);
-          setSession(null);
-          setProfile(null);
-          setRoles(['guest']);
-        }
-      } catch (error) {
-        console.error('Error initializing auth:', error);
-        toast({
-          title: "Authentication Error",
-          description: "There was a problem with authentication.",
-          variant: "destructive"
-        });
-      } finally {
+        // Now fetch profile & roles in the background. If these hang, they won't block the UI.
+        fetchUserProfile(newSession.user.id).catch(console.error);
+        fetchUserRoles(newSession.user.id).catch(console.error);
+        return;
+      }
+
+      // (Optional) If token refresh events also matter:
+      if (event === 'TOKEN_REFRESHED' && newSession?.user) {
+        setUser(newSession.user);
+        setSession(newSession);
+        setIsLoading(false);
+        fetchUserProfile(newSession.user.id).catch(console.error);
+        fetchUserRoles(newSession.user.id).catch(console.error);
+        return;
+      }
+
+      // For any other event, just unfreeze the UI
+      setIsLoading(false);
+    }
+  );
+
+  setAuthSubscription(subscription);
+
+  // 2) In parallel, do a one‐time initializeAuth to handle the “no session” case
+  const initializeAuth = async () => {
+    console.log('[initializeAuth] start');
+    try {
+      // This will be null if there's no saved session in localStorage / cookie
+      const { data: { session } } = await supabase.auth.getSession();
+      console.log('[initializeAuth] got session:', session);
+
+      if (session?.user) {
+        // We already handled the “SIGNED_IN” event above, so you could skip,
+        // but in case the listener fires too slowly, we ensure user/session get set.
+        setUser(session.user);
+        setSession(session);
+        setIsLoading(false);
+        // Fire these in the background too
+        fetchUserProfile(session.user.id).catch(console.error);
+        fetchUserRoles(session.user.id).catch(console.error);
+      } else {
+        // No user found → guest
+        setUser(null);
+        setSession(null);
+        setProfile(null);
+        setRoles(['guest']);
         setIsLoading(false);
       }
-    };
+    } catch (err) {
+      console.error('[initializeAuth] ERROR:', err);
+      toast({
+        title: 'Authentication Error',
+        description: 'There was a problem checking your session.',
+        variant: 'destructive',
+      });
+      setUser(null);
+      setSession(null);
+      setProfile(null);
+      setRoles(['guest']);
+      setIsLoading(false);
+    }
+  };
 
-    initializeAuth();
+  initializeAuth();
 
-    return () => {
-      if (authSubscription) {
-        authSubscription.unsubscribe();
-      }
-    };
-  }, []);
+  // 3) Cleanup on unmount
+  return () => {
+    if (authSubscription) {
+      authSubscription.unsubscribe(); // <-- TS complains: ‘unsubscribe’ does not exist on { subscription: RealtimeSubscription }
+    }
+  };
+}, []);
+
 
   const fetchUserProfile = async (userId: string) => {
     try {

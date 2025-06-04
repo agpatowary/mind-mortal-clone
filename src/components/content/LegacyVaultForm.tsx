@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -24,6 +23,9 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Badge } from "@/components/ui/badge";
+import { useNavigate } from 'react-router-dom';
+
+const STORAGE_KEY = 'legacy_vault_form_data';
 
 const legacyVaultSchema = z.object({
   title: z.string().min(3, { message: "Title must be at least 3 characters long" }),
@@ -42,17 +44,43 @@ const LegacyVaultForm: React.FC = () => {
   const [mediaPreview, setMediaPreview] = useState<string[]>([]);
   const { toast } = useToast();
   const { user } = useAuth();
+  const navigate = useNavigate();
   
+  // Load cached data from localStorage for default values:
+  const cachedData = typeof window !== "undefined" ? localStorage.getItem(STORAGE_KEY) : null;
+  const initialFormValues = cachedData ? JSON.parse(cachedData) : null;
+
   const form = useForm<LegacyVaultFormValues>({
     resolver: zodResolver(legacyVaultSchema),
     defaultValues: {
-      title: "",
-      content: "",
-      category: "",
-      visibility: "draft",
-      subcategory: "public-gallery",
+      title: initialFormValues?.title ?? "",
+      content: initialFormValues?.content ?? "",
+      category: initialFormValues?.category ?? "",
+      visibility: initialFormValues?.visibility ?? "draft",
+      subcategory: initialFormValues?.subcategory ?? "public-gallery",
+      releaseDate: initialFormValues?.releaseDate ? new Date(initialFormValues.releaseDate) : undefined,
     },
   });
+
+  // Sync local activeTab with cached data on mount
+  useEffect(() => {
+    if (initialFormValues?.subcategory) {
+      setActiveTab(initialFormValues.subcategory);
+    }
+  }, [initialFormValues]);
+
+  // Save form data + activeTab to localStorage whenever form data or tab changes
+  useEffect(() => {
+    const subscription = form.watch((value) => {
+      const dataToCache = {
+        ...value,
+        releaseDate: value.releaseDate ? value.releaseDate.toISOString() : null,
+        subcategory: activeTab,
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToCache));
+    });
+    return () => subscription.unsubscribe();
+  }, [form, activeTab]);
 
   const onSubmit = async (values: LegacyVaultFormValues) => {
     try {
@@ -65,9 +93,8 @@ const LegacyVaultForm: React.FC = () => {
         return;
       }
 
-      // Upload media files if any
+      // Upload media files if any (no caching for files)
       const mediaUrls: string[] = [];
-      
       if (mediaFiles.length > 0) {
         for (const file of mediaFiles) {
           const fileExt = file.name.split('.').pop();
@@ -77,20 +104,15 @@ const LegacyVaultForm: React.FC = () => {
           const { data: uploadData, error: uploadError } = await supabase.storage
             .from('legacy_media')
             .upload(filePath, file);
-            
-          if (uploadError) {
-            throw uploadError;
-          }
-          
+          if (uploadError) throw uploadError;
+
           const { data: { publicUrl } } = supabase.storage
             .from('legacy_media')
             .getPublicUrl(filePath);
-            
           mediaUrls.push(publicUrl);
         }
       }
 
-      // Prepare data for the database
       const legacyPost = {
         title: values.title,
         content: values.content,
@@ -102,7 +124,6 @@ const LegacyVaultForm: React.FC = () => {
         is_time_capsule: values.subcategory === "time-capsule",
       };
 
-      // Add release_date for time capsules
       if (values.subcategory === "time-capsule" && values.releaseDate) {
         Object.assign(legacyPost, { release_date: values.releaseDate.toISOString() });
       }
@@ -118,10 +139,13 @@ const LegacyVaultForm: React.FC = () => {
         description: "Your legacy post has been created successfully.",
       });
 
-      // Reset form
+      // Clear local storage cache on success
+      localStorage.removeItem(STORAGE_KEY);
+
       form.reset();
       setMediaFiles([]);
       setMediaPreview([]);
+      navigate('/dashboard/legacy-vault');
     } catch (error) {
       console.error("Error creating legacy post:", error);
       toast({
@@ -164,6 +188,13 @@ const LegacyVaultForm: React.FC = () => {
     
     setMediaFiles(prev => prev.filter((_, i) => i !== index));
     setMediaPreview(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const handleCancel = () => {
+    form.reset();
+    setMediaFiles([]);
+    setMediaPreview([]);
+    navigate('/dashboard/legacy-vault');
   };
 
   return (
@@ -351,7 +382,7 @@ const LegacyVaultForm: React.FC = () => {
             />
             
             <div className="flex justify-end space-x-4">
-              <Button type="button" variant="outline" onClick={() => form.reset()}>
+              <Button type="button" variant="outline" onClick={handleCancel}>
                 Cancel
               </Button>
               <Button type="submit">
