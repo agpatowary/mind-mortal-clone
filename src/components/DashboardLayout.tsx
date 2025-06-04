@@ -93,7 +93,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
-          <div className="container mx-auto p-6">
+          <div className="container mx-auto sm:p-6 md:p-6 lg:p-6 xl:p-6 2xl:p-6">
             {children}
           </div>
         </main>

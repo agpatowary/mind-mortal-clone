@@ -212,7 +212,7 @@ const LegacyVaultForm: React.FC = () => {
   };
 
   return (
-    <div className="w-full p-4">
+    <div className="w-full sm:p-4 md:p-6 lg:p-6 xl:p-6 2xl:p-6">
       <h2 className="text-2xl font-bold mb-6">Create Legacy Post</h2>
 
       <Tabs defaultValue="public-gallery" onValueChange={handleTabChange}>
