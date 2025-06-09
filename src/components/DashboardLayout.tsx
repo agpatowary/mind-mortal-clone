@@ -1,7 +1,6 @@
-
-import React from 'react';
-import DashboardSidebar from './DashboardSidebar';
-import DashboardAnimatedBackground from './dashboard/DashboardAnimatedBackground';
+import React from "react";
+import DashboardSidebar from "./DashboardSidebar";
+import DashboardAnimatedBackground from "./dashboard/DashboardAnimatedBackground";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -11,9 +10,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useAuth } from '@/hooks/useAuth';
-import { useNavigate } from 'react-router-dom';
-import { User, Settings, Shield, LogOut } from 'lucide-react';
+import { useAuth } from "@/hooks/useAuth";
+import { useNavigate } from "react-router-dom";
+import { User, Settings, Shield, LogOut } from "lucide-react";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -24,15 +23,15 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   const navigate = useNavigate();
 
   const handleProfileClick = () => {
-    navigate('/dashboard/profile');
+    navigate("/dashboard/profile");
   };
 
   const handleSettingsClick = () => {
-    navigate('/dashboard/settings');
+    navigate("/dashboard/settings");
   };
 
   const handleAdminClick = () => {
-    navigate('/admin');
+    navigate("/admin");
   };
 
   const handleSignOut = async () => {
@@ -42,16 +41,16 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   const getUserInitials = () => {
     if (profile?.full_name) {
       return profile.full_name
-        .split(' ')
+        .split(" ")
         .map((name: string) => name[0])
-        .join('')
+        .join("")
         .toUpperCase()
         .slice(0, 2);
     }
     if (user?.email) {
       return user.email[0].toUpperCase();
     }
-    return 'U';
+    return "U";
   };
 
   return (
@@ -63,9 +62,15 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
             <div></div>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                <Button
+                  variant="ghost"
+                  className="relative h-8 w-8 rounded-full"
+                >
                   <Avatar className="h-8 w-8">
-                    <AvatarImage src={profile?.avatar_url} alt={profile?.full_name || user?.email} />
+                    <AvatarImage
+                      src={profile?.avatar_url}
+                      alt={profile?.full_name || user?.email}
+                    />
                     <AvatarFallback>{getUserInitials()}</AvatarFallback>
                   </Avatar>
                 </Button>
@@ -93,9 +98,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
-          <div className="container mx-auto sm:p-6 md:p-6 lg:p-6 xl:p-6 2xl:p-6">
-            {children}
-          </div>
+          <div className="container mx-auto p-6 xs:p-0">{children}</div>
         </main>
       </div>
     </DashboardAnimatedBackground>
