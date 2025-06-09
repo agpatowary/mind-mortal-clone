@@ -450,11 +450,18 @@ const LegacyVaultForm: React.FC = () => {
               )}
             />
 
-            <div className="flex justify-end space-x-4">
-              <Button type="button" variant="outline" onClick={handleCancel}>
+            <div className="flex justify-end space-x-4 xs:space-x-0 xs:flex-col xs:items-start xs:gap-2">
+              <Button
+                className="xs:w-full"
+                type="button"
+                variant="outline"
+                onClick={handleCancel}
+              >
                 Cancel
               </Button>
-              <Button type="submit">Publish</Button>
+              <Button className="xs:w-full" type="submit">
+                Publish
+              </Button>
             </div>
           </form>
         </Form>
