@@ -13,8 +13,12 @@ export default {
 		container: {
 			center: true,
 			padding: {
-			  DEFAULT: '8px',
+			  DEFAULT: '0.5rem',
 			  sm: '2rem',
+			  md: '2rem',
+			  lg: '2rem',
+			  xl: '2rem',
+			  '2xl': '2rem',
 			},
 			screens: {
 			  '2xl': '1400px'
@@ -92,6 +96,9 @@ export default {
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
 				'accordion-up': 'accordion-up 0.2s ease-out'
+			},
+			screens: {
+				'xs': { min: '320px', max: '390px' },
 			}
 		}
 	},
