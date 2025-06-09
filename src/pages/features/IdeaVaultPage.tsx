@@ -1,4 +1,3 @@
-import React from 'react';
 import { motion } from 'framer-motion';
 import { Lightbulb, GanttChart, Users, Rocket, ArrowRight, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
