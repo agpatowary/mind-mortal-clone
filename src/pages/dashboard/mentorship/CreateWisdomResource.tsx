@@ -141,7 +141,7 @@ const CreateWisdomResource = () => {
         <CardHeader>
           <CardTitle>Resource Information</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="xs:p-2">
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
               <Label htmlFor="title">Title</Label>
@@ -241,8 +241,9 @@ const CreateWisdomResource = () => {
               </div>
             </div>
 
-            <div className="pt-4 flex justify-end space-x-2">
+            <div className="pt-4 flex justify-end space-x-2 xs:space-x-0 xs:flex-col xs:items-start xs:gap-2">
               <Button
+                className="xs:w-full"
                 type="button"
                 variant="outline"
                 onClick={() => navigate("/dashboard/mentorship")}
@@ -250,7 +251,11 @@ const CreateWisdomResource = () => {
               >
                 Cancel
               </Button>
-              <Button type="submit" disabled={isSubmitting}>
+              <Button
+                className="xs:w-full"
+                type="submit"
+                disabled={isSubmitting}
+              >
                 {isSubmitting ? (
                   <>
                     <FileCheck className="mr-2 h-4 w-4 animate-pulse" />

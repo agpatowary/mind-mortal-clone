@@ -1,16 +1,22 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
-import { useToast } from '@/hooks/use-toast';
-import { useAuth } from '@/hooks/useAuth';
-import { supabase } from '@/integrations/supabase/client';
-import { Badge } from '@/components/ui/badge';
-import { XCircle, PlusCircle, Lightbulb, Eye, EyeOff } from 'lucide-react';
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
+import { Badge } from "@/components/ui/badge";
+import { XCircle, PlusCircle, Lightbulb, Eye, EyeOff } from "lucide-react";
 
 interface IdeaFormState {
   title: string;
@@ -20,20 +26,20 @@ interface IdeaFormState {
   isPublic: boolean;
 }
 
-const STORAGE_KEY = 'create_idea_post_form';
+const STORAGE_KEY = "create_idea_post_form";
 
 const CreateIdeaPost = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [currentTag, setCurrentTag] = useState('');
+  const [currentTag, setCurrentTag] = useState("");
   const [formState, setFormState] = useState<IdeaFormState>({
-    title: '',
-    description: '',
-    content: '',
+    title: "",
+    description: "",
+    content: "",
     tags: [],
-    isPublic: true
+    isPublic: true,
   });
 
   // Load cached form data on mount
@@ -54,37 +60,39 @@ const CreateIdeaPost = () => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(formState));
   }, [formState]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     const { name, value } = e.target;
-    setFormState(prev => ({ ...prev, [name]: value }));
+    setFormState((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleAddTag = () => {
     if (currentTag && !formState.tags.includes(currentTag)) {
-      setFormState(prev => ({
+      setFormState((prev) => ({
         ...prev,
-        tags: [...prev.tags, currentTag]
+        tags: [...prev.tags, currentTag],
       }));
-      setCurrentTag('');
+      setCurrentTag("");
     }
   };
 
   const handleTagKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
+    if (e.key === "Enter") {
       e.preventDefault();
       handleAddTag();
     }
   };
 
   const handleRemoveTag = (tag: string) => {
-    setFormState(prev => ({
+    setFormState((prev) => ({
       ...prev,
-      tags: prev.tags.filter(t => t !== tag)
+      tags: prev.tags.filter((t) => t !== tag),
     }));
   };
 
   const handleToggleVisibility = () => {
-    setFormState(prev => ({ ...prev, isPublic: !prev.isPublic }));
+    setFormState((prev) => ({ ...prev, isPublic: !prev.isPublic }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -94,7 +102,7 @@ const CreateIdeaPost = () => {
       toast({
         title: "Authentication Required",
         description: "You must be signed in to create ideas.",
-        variant: "destructive"
+        variant: "destructive",
       });
       return;
     }
@@ -103,7 +111,7 @@ const CreateIdeaPost = () => {
       toast({
         title: "Missing Information",
         description: "Please provide a title and description for your idea.",
-        variant: "destructive"
+        variant: "destructive",
       });
       return;
     }
@@ -112,14 +120,14 @@ const CreateIdeaPost = () => {
 
     try {
       const { data, error } = await supabase
-        .from('idea_posts')
+        .from("idea_posts")
         .insert({
           title: formState.title,
           description: formState.description,
           content: formState.content,
           user_id: user.id,
           tags: formState.tags,
-          is_public: formState.isPublic
+          is_public: formState.isPublic,
         })
         .select();
 
@@ -133,13 +141,14 @@ const CreateIdeaPost = () => {
       // Clear cached form data on success
       localStorage.removeItem(STORAGE_KEY);
 
-      navigate('/dashboard/idea-vault');
+      navigate("/dashboard/idea-vault");
     } catch (error: any) {
-      console.error('Error creating idea:', error);
+      console.error("Error creating idea:", error);
       toast({
         title: "Creation Failed",
-        description: error.message || "Failed to create your idea. Please try again.",
-        variant: "destructive"
+        description:
+          error.message || "Failed to create your idea. Please try again.",
+        variant: "destructive",
       });
     } finally {
       setIsSubmitting(false);
@@ -161,7 +170,7 @@ const CreateIdeaPost = () => {
           <CardHeader>
             <CardTitle>Idea Details</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="xs:p-2 space-y-4">
             <div className="space-y-2">
               <Label htmlFor="title">Title</Label>
               <Input
@@ -209,18 +218,14 @@ const CreateIdeaPost = () => {
                   onChange={(e) => setCurrentTag(e.target.value)}
                   onKeyDown={handleTagKeyDown}
                 />
-                <Button
-                  type="button"
-                  onClick={handleAddTag}
-                  variant="outline"
-                >
+                <Button type="button" onClick={handleAddTag} variant="outline">
                   <PlusCircle className="h-4 w-4" />
                 </Button>
               </div>
 
               {formState.tags.length > 0 && (
                 <div className="flex flex-wrap gap-2 mt-2">
-                  {formState.tags.map(tag => (
+                  {formState.tags.map((tag) => (
                     <Badge key={tag} className="flex items-center gap-1">
                       {tag}
                       <XCircle
@@ -262,18 +267,16 @@ const CreateIdeaPost = () => {
             </div>
           </CardContent>
 
-          <CardFooter className="flex justify-between">
+          <CardFooter className="flex justify-between xs:flex-col xs:items-start xs:gap-2 xs:p-2">
             <Button
+              className="xs:w-full"
               type="button"
               variant="outline"
-              onClick={() => navigate('/dashboard/idea-vault')}
+              onClick={() => navigate("/dashboard/idea-vault")}
             >
               Cancel
             </Button>
-            <Button
-              type="submit"
-              disabled={isSubmitting}
-            >
+            <Button className="xs:w-full" type="submit" disabled={isSubmitting}>
               {isSubmitting ? "Creating..." : "Create Idea"}
             </Button>
           </CardFooter>

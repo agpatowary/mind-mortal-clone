@@ -1,15 +1,22 @@
-import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
+import React, { useState, useEffect } from "react";
+import { motion } from "framer-motion";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+  CardFooter,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Users, Plus, BookOpen, Star, Award } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/hooks/useAuth';
-import { useNavigate } from 'react-router-dom';
-import PostInteractions from '@/components/social/PostInteractions';
-import PostDetailsModal from '@/components/modals/PostDetailsModal';
+import { Users, Plus, BookOpen, Star, Award } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { useNavigate } from "react-router-dom";
+import PostInteractions from "@/components/social/PostInteractions";
+import PostDetailsModal from "@/components/modals/PostDetailsModal";
 import { Badge } from "@/components/ui/badge";
-import DashboardAnimatedBackground from '@/components/dashboard/DashboardAnimatedBackground';
+import DashboardAnimatedBackground from "@/components/dashboard/DashboardAnimatedBackground";
 
 const MentorshipPage: React.FC = () => {
   const [resources, setResources] = useState<any[]>([]);
@@ -29,29 +36,29 @@ const MentorshipPage: React.FC = () => {
     try {
       setLoading(true);
       const { data, error } = await supabase
-        .from('wisdom_resources')
-        .select('*')
-        .order('created_at', { ascending: false });
+        .from("wisdom_resources")
+        .select("*")
+        .order("created_at", { ascending: false });
 
       if (error) {
-        console.error('Error fetching resources:', error);
+        console.error("Error fetching resources:", error);
       } else {
         setResources(data || []);
       }
     } catch (err) {
-      console.error('Error in fetch operation:', err);
+      console.error("Error in fetch operation:", err);
     } finally {
       setLoading(false);
     }
   };
 
   const handleCreateResource = () => {
-    navigate('/dashboard/mentorship/create');
+    navigate("/dashboard/mentorship/create");
   };
 
   const handleBecomeMentor = () => {
     // Navigate to mentor application form
-    navigate('/dashboard/become-mentor');
+    navigate("/dashboard/become-mentor");
   };
 
   const handleViewDetails = (resource: any) => {
@@ -64,9 +71,9 @@ const MentorshipPage: React.FC = () => {
     visible: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.1
-      }
-    }
+        staggerChildren: 0.1,
+      },
+    },
   };
 
   const itemVariants = {
@@ -77,18 +84,18 @@ const MentorshipPage: React.FC = () => {
       transition: {
         type: "spring",
         stiffness: 100,
-        damping: 10
-      }
-    }
+        damping: 10,
+      },
+    },
   };
 
   const getResourceTypeIcon = (type: string) => {
     switch (type) {
-      case 'article':
+      case "article":
         return <BookOpen className="h-5 w-5 text-blue-500" />;
-      case 'video':
+      case "video":
         return <Users className="h-5 w-5 text-green-500" />;
-      case 'course':
+      case "course":
         return <Award className="h-5 w-5 text-purple-500" />;
       default:
         return <BookOpen className="h-5 w-5 text-primary" />;
@@ -104,7 +111,7 @@ const MentorshipPage: React.FC = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <div className="flex justify-between items-center">
+          <div className="flex justify-between items-center xs:flex-col xs:items-start xs:gap-2">
             <div>
               <h1 className="text-3xl font-bold">Mentorship</h1>
               <p className="text-muted-foreground mt-2">
@@ -112,7 +119,7 @@ const MentorshipPage: React.FC = () => {
               </p>
             </div>
             {profile?.is_mentor ? (
-              <Button 
+              <Button
                 className="flex items-center gap-2"
                 onClick={handleCreateResource}
               >
@@ -120,7 +127,7 @@ const MentorshipPage: React.FC = () => {
                 Create Resource
               </Button>
             ) : (
-              <Button 
+              <Button
                 className="flex items-center gap-2"
                 onClick={handleBecomeMentor}
               >
@@ -142,9 +149,9 @@ const MentorshipPage: React.FC = () => {
             animate="visible"
             className="grid grid-cols-1 gap-6"
           >
-            {resources.map(resource => (
-              <motion.div 
-                key={resource.id} 
+            {resources.map((resource) => (
+              <motion.div
+                key={resource.id}
                 variants={itemVariants}
                 whileHover={{ scale: 1.01 }}
                 transition={{ type: "spring", stiffness: 300 }}
@@ -167,19 +174,22 @@ const MentorshipPage: React.FC = () => {
                       )}
                     </CardTitle>
                     <CardDescription className="flex items-center gap-4">
-                      <span>Created on {new Date(resource.created_at).toLocaleDateString()}</span>
+                      <span>
+                        Created on{" "}
+                        {new Date(resource.created_at).toLocaleDateString()}
+                      </span>
                       <span className="flex items-center gap-1">
                         <Users className="h-4 w-4" />
                         {resource.views_count || 0} views
                       </span>
-                      <Badge variant="outline">
-                        {resource.resource_type}
-                      </Badge>
+                      <Badge variant="outline">{resource.resource_type}</Badge>
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
                     {resource.description && (
-                      <p className="text-muted-foreground mb-3">{resource.description}</p>
+                      <p className="text-muted-foreground mb-3">
+                        {resource.description}
+                      </p>
                     )}
                     {resource.tags && resource.tags.length > 0 && (
                       <div className="flex flex-wrap gap-2 mt-3">
@@ -192,14 +202,14 @@ const MentorshipPage: React.FC = () => {
                     )}
                   </CardContent>
                   <CardFooter className="flex flex-col items-stretch">
-                    <PostInteractions 
-                      postId={resource.id} 
+                    <PostInteractions
+                      postId={resource.id}
                       postType="wisdom_resource"
                       onUpdate={fetchResources}
                     />
                     <div className="flex justify-end mt-4">
-                      <Button 
-                        variant="outline" 
+                      <Button
+                        variant="outline"
                         size="sm"
                         onClick={() => handleViewDetails(resource)}
                       >
@@ -216,13 +226,17 @@ const MentorshipPage: React.FC = () => {
                 <Card className="border-dashed">
                   <CardContent className="flex flex-col items-center justify-center py-12">
                     <Users className="h-12 w-12 mb-4 text-muted-foreground" />
-                    <h3 className="text-xl font-medium mb-2">No resources yet</h3>
+                    <h3 className="text-xl font-medium mb-2">
+                      No resources yet
+                    </h3>
                     <p className="text-muted-foreground mb-6 text-center max-w-md">
-                      Start sharing your knowledge and experience with the community
+                      Start sharing your knowledge and experience with the
+                      community
                     </p>
                     {profile?.is_mentor ? (
                       <Button onClick={handleCreateResource}>
-                        <Plus className="h-4 w-4 mr-2" /> Share Your First Resource
+                        <Plus className="h-4 w-4 mr-2" /> Share Your First
+                        Resource
                       </Button>
                     ) : (
                       <Button onClick={handleBecomeMentor}>
