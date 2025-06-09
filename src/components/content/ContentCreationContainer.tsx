@@ -1,6 +1,6 @@
-import React, { useState, useEffect, ReactNode } from 'react';
-import LegacyVaultForm from './LegacyVaultForm';
-import { RouteInfo } from '@/types';
+import { RouteInfo } from "@/types";
+import React, { ReactNode } from "react";
+import LegacyVaultForm from "./LegacyVaultForm";
 
 interface ContentCreationContainerProps {
   initialTab?: string;
@@ -11,13 +11,13 @@ interface ContentCreationContainerProps {
   icon?: ReactNode;
 }
 
-const ContentCreationContainer: React.FC<ContentCreationContainerProps> = ({ 
-  initialTab, 
+const ContentCreationContainer: React.FC<ContentCreationContainerProps> = ({
+  initialTab,
   routeInfo,
   children,
   title,
   description,
-  icon
+  icon,
 }) => {
   // If children is provided, render it directly
   if (children) {
@@ -36,7 +36,7 @@ const ContentCreationContainer: React.FC<ContentCreationContainerProps> = ({
   }
 
   // Otherwise, render the LegacyVaultForm
-  return (
+  return (  
     <div className="container mx-auto py-6">
       <LegacyVaultForm />
     </div>

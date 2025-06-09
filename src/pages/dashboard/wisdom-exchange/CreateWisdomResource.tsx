@@ -1,24 +1,28 @@
-
-import React from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Users } from 'lucide-react';
-import { motion } from 'framer-motion';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { motion } from "framer-motion";
+import { Users } from "lucide-react";
+import { useLocation, useNavigate } from "react-router-dom";
 
 // Import the actual content creation component
-import ContentCreationContainer from '@/components/content/ContentCreationContainer';
-import { RouteInfo } from '@/types';
+import ContentCreationContainer from "@/components/content/ContentCreationContainer";
+import { RouteInfo } from "@/types";
 
 const CreateWisdomResource = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  
+
   // Create a properly typed routeInfo object
   const routeInfo: RouteInfo = {
-    returnPath: '/dashboard/mentorship',
-    pathname: location.pathname
+    returnPath: "/dashboard/mentorship",
+    pathname: location.pathname,
   };
-  
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -36,8 +40,8 @@ const CreateWisdomResource = () => {
             Share your knowledge and connect with others seeking guidance.
           </CardDescription>
         </CardHeader>
-        <CardContent className="pt-6">
-          <ContentCreationContainer 
+        <CardContent className="xs:p-0 pt-6">
+          <ContentCreationContainer
             initialTab="mentorship"
             routeInfo={routeInfo}
           />

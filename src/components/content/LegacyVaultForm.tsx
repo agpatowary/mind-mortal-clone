@@ -1,36 +1,46 @@
-import React, { useState, useEffect } from 'react';
-import { z } from "zod";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { 
-  Form, 
-  FormControl, 
-  FormField, 
-  FormItem, 
-  FormLabel, 
-  FormMessage 
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
+import { cn } from "@/lib/utils";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
 import { Calendar as CalendarIcon, ImagePlus, X } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/hooks/useAuth";
-import { Badge } from "@/components/ui/badge";
-import { useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import { useNavigate } from "react-router-dom";
+import { z } from "zod";
 
-const STORAGE_KEY = 'legacy_vault_form_data';
+const STORAGE_KEY = "legacy_vault_form_data";
 
 const legacyVaultSchema = z.object({
-  title: z.string().min(3, { message: "Title must be at least 3 characters long" }),
-  content: z.string().min(10, { message: "Content must be at least 10 characters long" }),
-  category: z.string().min(1, { message: "Please select at least one category" }),
+  title: z
+    .string()
+    .min(3, { message: "Title must be at least 3 characters long" }),
+  content: z
+    .string()
+    .min(10, { message: "Content must be at least 10 characters long" }),
+  category: z
+    .string()
+    .min(1, { message: "Please select at least one category" }),
   visibility: z.enum(["public", "draft"]),
   subcategory: z.enum(["public-gallery", "time-capsule"]),
   releaseDate: z.date().optional(),
@@ -45,9 +55,10 @@ const LegacyVaultForm: React.FC = () => {
   const { toast } = useToast();
   const { user } = useAuth();
   const navigate = useNavigate();
-  
+
   // Load cached data from localStorage for default values:
-  const cachedData = typeof window !== "undefined" ? localStorage.getItem(STORAGE_KEY) : null;
+  const cachedData =
+    typeof window !== "undefined" ? localStorage.getItem(STORAGE_KEY) : null;
   const initialFormValues = cachedData ? JSON.parse(cachedData) : null;
 
   const form = useForm<LegacyVaultFormValues>({
@@ -58,7 +69,9 @@ const LegacyVaultForm: React.FC = () => {
       category: initialFormValues?.category ?? "",
       visibility: initialFormValues?.visibility ?? "draft",
       subcategory: initialFormValues?.subcategory ?? "public-gallery",
-      releaseDate: initialFormValues?.releaseDate ? new Date(initialFormValues.releaseDate) : undefined,
+      releaseDate: initialFormValues?.releaseDate
+        ? new Date(initialFormValues.releaseDate)
+        : undefined,
     },
   });
 
@@ -97,18 +110,19 @@ const LegacyVaultForm: React.FC = () => {
       const mediaUrls: string[] = [];
       if (mediaFiles.length > 0) {
         for (const file of mediaFiles) {
-          const fileExt = file.name.split('.').pop();
-          const fileName = `${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
+          const fileExt = file.name.split(".").pop();
+          const fileName = `${Math.random()
+            .toString(36)
+            .substring(2, 15)}.${fileExt}`;
           const filePath = `${user.id}/${fileName}`;
-          
-          const { data: uploadData, error: uploadError } = await supabase.storage
-            .from('legacy_media')
-            .upload(filePath, file);
+
+          const { data: uploadData, error: uploadError } =
+            await supabase.storage.from("legacy_media").upload(filePath, file);
           if (uploadError) throw uploadError;
 
-          const { data: { publicUrl } } = supabase.storage
-            .from('legacy_media')
-            .getPublicUrl(filePath);
+          const {
+            data: { publicUrl },
+          } = supabase.storage.from("legacy_media").getPublicUrl(filePath);
           mediaUrls.push(publicUrl);
         }
       }
@@ -125,12 +139,12 @@ const LegacyVaultForm: React.FC = () => {
       };
 
       if (values.subcategory === "time-capsule" && values.releaseDate) {
-        Object.assign(legacyPost, { release_date: values.releaseDate.toISOString() });
+        Object.assign(legacyPost, {
+          release_date: values.releaseDate.toISOString(),
+        });
       }
 
-      const { error } = await supabase
-        .from("legacy_posts")
-        .insert(legacyPost);
+      const { error } = await supabase.from("legacy_posts").insert(legacyPost);
 
       if (error) throw error;
 
@@ -145,7 +159,7 @@ const LegacyVaultForm: React.FC = () => {
       form.reset();
       setMediaFiles([]);
       setMediaPreview([]);
-      navigate('/dashboard/legacy-vault');
+      navigate("/dashboard/legacy-vault");
     } catch (error) {
       console.error("Error creating legacy post:", error);
       toast({
@@ -164,7 +178,7 @@ const LegacyVaultForm: React.FC = () => {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     if (!files.length) return;
-    
+
     // Limit to 5 files
     if (mediaFiles.length + files.length > 5) {
       toast({
@@ -174,39 +188,39 @@ const LegacyVaultForm: React.FC = () => {
       });
       return;
     }
-    
+
     // Create preview URLs
-    const newPreviews = files.map(file => URL.createObjectURL(file));
-    
-    setMediaFiles(prev => [...prev, ...files]);
-    setMediaPreview(prev => [...prev, ...newPreviews]);
+    const newPreviews = files.map((file) => URL.createObjectURL(file));
+
+    setMediaFiles((prev) => [...prev, ...files]);
+    setMediaPreview((prev) => [...prev, ...newPreviews]);
   };
-  
+
   const removeMedia = (index: number) => {
     // Release object URL to prevent memory leaks
     URL.revokeObjectURL(mediaPreview[index]);
-    
-    setMediaFiles(prev => prev.filter((_, i) => i !== index));
-    setMediaPreview(prev => prev.filter((_, i) => i !== index));
+
+    setMediaFiles((prev) => prev.filter((_, i) => i !== index));
+    setMediaPreview((prev) => prev.filter((_, i) => i !== index));
   };
 
   const handleCancel = () => {
     form.reset();
     setMediaFiles([]);
     setMediaPreview([]);
-    navigate('/dashboard/legacy-vault');
+    navigate("/dashboard/legacy-vault");
   };
 
   return (
-    <div className="w-full p-4">
+    <div className="w-full p-6 xs:p-0 sm:p-4">
       <h2 className="text-2xl font-bold mb-6">Create Legacy Post</h2>
-      
+
       <Tabs defaultValue="public-gallery" onValueChange={handleTabChange}>
         <TabsList className="grid grid-cols-2 mb-6">
           <TabsTrigger value="public-gallery">Public Gallery</TabsTrigger>
           <TabsTrigger value="time-capsule">Time Capsule</TabsTrigger>
         </TabsList>
-        
+
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <FormField
@@ -216,13 +230,16 @@ const LegacyVaultForm: React.FC = () => {
                 <FormItem>
                   <FormLabel>Title</FormLabel>
                   <FormControl>
-                    <Input placeholder="Enter a title for your post" {...field} />
+                    <Input
+                      placeholder="Enter a title for your post"
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
-            
+
             <FormField
               control={form.control}
               name="category"
@@ -230,16 +247,16 @@ const LegacyVaultForm: React.FC = () => {
                 <FormItem>
                   <FormLabel>Category</FormLabel>
                   <FormControl>
-                    <Input 
-                      placeholder="E.g., Technology, Life, Nature, Books" 
-                      {...field} 
+                    <Input
+                      placeholder="E.g., Technology, Life, Nature, Books"
+                      {...field}
                     />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
-            
+
             <TabsContent value="time-capsule">
               <FormField
                 control={form.control}
@@ -283,18 +300,18 @@ const LegacyVaultForm: React.FC = () => {
                 )}
               />
             </TabsContent>
-            
+
             {/* Media Upload Section */}
             <div className="space-y-2">
               <FormLabel>Media (optional)</FormLabel>
               <div className="flex flex-wrap gap-2 mb-4">
                 {mediaPreview.map((url, index) => (
-                  <div 
-                    key={index} 
+                  <div
+                    key={index}
                     className="relative w-24 h-24 bg-muted rounded-md overflow-hidden"
                   >
-                    <img 
-                      src={url} 
+                    <img
+                      src={url}
                       alt={`Preview ${index}`}
                       className="w-full h-full object-cover"
                     />
@@ -313,11 +330,13 @@ const LegacyVaultForm: React.FC = () => {
                   <label className="flex items-center justify-center w-24 h-24 bg-muted rounded-md border border-dashed border-muted-foreground/50 cursor-pointer hover:bg-muted/80 transition-colors">
                     <div className="flex flex-col items-center gap-1">
                       <ImagePlus className="h-8 w-8 text-muted-foreground" />
-                      <span className="text-xs text-muted-foreground">Add Media</span>
+                      <span className="text-xs text-muted-foreground">
+                        Add Media
+                      </span>
                     </div>
-                    <input 
-                      type="file" 
-                      className="hidden" 
+                    <input
+                      type="file"
+                      className="hidden"
                       accept="image/*,video/*"
                       onChange={handleFileChange}
                       multiple
@@ -329,13 +348,14 @@ const LegacyVaultForm: React.FC = () => {
                 <div className="flex gap-2">
                   {mediaFiles.map((file, index) => (
                     <Badge key={index} variant="secondary" className="text-xs">
-                      {file.name.slice(0, 15)}{file.name.length > 15 ? '...' : ''}
+                      {file.name.slice(0, 15)}
+                      {file.name.length > 15 ? "..." : ""}
                     </Badge>
                   ))}
                 </div>
               )}
             </div>
-            
+
             <FormField
               control={form.control}
               name="content"
@@ -343,9 +363,9 @@ const LegacyVaultForm: React.FC = () => {
                 <FormItem>
                   <FormLabel>Content</FormLabel>
                   <FormControl>
-                    <Textarea 
-                      placeholder="Share your legacy..." 
-                      className="min-h-[200px] resize-y" 
+                    <Textarea
+                      placeholder="Share your legacy..."
+                      className="min-h-[200px] resize-y"
                       {...field}
                     />
                   </FormControl>
@@ -353,7 +373,7 @@ const LegacyVaultForm: React.FC = () => {
                 </FormItem>
               )}
             />
-            
+
             <FormField
               control={form.control}
               name="visibility"
@@ -380,14 +400,12 @@ const LegacyVaultForm: React.FC = () => {
                 </FormItem>
               )}
             />
-            
+
             <div className="flex justify-end space-x-4">
               <Button type="button" variant="outline" onClick={handleCancel}>
                 Cancel
               </Button>
-              <Button type="submit">
-                Publish
-              </Button>
+              <Button type="submit">Publish</Button>
             </div>
           </form>
         </Form>
