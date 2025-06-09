@@ -1,24 +1,28 @@
-
-import React from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Archive } from 'lucide-react';
-import { motion } from 'framer-motion';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { motion } from "framer-motion";
+import { Archive } from "lucide-react";
+import { useLocation, useNavigate } from "react-router-dom";
 
 // Import the actual content creation component
-import ContentCreationContainer from '@/components/content/ContentCreationContainer';
-import { RouteInfo } from '@/types';
+import ContentCreationContainer from "@/components/content/ContentCreationContainer";
+import { RouteInfo } from "@/types";
 
 const CreateLegacyPost = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  
+
   // Create a properly typed routeInfo object
   const routeInfo: RouteInfo = {
-    returnPath: '/dashboard/legacy-vault',
-    pathname: location.pathname
+    returnPath: "/dashboard/legacy-vault",
+    pathname: location.pathname,
   };
-  
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -33,11 +37,12 @@ const CreateLegacyPost = () => {
             <CardTitle>Create Legacy Post</CardTitle>
           </div>
           <CardDescription>
-            Preserve your stories, wisdom, and experiences for future generations.
+            Preserve your stories, wisdom, and experiences for future
+            generations.
           </CardDescription>
         </CardHeader>
-        <CardContent className="pt-6">
-          <ContentCreationContainer 
+        <CardContent className="xs:p-0 pt-6">
+          <ContentCreationContainer
             initialTab="legacy-vault"
             routeInfo={routeInfo}
           />
