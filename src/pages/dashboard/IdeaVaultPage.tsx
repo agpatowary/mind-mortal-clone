@@ -102,7 +102,7 @@ const IdeaVaultPage: React.FC = () => {
               </p>
             </div>
             <Button
-              className="flex items-center gap-2 xs:p-2"
+              className="flex items-center gap-2"
               onClick={handleCreateIdea}
             >
               <Plus className="h-4 w-4" />

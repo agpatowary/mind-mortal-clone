@@ -113,7 +113,7 @@ const LegacyVaultPage: React.FC = () => {
               </p>
             </div>
             <Button
-              className="flex items-center gap-2 xs:p-1"
+              className="flex items-center gap-2"
               onClick={handleCreateLegacy}
             >
               <Plus className="h-4 w-4" />
