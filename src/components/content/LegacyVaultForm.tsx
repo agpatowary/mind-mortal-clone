@@ -15,7 +15,6 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
@@ -24,18 +23,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
-import {
-  Calendar as CalendarIcon,
-  Eye,
-  EyeOff,
-  ImagePlus,
-  X,
-} from "lucide-react";
+import { Calendar as CalendarIcon, ImagePlus, X } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { z } from "zod";
-import { Label } from "../ui/label";
 
 const STORAGE_KEY = "legacy_vault_form_data";
 
@@ -49,7 +41,6 @@ const legacyVaultSchema = z.object({
   category: z
     .string()
     .min(1, { message: "Please select at least one category" }),
-  visibility: z.enum(["public", "draft"]),
   subcategory: z.enum(["public-gallery", "time-capsule"]),
   releaseDate: z.date().optional(),
 });
@@ -75,7 +66,6 @@ const LegacyVaultForm: React.FC = () => {
       title: initialFormValues?.title ?? "",
       content: initialFormValues?.content ?? "",
       category: initialFormValues?.category ?? "",
-      visibility: initialFormValues?.visibility ?? "draft",
       subcategory: initialFormValues?.subcategory ?? "public-gallery",
       releaseDate: initialFormValues?.releaseDate
         ? new Date(initialFormValues.releaseDate)
@@ -139,7 +129,7 @@ const LegacyVaultForm: React.FC = () => {
         title: values.title,
         content: values.content,
         categories: [values.category],
-        visibility: values.visibility,
+        visibility: "public",
         subcategory: values.subcategory,
         user_id: user.id,
         media_urls: mediaUrls,
@@ -409,7 +399,7 @@ const LegacyVaultForm: React.FC = () => {
               )}
             /> */}
 
-            <FormField
+            {/* <FormField
               control={form.control}
               name="visibility"
               render={({ field }) => (
@@ -448,7 +438,7 @@ const LegacyVaultForm: React.FC = () => {
                   <FormMessage />
                 </FormItem>
               )}
-            />
+            /> */}
 
             <div className="flex justify-end space-x-4 xs:space-x-0 xs:flex-col xs:items-start xs:gap-2">
               <Button
