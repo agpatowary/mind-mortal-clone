@@ -1,18 +1,18 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/hooks/useAuth';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { ArrowLeft, Save, Clock } from 'lucide-react';
-import { AnimationPlayer } from '@/components/ui/animation-player';
-import mediaConfig from '@/data/mediaConfig.json';
-import { useToast } from '@/hooks/use-toast';
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { ArrowLeft, Save, Clock } from "lucide-react";
+import { AnimationPlayer } from "@/components/ui/animation-player";
+import mediaConfig from "@/data/mediaConfig.json";
+import { useToast } from "@/hooks/use-toast";
 
-const STORAGE_KEY = 'timeless_message_form';
+const STORAGE_KEY = "timeless_message_form";
 
 const CreateTimelessMessage = () => {
   const navigate = useNavigate();
@@ -20,12 +20,14 @@ const CreateTimelessMessage = () => {
   const { user } = useAuth();
 
   // Controlled form state
-  const [recipientEmails, setRecipientEmails] = useState('');
-  const [title, setTitle] = useState('');
-  const [messageContent, setMessageContent] = useState('');
-  const [deliveryType, setDeliveryType] = useState<'date' | 'event'>('date');
-  const [deliveryDate, setDeliveryDate] = useState<string>(new Date().toISOString().split('T')[0]);
-  const [deliveryEvent, setDeliveryEvent] = useState('');
+  const [recipientEmails, setRecipientEmails] = useState("");
+  const [title, setTitle] = useState("");
+  const [messageContent, setMessageContent] = useState("");
+  const [deliveryType, setDeliveryType] = useState<"date" | "event">("date");
+  const [deliveryDate, setDeliveryDate] = useState<string>(
+    new Date().toISOString().split("T")[0]
+  );
+  const [deliveryEvent, setDeliveryEvent] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showAnimation, setShowAnimation] = useState(false);
 
@@ -58,33 +60,60 @@ const CreateTimelessMessage = () => {
       deliveryEvent,
     };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToCache));
-  }, [recipientEmails, title, messageContent, deliveryType, deliveryDate, deliveryEvent]);
+  }, [
+    recipientEmails,
+    title,
+    messageContent,
+    deliveryType,
+    deliveryDate,
+    deliveryEvent,
+  ]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!user) {
-      toast({ title: 'Error', description: 'You must be logged in to create a message.', variant: 'destructive' });
+      toast({
+        title: "Error",
+        description: "You must be logged in to create a message.",
+        variant: "destructive",
+      });
       return;
     }
 
     if (!title.trim()) {
-      toast({ title: 'Missing Title', description: 'Please enter a title.', variant: 'destructive' });
+      toast({
+        title: "Missing Title",
+        description: "Please enter a title.",
+        variant: "destructive",
+      });
       return;
     }
 
     if (!messageContent.trim()) {
-      toast({ title: 'Missing Message Content', description: 'Please enter your message.', variant: 'destructive' });
+      toast({
+        title: "Missing Message Content",
+        description: "Please enter your message.",
+        variant: "destructive",
+      });
       return;
     }
 
-    if (deliveryType === 'date' && !deliveryDate) {
-      toast({ title: 'Missing Delivery Date', description: 'Please select a delivery date.', variant: 'destructive' });
+    if (deliveryType === "date" && !deliveryDate) {
+      toast({
+        title: "Missing Delivery Date",
+        description: "Please select a delivery date.",
+        variant: "destructive",
+      });
       return;
     }
 
-    if (deliveryType === 'event' && !deliveryEvent.trim()) {
-      toast({ title: 'Missing Delivery Event', description: 'Please enter the life event.', variant: 'destructive' });
+    if (deliveryType === "event" && !deliveryEvent.trim()) {
+      toast({
+        title: "Missing Delivery Event",
+        description: "Please enter the life event.",
+        variant: "destructive",
+      });
       return;
     }
 
@@ -93,9 +122,9 @@ const CreateTimelessMessage = () => {
     try {
       // Convert recipient emails string to array
       const recipientEmailsArray = recipientEmails
-        .split(',')
-        .map(email => email.trim())
-        .filter(email => email.length > 0);
+        .split(",")
+        .map((email) => email.trim())
+        .filter((email) => email.length > 0);
 
       // Build the record to insert
       const newMessage = {
@@ -103,10 +132,11 @@ const CreateTimelessMessage = () => {
         title: title.trim(),
         content: messageContent.trim(),
         delivery_type: deliveryType,
-        delivery_date: deliveryType === 'date' ? deliveryDate : null,
-        delivery_event: deliveryType === 'event' ? deliveryEvent.trim() : null,
-        recipient_emails: recipientEmailsArray.length > 0 ? recipientEmailsArray : null,
-        status: 'pending',
+        delivery_date: deliveryType === "date" ? deliveryDate : null,
+        delivery_event: deliveryType === "event" ? deliveryEvent.trim() : null,
+        recipient_emails:
+          recipientEmailsArray.length > 0 ? recipientEmailsArray : null,
+        status: "pending",
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
         is_recurring: false,
@@ -118,17 +148,18 @@ const CreateTimelessMessage = () => {
       };
 
       const { error } = await supabase
-        .from('timeless_messages')
+        .from("timeless_messages")
         .insert([newMessage]);
 
       if (error) {
-        console.error('Insert error:', error);
+        console.error("Insert error:", error);
         throw error;
       }
 
       toast({
-        title: 'Message Created',
-        description: 'Your timeless message has been created and stored securely.',
+        title: "Message Created",
+        description:
+          "Your timeless message has been created and stored securely.",
       });
 
       // Clear cached form data on success
@@ -138,9 +169,9 @@ const CreateTimelessMessage = () => {
       setShowAnimation(true);
     } catch (error) {
       toast({
-        title: 'Failed to create message',
-        description: 'Please try again later.',
-        variant: 'destructive',
+        title: "Failed to create message",
+        description: "Please try again later.",
+        variant: "destructive",
       });
       setIsSubmitting(false);
     }
@@ -152,7 +183,7 @@ const CreateTimelessMessage = () => {
         <div className="w-full max-w-lg">
           <AnimationPlayer
             config={mediaConfig.animations.messageSubmitted}
-            onComplete={() => navigate('/dashboard/timeless-messages')}
+            onComplete={() => navigate("/dashboard/timeless-messages")}
           />
           <p className="text-center mt-4 text-lg font-medium">
             Your timeless message has been safely stored for the future
@@ -168,7 +199,7 @@ const CreateTimelessMessage = () => {
         <Button
           variant="ghost"
           size="icon"
-          onClick={() => navigate('/dashboard/timeless-messages')}
+          onClick={() => navigate("/dashboard/timeless-messages")}
           className="h-8 w-8"
           disabled={isSubmitting}
         >
@@ -181,10 +212,12 @@ const CreateTimelessMessage = () => {
         <CardHeader>
           <CardTitle>Message Details</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="xs:p-2">
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
-              <Label htmlFor="recipientEmails">Recipient Emails (comma separated)</Label>
+              <Label htmlFor="recipientEmails">
+                Recipient Emails (comma separated)
+              </Label>
               <Input
                 id="recipientEmails"
                 placeholder="Enter recipient email addresses separated by commas"
@@ -225,8 +258,8 @@ const CreateTimelessMessage = () => {
                     type="radio"
                     name="deliveryType"
                     value="date"
-                    checked={deliveryType === 'date'}
-                    onChange={() => setDeliveryType('date')}
+                    checked={deliveryType === "date"}
+                    onChange={() => setDeliveryType("date")}
                     disabled={isSubmitting}
                     className="form-radio"
                   />
@@ -237,8 +270,8 @@ const CreateTimelessMessage = () => {
                     type="radio"
                     name="deliveryType"
                     value="event"
-                    checked={deliveryType === 'event'}
-                    onChange={() => setDeliveryType('event')}
+                    checked={deliveryType === "event"}
+                    onChange={() => setDeliveryType("event")}
                     disabled={isSubmitting}
                     className="form-radio"
                   />
@@ -247,13 +280,13 @@ const CreateTimelessMessage = () => {
               </div>
             </div>
 
-            {deliveryType === 'date' && (
+            {deliveryType === "date" && (
               <div className="space-y-2">
                 <Label htmlFor="deliveryDate">Delivery Date</Label>
                 <Input
                   id="deliveryDate"
                   type="date"
-                  min={new Date().toISOString().split('T')[0]}
+                  min={new Date().toISOString().split("T")[0]}
                   value={deliveryDate}
                   onChange={(e) => setDeliveryDate(e.target.value)}
                   disabled={isSubmitting}
@@ -261,7 +294,7 @@ const CreateTimelessMessage = () => {
               </div>
             )}
 
-            {deliveryType === 'event' && (
+            {deliveryType === "event" && (
               <div className="space-y-2">
                 <Label htmlFor="deliveryEvent">Delivery Event</Label>
                 <Input
@@ -274,16 +307,21 @@ const CreateTimelessMessage = () => {
               </div>
             )}
 
-            <div className="pt-4 flex justify-end space-x-2">
+            <div className="pt-4 flex justify-end space-x-2 xs:space-x-0 xs:flex-col xs:items-start xs:gap-2">
               <Button
+                className="xs:w-full"
                 type="button"
                 variant="outline"
-                onClick={() => navigate('/dashboard/timeless-messages')}
+                onClick={() => navigate("/dashboard/timeless-messages")}
                 disabled={isSubmitting}
               >
                 Cancel
               </Button>
-              <Button type="submit" disabled={isSubmitting}>
+              <Button
+                className="xs:w-full"
+                type="submit"
+                disabled={isSubmitting}
+              >
                 {isSubmitting ? (
                   <>
                     <Clock className="mr-2 h-4 w-4 animate-pulse" />

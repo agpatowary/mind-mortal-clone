@@ -1,16 +1,22 @@
-
-import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
+import React, { useState, useEffect } from "react";
+import { motion } from "framer-motion";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+  CardFooter,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Lightbulb, Plus, TrendingUp, Users, Clock } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/hooks/useAuth';
-import { useNavigate } from 'react-router-dom';
-import PostInteractions from '@/components/social/PostInteractions';
-import PostDetailsModal from '@/components/modals/PostDetailsModal';
+import { Lightbulb, Plus, TrendingUp, Users, Clock } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { useNavigate } from "react-router-dom";
+import PostInteractions from "@/components/social/PostInteractions";
+import PostDetailsModal from "@/components/modals/PostDetailsModal";
 import { Badge } from "@/components/ui/badge";
-import DashboardAnimatedBackground from '@/components/dashboard/DashboardAnimatedBackground';
+import DashboardAnimatedBackground from "@/components/dashboard/DashboardAnimatedBackground";
 
 const IdeaVaultPage: React.FC = () => {
   const [ideas, setIdeas] = useState<any[]>([]);
@@ -30,24 +36,24 @@ const IdeaVaultPage: React.FC = () => {
     try {
       setLoading(true);
       const { data, error } = await supabase
-        .from('idea_posts')
-        .select('*')
-        .order('created_at', { ascending: false });
+        .from("idea_posts")
+        .select("*")
+        .order("created_at", { ascending: false });
 
       if (error) {
-        console.error('Error fetching ideas:', error);
+        console.error("Error fetching ideas:", error);
       } else {
         setIdeas(data || []);
       }
     } catch (err) {
-      console.error('Error in fetch operation:', err);
+      console.error("Error in fetch operation:", err);
     } finally {
       setLoading(false);
     }
   };
 
   const handleCreateIdea = () => {
-    navigate('/dashboard/idea-vault/create');
+    navigate("/dashboard/idea-vault/create");
   };
 
   const handleViewDetails = (idea: any) => {
@@ -60,9 +66,9 @@ const IdeaVaultPage: React.FC = () => {
     visible: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.1
-      }
-    }
+        staggerChildren: 0.1,
+      },
+    },
   };
 
   const itemVariants = {
@@ -73,9 +79,9 @@ const IdeaVaultPage: React.FC = () => {
       transition: {
         type: "spring",
         stiffness: 100,
-        damping: 10
-      }
-    }
+        damping: 10,
+      },
+    },
   };
 
   return (
@@ -87,14 +93,15 @@ const IdeaVaultPage: React.FC = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <div className="flex justify-between items-center">
+          <div className="flex justify-between items-center xs:flex-col xs:items-start xs:gap-2">
             <div>
               <h1 className="text-3xl font-bold">Idea</h1>
               <p className="text-muted-foreground mt-2">
-                Refine, share, and fund your ideas. Turn your dreams into reality.
+                Refine, share, and fund your ideas. Turn your dreams into
+                reality.
               </p>
             </div>
-            <Button 
+            <Button
               className="flex items-center gap-2"
               onClick={handleCreateIdea}
             >
@@ -115,9 +122,9 @@ const IdeaVaultPage: React.FC = () => {
             animate="visible"
             className="grid grid-cols-1 gap-6"
           >
-            {ideas.map(idea => (
-              <motion.div 
-                key={idea.id} 
+            {ideas.map((idea) => (
+              <motion.div
+                key={idea.id}
                 variants={itemVariants}
                 whileHover={{ scale: 1.01 }}
                 transition={{ type: "spring", stiffness: 300 }}
@@ -135,7 +142,10 @@ const IdeaVaultPage: React.FC = () => {
                       )}
                     </CardTitle>
                     <CardDescription className="flex items-center gap-4">
-                      <span>Created on {new Date(idea.created_at).toLocaleDateString()}</span>
+                      <span>
+                        Created on{" "}
+                        {new Date(idea.created_at).toLocaleDateString()}
+                      </span>
                       {idea.boost_count > 0 && (
                         <span className="flex items-center gap-1">
                           <Users className="h-4 w-4" />
@@ -145,14 +155,17 @@ const IdeaVaultPage: React.FC = () => {
                       {idea.boost_until && (
                         <span className="flex items-center gap-1">
                           <Clock className="h-4 w-4" />
-                          Boosted until {new Date(idea.boost_until).toLocaleDateString()}
+                          Boosted until{" "}
+                          {new Date(idea.boost_until).toLocaleDateString()}
                         </span>
                       )}
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
                     {idea.description && (
-                      <p className="text-muted-foreground mb-3">{idea.description}</p>
+                      <p className="text-muted-foreground mb-3">
+                        {idea.description}
+                      </p>
                     )}
                     <p className="line-clamp-3">{idea.content}</p>
                     {idea.tags && idea.tags.length > 0 && (
@@ -166,14 +179,14 @@ const IdeaVaultPage: React.FC = () => {
                     )}
                   </CardContent>
                   <CardFooter className="flex flex-col items-stretch">
-                    <PostInteractions 
-                      postId={idea.id} 
+                    <PostInteractions
+                      postId={idea.id}
                       postType="idea_post"
                       onUpdate={fetchIdeas}
                     />
                     <div className="flex justify-end mt-4">
-                      <Button 
-                        variant="outline" 
+                      <Button
+                        variant="outline"
                         size="sm"
                         onClick={() => handleViewDetails(idea)}
                       >

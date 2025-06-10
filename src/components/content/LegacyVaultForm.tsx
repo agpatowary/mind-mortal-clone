@@ -15,6 +15,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
@@ -23,11 +24,18 @@ import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
-import { Calendar as CalendarIcon, ImagePlus, X } from "lucide-react";
+import {
+  Calendar as CalendarIcon,
+  Eye,
+  EyeOff,
+  ImagePlus,
+  X,
+} from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { z } from "zod";
+import { Label } from "../ui/label";
 
 const STORAGE_KEY = "legacy_vault_form_data";
 
@@ -373,8 +381,8 @@ const LegacyVaultForm: React.FC = () => {
                 </FormItem>
               )}
             />
-
-            <FormField
+            {/* TODO: Add visibility toggle; Kept for future reference */}
+            {/* <FormField
               control={form.control}
               name="visibility"
               render={({ field }) => (
@@ -399,13 +407,61 @@ const LegacyVaultForm: React.FC = () => {
                   <FormMessage />
                 </FormItem>
               )}
+            /> */}
+
+            <FormField
+              control={form.control}
+              name="visibility"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Visibility</FormLabel>
+                  <div className="flex items-center space-x-4">
+                    <Switch
+                      id="visibility"
+                      checked={field.value == "public"}
+                      onCheckedChange={() =>
+                        field.value == "public"
+                          ? field.onChange("private")
+                          : field.onChange("public")
+                      }
+                    />
+                    <div className="flex flex-col gap-1">
+                      <Label
+                        htmlFor="visibility"
+                        className="flex items-center gap-2"
+                      >
+                        {field.value == "public" ? (
+                          <>
+                            <Eye className="h-4 w-4" />
+                            <span className="text-lg">Public</span>
+                          </>
+                        ) : (
+                          <>
+                            <EyeOff className="h-4 w-4" />
+                            <span className="text-lg">Private</span>
+                          </>
+                        )}
+                      </Label>
+                    </div>
+                  </div>
+
+                  <FormMessage />
+                </FormItem>
+              )}
             />
 
-            <div className="flex justify-end space-x-4">
-              <Button type="button" variant="outline" onClick={handleCancel}>
+            <div className="flex justify-end space-x-4 xs:space-x-0 xs:flex-col xs:items-start xs:gap-2">
+              <Button
+                className="xs:w-full"
+                type="button"
+                variant="outline"
+                onClick={handleCancel}
+              >
                 Cancel
               </Button>
-              <Button type="submit">Publish</Button>
+              <Button className="xs:w-full" type="submit">
+                Publish
+              </Button>
             </div>
           </form>
         </Form>
