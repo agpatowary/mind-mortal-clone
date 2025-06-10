@@ -421,7 +421,7 @@ const LegacyVaultForm: React.FC = () => {
                       checked={field.value == "public"}
                       onCheckedChange={() =>
                         field.value == "public"
-                          ? field.onChange("draft")
+                          ? field.onChange("private")
                           : field.onChange("public")
                       }
                     />
@@ -438,7 +438,7 @@ const LegacyVaultForm: React.FC = () => {
                         ) : (
                           <>
                             <EyeOff className="h-4 w-4" />
-                            <span className="text-lg">Draft</span>
+                            <span className="text-lg">Private</span>
                           </>
                         )}
                       </Label>
