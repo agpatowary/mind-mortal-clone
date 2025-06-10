@@ -1135,10 +1135,7 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: boolean
       }
-      is_super_admin: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
-      }
+      
       refresh_profile_data: {
         Args: Record<PropertyKey, never>
         Returns: Json
@@ -1152,10 +1149,7 @@ export type Database = {
         }
         Returns: Json
       }
-      super_admin_exists: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
-      }
+      
       update_user_role: {
         Args: { user_id: string; new_role: string }
         Returns: undefined

@@ -21,6 +21,7 @@ export function useSubscription() {
     const fetchSubscription = async () => {
       if (!user) {
         setIsLoading(false);
+        console.log('No user logged in, skipping subscription fetch');
         return;
       }
       
