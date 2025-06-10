@@ -41,7 +41,7 @@ const legacyVaultSchema = z.object({
   category: z
     .string()
     .min(1, { message: "Please select at least one category" }),
-  // visibility: z.enum(["public", "draft"]),
+  visibility: z.enum(["public", "private"]),
   subcategory: z.enum(["public-gallery", "time-capsule"]),
   releaseDate: z.date().optional(),
 });
@@ -67,7 +67,7 @@ const LegacyVaultForm: React.FC = () => {
       title: initialFormValues?.title ?? "",
       content: initialFormValues?.content ?? "",
       category: initialFormValues?.category ?? "",
-      visibility: initialFormValues?.visibility ?? "draft",
+      visibility: initialFormValues?.visibility ?? "public",
       subcategory: initialFormValues?.subcategory ?? "public-gallery",
       releaseDate: initialFormValues?.releaseDate
         ? new Date(initialFormValues.releaseDate)
