@@ -41,7 +41,6 @@ const legacyVaultSchema = z.object({
   category: z
     .string()
     .min(1, { message: "Please select at least one category" }),
-  visibility: z.enum(["public", "private"]),
   subcategory: z.enum(["public-gallery", "time-capsule"]),
   releaseDate: z.date().optional(),
 });
@@ -67,7 +66,6 @@ const LegacyVaultForm: React.FC = () => {
       title: initialFormValues?.title ?? "",
       content: initialFormValues?.content ?? "",
       category: initialFormValues?.category ?? "",
-      visibility: initialFormValues?.visibility ?? "public",
       subcategory: initialFormValues?.subcategory ?? "public-gallery",
       releaseDate: initialFormValues?.releaseDate
         ? new Date(initialFormValues.releaseDate)
@@ -131,7 +129,7 @@ const LegacyVaultForm: React.FC = () => {
         title: values.title,
         content: values.content,
         categories: [values.category],
-        visibility: values.visibility,
+        visibility: "public",
         subcategory: values.subcategory,
         user_id: user.id,
         media_urls: mediaUrls,
@@ -373,6 +371,74 @@ const LegacyVaultForm: React.FC = () => {
                 </FormItem>
               )}
             />
+            {/* TODO: Add visibility toggle; Kept for future reference */}
+            {/* <FormField
+              control={form.control}
+              name="visibility"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Visibility</FormLabel>
+                  <div className="flex space-x-4">
+                    <Button
+                      type="button"
+                      variant={field.value === "public" ? "default" : "outline"}
+                      onClick={() => field.onChange("public")}
+                    >
+                      Public
+                    </Button>
+                    <Button
+                      type="button"
+                      variant={field.value === "draft" ? "default" : "outline"}
+                      onClick={() => field.onChange("draft")}
+                    >
+                      Draft
+                    </Button>
+                  </div>
+                  <FormMessage />
+                </FormItem>
+              )}
+            /> */}
+
+            {/* <FormField
+              control={form.control}
+              name="visibility"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Visibility</FormLabel>
+                  <div className="flex items-center space-x-4">
+                    <Switch
+                      id="visibility"
+                      checked={field.value == "public"}
+                      onCheckedChange={() =>
+                        field.value == "public"
+                          ? field.onChange("private")
+                          : field.onChange("public")
+                      }
+                    />
+                    <div className="flex flex-col gap-1">
+                      <Label
+                        htmlFor="visibility"
+                        className="flex items-center gap-2"
+                      >
+                        {field.value == "public" ? (
+                          <>
+                            <Eye className="h-4 w-4" />
+                            <span className="text-lg">Public</span>
+                          </>
+                        ) : (
+                          <>
+                            <EyeOff className="h-4 w-4" />
+                            <span className="text-lg">Private</span>
+                          </>
+                        )}
+                      </Label>
+                    </div>
+                  </div>
+
+                  <FormMessage />
+                </FormItem>
+              )}
+            /> */}
 
             <div className="flex justify-end space-x-4 xs:space-x-0 xs:flex-col xs:items-start xs:gap-2">
               <Button
