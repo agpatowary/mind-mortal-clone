@@ -192,11 +192,11 @@ const SignUp = () => {
                         <div className="space-y-1 leading-none">
                           <FormLabel>
                             I agree to the{' '}
-                            <Link to="/legal/terms" className="text-primary hover:underline" target="_blank">
+                            <Link to="/legal/terms-of-use" className="text-primary hover:underline" target="_blank">
                               Terms of Service
                             </Link>{' '}
                             and{' '}
-                            <Link to="/legal/privacy" className="text-primary hover:underline" target="_blank">
+                            <Link to="/legal/privacy-policy" className="text-primary hover:underline" target="_blank">
                               Privacy Policy
                             </Link>
                           </FormLabel>
