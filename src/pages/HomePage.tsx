@@ -202,8 +202,8 @@ const HomePage: React.FC = () => {
             onClick={() => goToSection(index)}
             className={`w-3 h-3 rounded-full transition-all duration-300 ${
               currentSection === index
-                ? "bg-white scale-125"
-                : "bg-white/50 hover:bg-white/75"
+                ? "bg-primary scale-125 border-primary"
+                : "bg-muted dark:bg-white/50 hover:bg-primary/50"
             }`}
             disabled={isTransitioning}
           />
