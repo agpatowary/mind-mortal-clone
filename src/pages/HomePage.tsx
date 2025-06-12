@@ -105,7 +105,38 @@ const HomePage: React.FC = () => {
     }
   }, [currentSection, goToSection]);
 
-  // Reset and reprogram mouse wheel event listener
+  // Reset and reprogram mouse wheel or swipe event listener
+  useEffect(() => {
+    let startY = 0;
+
+    const handleTouchStart = (e: TouchEvent) => {
+      startY = e.touches[0].clientY;
+    };
+
+    const handleTouchEnd = (e: TouchEvent) => {
+      const endY = e.changedTouches[0].clientY;
+      const deltaY = startY - endY;
+
+      if (Math.abs(deltaY) > 50 && !isTransitioning) {
+        if (deltaY > 0 && currentSection < sections.length - 1) {
+          handleNext();
+        } else if (deltaY < 0 && currentSection > 0) {
+          handlePrevious();
+        }
+      }
+    };
+
+    if (isMobile) {
+      window.addEventListener("touchstart", handleTouchStart);
+      window.addEventListener("touchend", handleTouchEnd);
+    }
+
+    return () => {
+      window.removeEventListener("touchstart", handleTouchStart);
+      window.removeEventListener("touchend", handleTouchEnd);
+    };
+  }, [currentSection, isTransitioning, isMobile]);
+
   useEffect(() => {
     let wheelTimeout: NodeJS.Timeout;
 
