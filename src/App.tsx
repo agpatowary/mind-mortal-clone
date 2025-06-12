@@ -79,24 +79,141 @@ function App() {
                 }
               >
                 <Route index element={<AdminOverview />} />
-                <Route path="users" element={<UsersManagement />} />
-                <Route path="mentor-applications" element={<MentorApplications />} />
-                <Route path="subscription-plans" element={<SubscriptionPlans />} />
+                <Route 
+                  path="users" 
+                  element={<UsersManagement />} 
+                />
+                <Route 
+                  path="mentor-applications" 
+                  element={<MentorApplications />} 
+                />
+                <Route 
+                  path="subscription-plans" 
+                  element={<SubscriptionPlans />} 
+                />
               </Route>
 
               {/* Dashboard Routes */}
-              <Route path="/dashboard" element={<AuthGuard><DashboardLayout><DashboardHome /></DashboardLayout></AuthGuard>} />
-              <Route path="/dashboard/legacy-vault" element={<AuthGuard><DashboardLayout><LegacyVaultPage /></DashboardLayout></AuthGuard>} />
-              <Route path="/dashboard/legacy-vault/create" element={<AuthGuard><DashboardLayout><LegacyPostEdit /></DashboardLayout></AuthGuard>} />
-              <Route path="/dashboard/idea-vault" element={<AuthGuard><DashboardLayout><IdeaVaultPage /></DashboardLayout></AuthGuard>} />
-              <Route path="/dashboard/idea-vault/create" element={<AuthGuard><DashboardLayout><IdeaPostCreate /></DashboardLayout></AuthGuard>} />
-              <Route path="/dashboard/mentorship" element={<AuthGuard><DashboardLayout><MentorshipPage /></DashboardLayout></AuthGuard>} />
-              <Route path="/dashboard/mentorship/create" element={<AuthGuard><DashboardLayout><MentorshipResourceCreate /></DashboardLayout></AuthGuard>} />
-              <Route path="/dashboard/timeless-messages" element={<AuthGuard><DashboardLayout><TimelessMessagesPage /></DashboardLayout></AuthGuard>} />
-              <Route path="/dashboard/timeless-messages/create" element={<AuthGuard><DashboardLayout><TimelessMessageCreate /></DashboardLayout></AuthGuard>} />
-              <Route path="/dashboard/settings" element={<AuthGuard><DashboardLayout><SettingsPage /></DashboardLayout></AuthGuard>} />
-              <Route path="/dashboard/profile" element={<AuthGuard><DashboardLayout><ProfilePage /></DashboardLayout></AuthGuard>} />
-              <Route path="/dashboard/become-mentor" element={<AuthGuard><DashboardLayout><BecomeMentorPage /></DashboardLayout></AuthGuard>} />
+              <Route 
+                path="/dashboard" 
+                element={
+                  <AuthGuard>
+                    <DashboardLayout>
+                      <DashboardHome />
+                    </DashboardLayout>
+                  </AuthGuard>
+                } 
+              />
+              <Route 
+                path="/dashboard/legacy-vault" 
+                element={
+                  <AuthGuard>
+                    <DashboardLayout>
+                      <LegacyVaultPage />
+                    </DashboardLayout>
+                  </AuthGuard>
+                } 
+              />
+              <Route 
+                path="/dashboard/legacy-vault/create" 
+                element={
+                  <AuthGuard>
+                    <DashboardLayout>
+                      <LegacyPostEdit />
+                    </DashboardLayout>
+                  </AuthGuard>
+                } 
+              />
+              <Route 
+                path="/dashboard/idea-vault" 
+                element={
+                  <AuthGuard>
+                    <DashboardLayout>
+                      <IdeaVaultPage />
+                    </DashboardLayout>
+                  </AuthGuard>
+                } 
+              />
+              <Route 
+                path="/dashboard/idea-vault/create" 
+                element={
+                  <AuthGuard>
+                    <DashboardLayout>
+                      <IdeaPostCreate />
+                    </DashboardLayout>
+                  </AuthGuard>
+                } 
+              />
+              <Route 
+                path="/dashboard/mentorship" 
+                element={
+                  <AuthGuard>
+                    <DashboardLayout>
+                      <MentorshipPage />
+                    </DashboardLayout>
+                  </AuthGuard>
+                }
+              />
+              <Route 
+                path="/dashboard/mentorship/create" 
+                element={
+                  <AuthGuard>
+                    <DashboardLayout>
+                      <MentorshipResourceCreate />
+                    </DashboardLayout>
+                  </AuthGuard>
+                } 
+              />
+              <Route 
+                path="/dashboard/timeless-messages" 
+                element={
+                  <AuthGuard>
+                    <DashboardLayout>
+                      <TimelessMessagesPage />
+                    </DashboardLayout>
+                  </AuthGuard>
+                } 
+              />
+              <Route 
+                path="/dashboard/timeless-messages/create" 
+                element={
+                  <AuthGuard>
+                    <DashboardLayout>
+                      <TimelessMessageCreate />
+                    </DashboardLayout>
+                  </AuthGuard>
+                } 
+              />
+              <Route 
+                path="/dashboard/settings" 
+                element={
+                  <AuthGuard>
+                    <DashboardLayout>
+                      <SettingsPage />
+                    </DashboardLayout>
+                  </AuthGuard>
+                } 
+              />
+              <Route 
+                path="/dashboard/profile" 
+                element={
+                  <AuthGuard>
+                    <DashboardLayout>
+                      <ProfilePage />
+                    </DashboardLayout>
+                  </AuthGuard>
+                } 
+              />
+              <Route 
+                path="/dashboard/become-mentor" 
+                element={
+                  <AuthGuard>
+                    <DashboardLayout>
+                      <BecomeMentorPage />
+                    </DashboardLayout>
+                  </AuthGuard>
+                } 
+              />
 
               <Route path="*" element={<NotFoundPage />} />
             </Routes>
