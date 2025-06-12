@@ -203,7 +203,7 @@ const HomePage: React.FC = () => {
             className={`w-3 h-3 rounded-full transition-all duration-300 ${
               currentSection === index
                 ? "bg-primary scale-125 border-primary"
-                : "bg-muted dark:bg-white/50 hover:bg-primary/50"
+                : "bg-gray-300 dark:bg-white/30 hover:bg-primary/50"
             }`}
             disabled={isTransitioning}
           />
