@@ -30,7 +30,7 @@ const CtaSection: React.FC<CtaSectionProps> = ({ data }) => {
   ];
 
   return (
-    <div className="min-h-screen relative flex flex-col justify-center items-center py-20 px-4">
+    <div className="min-h-screen relative flex flex-col justify-center items-center py-20 xs:py-12 px-4">
       {/* Background gradient */}
       <div className="absolute inset-0 bg-gradient-to-b from-background via-background to-primary/5"></div>
 
@@ -47,7 +47,7 @@ const CtaSection: React.FC<CtaSectionProps> = ({ data }) => {
             {data.description}
           </p>
 
-          <div className="mb-16">
+          <div className="mb-16 xs:mb-4">
             <Button
               size="lg"
               className="rounded-full px-8 py-6 text-lg bg-[#F97316] hover:bg-[#F97316]/90"
@@ -58,7 +58,7 @@ const CtaSection: React.FC<CtaSectionProps> = ({ data }) => {
           </div>
 
           {data.metrics && (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-16">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-16 xs:mt-8">
               {data.metrics.map((metric, index) => (
                 <motion.div
                   key={index}
@@ -78,8 +78,8 @@ const CtaSection: React.FC<CtaSectionProps> = ({ data }) => {
           )}
 
           {/* Legal Links Section */}
-          <div className="mt-16">
-            <Separator className="mb-8" />
+          <div className="mt-16 xs:mt-4">
+            <Separator className="mb-8 xs:mb-2" />
             <div className="flex flex-wrap justify-center gap-4 md:gap-8">
               {legalLinks.map((link, index) => (
                 <motion.div
