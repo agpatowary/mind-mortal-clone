@@ -52,10 +52,15 @@ const FeaturedMentorsSection = () => {
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, amount: 0.2 }}
-          className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto mb-12"
+          className="flex flex-row gap-4 overflow-x-auto md:grid md:grid-cols-3 md:gap-6 md:overflow-visible max-w-5xl mx-auto my-12"
+          style={{ WebkitOverflowScrolling: "touch" }}
         >
           {[1, 2, 3].map((_, index) => (
-            <motion.div key={index} variants={itemVariants}>
+            <motion.div
+              key={index}
+              variants={itemVariants}
+              className="min-w-[260px] max-w-xs w-full md:w-auto md:min-w-0 md:max-w-none flex-shrink-0"
+            >
               <Card className="text-center border border-primary/10 hover:border-primary/30 transition-all hover:shadow-md">
                 <CardContent className="pt-6">
                   <div className="w-24 h-24 bg-gray-200 dark:bg-gray-700 rounded-full mx-auto mb-4 flex items-center justify-center">
