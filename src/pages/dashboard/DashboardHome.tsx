@@ -1,31 +1,57 @@
-
-import React from 'react';
-import { motion } from 'framer-motion';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import React, { useEffect, useState } from "react";
+import { motion } from "framer-motion";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Plus, FileText, Lightbulb, Clock, BookOpen, Users, Heart, MessageSquare } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '@/hooks/useAuth';
-import DashboardAnimatedBackground from '@/components/dashboard/DashboardAnimatedBackground';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Plus,
+  FileText,
+  Lightbulb,
+  Clock,
+  BookOpen,
+  Users,
+  Heart,
+  MessageSquare,
+} from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
+import DashboardAnimatedBackground from "@/components/dashboard/DashboardAnimatedBackground";
+import { useContentCount } from "@/hooks/useContentCount";
 
 const DashboardHome: React.FC = () => {
   const navigate = useNavigate();
   const { profile } = useAuth();
+  const {
+    legacyPostCount,
+    ideaCount,
+    timelessMessageCount,
+    wisdomResourceCount,
+  } = useContentCount();
 
   const handleCreateClick = (type: string) => {
     switch (type) {
-      case 'legacy':
-        navigate('/dashboard/legacy-vault/create');
+      case "legacy":
+        navigate("/dashboard/legacy-vault/create");
         break;
-      case 'idea':
-        navigate('/dashboard/idea-vault/create');
+      case "idea":
+        navigate("/dashboard/idea-vault/create");
         break;
-      case 'message':
-        navigate('/dashboard/timeless-messages/create');
+      case "message":
+        navigate("/dashboard/timeless-messages/create");
         break;
-      case 'resource':
-        navigate('/dashboard/mentorship/create');
+      case "resource":
+        navigate("/dashboard/mentorship/create");
         break;
       default:
         break;
@@ -37,9 +63,9 @@ const DashboardHome: React.FC = () => {
     visible: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.1
-      }
-    }
+        staggerChildren: 0.1,
+      },
+    },
   };
 
   const itemVariants = {
@@ -50,9 +76,9 @@ const DashboardHome: React.FC = () => {
       transition: {
         type: "spring",
         stiffness: 100,
-        damping: 10
-      }
-    }
+        damping: 10,
+      },
+    },
   };
 
   return (
@@ -66,11 +92,14 @@ const DashboardHome: React.FC = () => {
         >
           {/* Header */}
           <motion.div variants={itemVariants} className="text-center">
-            <h1 className="text-4xl font-bold mb-4">Welcome to Your Dashboard</h1>
+            <h1 className="text-4xl font-bold mb-4">
+              Welcome to Your Dashboard
+            </h1>
             <p className="text-xl text-muted-foreground mb-8">
-              Your journey to immortality begins here. Create, share, and preserve your legacy.
+              Your journey to immortality begins here. Create, share, and
+              preserve your legacy.
             </p>
-            
+
             {/* Create Content Dropdown */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -80,20 +109,22 @@ const DashboardHome: React.FC = () => {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="center" className="w-56">
-                <DropdownMenuItem onClick={() => handleCreateClick('legacy')}>
+                <DropdownMenuItem onClick={() => handleCreateClick("legacy")}>
                   <FileText className="mr-2 h-4 w-4" />
                   Legacy Post
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleCreateClick('idea')}>
+                <DropdownMenuItem onClick={() => handleCreateClick("idea")}>
                   <Lightbulb className="mr-2 h-4 w-4" />
                   Idea Post
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleCreateClick('message')}>
+                <DropdownMenuItem onClick={() => handleCreateClick("message")}>
                   <Clock className="mr-2 h-4 w-4" />
                   Timeless Message
                 </DropdownMenuItem>
                 {profile?.is_mentor && (
-                  <DropdownMenuItem onClick={() => handleCreateClick('resource')}>
+                  <DropdownMenuItem
+                    onClick={() => handleCreateClick("resource")}
+                  >
                     <BookOpen className="mr-2 h-4 w-4" />
                     Mentorship Resource
                   </DropdownMenuItem>
@@ -107,11 +138,13 @@ const DashboardHome: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               <Card className="hover:shadow-lg transition-shadow">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Legacy Posts</CardTitle>
+                  <CardTitle className="text-sm font-medium">
+                    Legacy Posts
+                  </CardTitle>
                   <FileText className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">0</div>
+                  <div className="text-2xl font-bold">{legacyPostCount}</div>
                   <p className="text-xs text-muted-foreground">
                     Stories for the future
                   </p>
@@ -120,11 +153,13 @@ const DashboardHome: React.FC = () => {
 
               <Card className="hover:shadow-lg transition-shadow">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Ideas Shared</CardTitle>
+                  <CardTitle className="text-sm font-medium">
+                    Ideas Shared
+                  </CardTitle>
                   <Lightbulb className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">0</div>
+                  <div className="text-2xl font-bold">{ideaCount}</div>
                   <p className="text-xs text-muted-foreground">
                     Innovations documented
                   </p>
@@ -133,24 +168,30 @@ const DashboardHome: React.FC = () => {
 
               <Card className="hover:shadow-lg transition-shadow">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Community Impact</CardTitle>
+                  <CardTitle className="text-sm font-medium">
+                    Community Impact
+                  </CardTitle>
                   <Heart className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">0</div>
-                  <p className="text-xs text-muted-foreground">
-                    Lives touched
-                  </p>
+                  <div className="text-2xl font-bold">
+                    {wisdomResourceCount}
+                  </div>
+                  <p className="text-xs text-muted-foreground">Lives touched</p>
                 </CardContent>
               </Card>
 
               <Card className="hover:shadow-lg transition-shadow">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Messages Scheduled</CardTitle>
+                  <CardTitle className="text-sm font-medium">
+                    Messages Scheduled
+                  </CardTitle>
                   <Clock className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">0</div>
+                  <div className="text-2xl font-bold">
+                    {timelessMessageCount}
+                  </div>
                   <p className="text-xs text-muted-foreground">
                     Future connections
                   </p>
@@ -163,9 +204,9 @@ const DashboardHome: React.FC = () => {
           <motion.div variants={itemVariants}>
             <h2 className="text-2xl font-bold mb-6">Quick Actions</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              <Card 
+              <Card
                 className="cursor-pointer hover:shadow-lg transition-all duration-300 hover:scale-105"
-                onClick={() => navigate('/dashboard/legacy-vault')}
+                onClick={() => navigate("/dashboard/legacy-vault")}
               >
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
@@ -178,9 +219,9 @@ const DashboardHome: React.FC = () => {
                 </CardHeader>
               </Card>
 
-              <Card 
+              <Card
                 className="cursor-pointer hover:shadow-lg transition-all duration-300 hover:scale-105"
-                onClick={() => navigate('/dashboard/idea-vault')}
+                onClick={() => navigate("/dashboard/idea-vault")}
               >
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
@@ -193,9 +234,9 @@ const DashboardHome: React.FC = () => {
                 </CardHeader>
               </Card>
 
-              <Card 
+              <Card
                 className="cursor-pointer hover:shadow-lg transition-all duration-300 hover:scale-105"
-                onClick={() => navigate('/dashboard/mentorship')}
+                onClick={() => navigate("/dashboard/mentorship")}
               >
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
@@ -203,14 +244,16 @@ const DashboardHome: React.FC = () => {
                     Mentorship
                   </CardTitle>
                   <CardDescription>
-                    {profile?.is_mentor ? 'Share your knowledge and experience' : 'Connect with mentors and learn'}
+                    {profile?.is_mentor
+                      ? "Share your knowledge and experience"
+                      : "Connect with mentors and learn"}
                   </CardDescription>
                 </CardHeader>
               </Card>
 
-              <Card 
+              <Card
                 className="cursor-pointer hover:shadow-lg transition-all duration-300 hover:scale-105"
-                onClick={() => navigate('/dashboard/timeless-messages')}
+                onClick={() => navigate("/dashboard/timeless-messages")}
               >
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
